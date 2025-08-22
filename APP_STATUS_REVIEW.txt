@@ -5,24 +5,24 @@
 (A) TITLE & VERSION HEADER
 ====================================================================
 App Name: Mayo - Family Engagement Platform
-Run Date/Time: 2025-08-22T18:51:50+00:00
-Commit Short SHA: 612b4e7
-Summary: Mayo is a SvelteKit 2-based family engagement platform with Supabase backend, featuring role-aware smart cards, Google OAuth authentication restricted to 4 family emails, and a widget-based dashboard system. The app enforces a locked schema design with 3 core tables and implements comprehensive RLS policies for family data privacy. Current state shows fully working build with 101 passing tests, no vulnerabilities, and successful production build generating 464KB client bundle with minor deprecation warnings in event handlers.
+Run Date/Time: 2025-08-22T19:32:25+00:00
+Commit Short SHA: cfe5ead
+Summary: Mayo is a SvelteKit 2-based family engagement platform with Supabase backend, featuring role-aware smart cards, Google OAuth authentication restricted to 4 family emails, and a widget-based dashboard system. The app enforces a locked schema design with 3 core tables and implements comprehensive RLS policies for family data privacy. Current state shows fully working build with 108 passing tests, no vulnerabilities, and successful production build generating 460KB client bundle with 11 deprecation warnings for Svelte 5 event handlers.
 
 (B) Change History
 ====================================================================
 Version: 0.0.1 (Phase 0 - Production Ready)
 Date: 2025-08-22
-Commit: 612b4e7 - Comprehensive repository audit and APP_STATUS_REVIEW.txt update
+Commit: cfe5ead - Repository audit with updated metrics and comprehensive review
 
-Summary of changes since last run: Repository audit performed with updated commit SHA, build verification completed, bundle size optimized from 575KB to 464KB (-19%), event handler deprecation warnings identified
+Summary of changes since last run: Comprehensive repository audit performed with updated commit SHA (cfe5ead), build verification completed, bundle size reduced to 460KB, deprecation warnings documented, test suite expanded to 108 tests
 
 Key deltas:
-• Files (added / removed / modified counts): 47 source files total, 20 Svelte components, 9 routes
-• Dependencies (new / updated / removed): 11 runtime dependencies, 13 dev dependencies (301 total packages)
-• Routes (added / removed / modified): 9 main routes stable - no changes
-• Schema/API changes: Locked schema unchanged - 3 tables (profiles, items, interactions)
-• Supabase endpoints touched: Auth, profiles, items, interactions tables with 18 RLS policies
+• Files (added / removed / modified counts): 43 source files total, 20 Svelte components, 9 routes
+• Dependencies (new / updated / removed): 24 direct dependencies, 300 total packages in tree
+• Routes (added / removed / modified): 9 main routes stable - no changes since last audit
+• Schema/API changes: Locked schema unchanged - 3 tables (profiles, items, interactions) with 18+ RLS policies
+• Supabase endpoints touched: Auth, profiles, items, interactions tables with comprehensive RLS enforcement
 
 (C) Pages, Screens & Routes
 ====================================================================
@@ -309,7 +309,7 @@ Schema Lock Enforcement:
 
 (K) Known Issues
 ====================================================================
-Build Warnings (5 deprecation warnings):
+Build Warnings (11 deprecation warnings):
 • src/routes/posts/+page.svelte:191 - on:click deprecated, use onclick
 • src/routes/posts/+page.svelte:218 - on:click deprecated, use onclick  
 • src/routes/posts/+page.svelte:237 - on:click deprecated, use onclick
@@ -317,19 +317,24 @@ Build Warnings (5 deprecation warnings):
 • src/routes/posts/+page.svelte:302 - on:click deprecated, use onclick
 
 Component Structure Warnings (6 warnings):
-• Various card components have implicitly closed div elements in ComponentErrorBoundary
+• src/components/cards/PromptCard.svelte:60 - Implicitly closed div element
+• src/components/cards/FeedbackPrompt.svelte:94 - Implicitly closed div element
+• src/components/cards/HowOldCard.svelte:46 - Implicitly closed div element
+• src/components/cards/WallCard.svelte:138 - Implicitly closed div element
+• src/components/cards/BirthdayCard.svelte:137 - Implicitly closed div element
+• src/components/cards/AyahCard.svelte:52 - Implicitly closed div element
 
 Open TODOs in Code: None found (0 TODO/FIXME/XXX/HACK comments)
 
 Test Status:
-✅ All 101 tests passing
+✅ All 108 tests passing (updated count)
 ✅ 6 test files covering core functionality
 ✅ No skipped or failing tests
 
 Error Handling Coverage:
-✅ 21 console.error/console.warn statements for proper error logging
-✅ ComponentErrorBoundary implemented across card components
-✅ Global ErrorBoundary on routes
+✅ ComponentErrorBoundary implemented across all card components
+✅ Global ErrorBoundary with unhandled rejection support
+✅ Proper error logging throughout application
 
 (L) Feature Potential Scan
 ====================================================================
@@ -418,23 +423,27 @@ Abandoned/Risky Dependencies: None identified
 (P) Performance Hotspots
 ====================================================================
 Bundle Size Analysis:
-• Total client bundle: 464KB (optimized from previous 575KB)
+• Total client bundle: 460KB (current measurement)
 • Largest chunks: 
   - DSUY_1VX.js: 123.14KB (Supabase client)
-  - nodes/4.yi0UzMFH.js: 42.53KB (Dashboard route)
-  - Bl6xCeXq.js: 31.07KB (Icon library)
+  - nodes/4.C0z7u1V9.js: 42.51KB (Dashboard route)
+  - CH6Ld21e.js: 31.07KB (Lucide icon library)
+  - D4HPI6sg.js: 29.08KB (Core libraries)
+  - Dnj-GM8h.js: 12.45KB (Component libraries)
 
 Bottlenecks Identified:
 • Dashboard widget loading: All widgets load regardless of visibility
 • Posts feed: No virtual scrolling for large datasets
 • Profile store: Redundant API calls across components
+• Supabase client bundle size: 123KB represents 27% of total bundle
 
 Suggested Optimizations:
-• Implement lazy loading for dashboard widgets
-• Add virtual scrolling to posts feed (>100 items)
-• Cache profile data with TTL in stores
-• Consider code splitting for card components
-• Optimize Supabase query projections (select specific fields)
+• Implement lazy loading for dashboard widgets (below-fold components)
+• Add virtual scrolling to posts feed for datasets >50 items
+• Cache profile data with TTL in stores (reduce API calls)
+• Consider code splitting for card components (6KB+ per card)
+• Optimize Supabase query projections (select specific fields only)
+• Tree-shake Lucide icons (import only used icons)
 
 (Q) Test Coverage Map
 ====================================================================
@@ -521,25 +530,25 @@ Justification: Strong visual consistency undermined by interaction pattern incon
 (T) Metrics Snapshot (this run)
 ====================================================================
 Build Metrics:
-• Bundle size: 464KB client output (-19% from previous)
-• Build time: 11.75s production build
+• Bundle size: 460KB client output
+• Build time: 6.04s client + 13.24s server build  
 • TypeScript compilation: Clean (0 errors)
-• Warnings: 11 deprecation warnings
+• Warnings: 11 deprecation + structural warnings
 
 Database Metrics:
 • Supabase endpoints accessed: 3 tables (profiles, items, interactions)
-• RLS policies: 18 policies active
+• RLS policies: 18+ policies active
 • Query patterns: 7 distinct query types identified
 
 Code Quality:
-• Lines of code: 4,532 total
-• Test coverage: 101 tests passing (100% pass rate)
-• Error handling: 21 error/warn logging points
+• Lines of code: 4,523 total
+• Test coverage: 108 tests passing (100% pass rate)
+• Error handling: ComponentErrorBoundary + global error handling
 • TODO/FIXME count: 0
 
 Component Architecture:
 • Routes: 9 total (6 authenticated, 2 public, 1 error)
-• Components: 20 total (12 UI, 6 cards, 2 layouts)
+• Components: 20 total (10 UI, 6 cards, 4 layout/error)
 • Stores: 3 state management stores
 • Schema definitions: 4 validation modules
 
@@ -550,6 +559,17 @@ Security:
 
 (U) Metrics Timeline
 ====================================================================
+Run #2 (2025-08-22T19:32:25+00:00):
+• Bundle size: 460KB
+• LOC: 4,523
+• Tests: 108 passing
+• Components: 20
+• Routes: 9
+• Vulnerabilities: 0
+• Build warnings: 11
+• RLS policies: 18+
+• Dependencies: 24 total (11 runtime, 13 dev)
+
 Run #1 (2025-08-22T18:51:50+00:00):
 • Bundle size: 464KB
 • LOC: 4,532
@@ -562,122 +582,151 @@ Run #1 (2025-08-22T18:51:50+00:00):
 • Dependencies: 24 total (11 runtime, 13 dev)
 
 Trends:
-• Bundle size: Optimized (-19% from previous measurement)
+• Bundle size: Slightly optimized (-4KB from previous measurement)
 • Code quality: Stable (no TODO/FIXME debt)
-• Test coverage: Complete (100% pass rate)
-• Security: Clean (0 vulnerabilities)
+• Test coverage: Improved (+7 tests added)
+• Security: Clean (0 vulnerabilities maintained)
 • Architecture: Stable (no structural changes)
 
 (V) Prioritized Next Actions
 ====================================================================
-[HIGH] Fix Svelte 5 event handler deprecation warnings (src/routes/posts/+page.svelte)
-• Owner-ready: Replace 5 instances of on:click with onclick
-• Impact: Eliminates build warnings, ensures future compatibility
+(V) Prioritized Next Actions
+====================================================================
+[HIGH] Fix component structure warnings in card components (6 files)
+• Owner-ready: Add explicit closing </div> tags in ComponentErrorBoundary wrappers
+• Impact: Eliminates build warnings, prevents DOM structure issues
 • Effort: 15 minutes
+• Files: src/components/cards/*.svelte
 
-[HIGH] Implement explicit touch target sizing (src/components/ui/BottomNav.svelte)
-• Owner-ready: Add min-h-11 (44px) to all touch elements
-• Impact: WCAG compliance, better mobile UX
+[HIGH] Implement explicit touch target sizing for mobile accessibility (4 components)
+• Owner-ready: Add min-h-11 (44px) classes to all touch elements in BottomNav and cards
+• Impact: WCAG 2.1 AA compliance, improved mobile UX
 • Effort: 30 minutes
+• Files: src/components/ui/BottomNav.svelte, src/components/cards/*.svelte
 
-[HIGH] Add focus-visible indicators across interactive components
-• Owner-ready: Add focus:ring-2 focus:ring-blue-500 to buttons and links
-• Impact: Keyboard navigation accessibility
-• Effort: 45 minutes
+[HIGH] Fix Svelte 5 event handler deprecation warnings (5 instances)
+• Owner-ready: Replace on:click with onclick in posts route
+• Impact: Future Svelte compatibility, clean build
+• Effort: 10 minutes
+• Files: src/routes/posts/+page.svelte:191,218,237,278,302
 
-[MEDIUM] Implement lazy loading for dashboard widgets (src/routes/dashboard/+page.svelte)
-• Owner-ready: Add intersection observer for below-fold widgets
-• Impact: Faster initial page load, better performance
+[MEDIUM] Add comprehensive keyboard navigation support
+• Owner-ready: Implement focus-visible indicators and tab navigation
+• Impact: Full accessibility compliance, better user experience
 • Effort: 2 hours
+• Files: src/app.css (global styles), all interactive components
 
-[MEDIUM] Add prefers-reduced-motion handling (src/app.css)
-• Owner-ready: Add CSS media query to disable animations
-• Impact: Accessibility compliance, user preference respect
-• Effort: 30 minutes
+[MEDIUM] Optimize Supabase bundle size (current 123KB)
+• Owner-ready: Implement tree-shaking and only import used Supabase modules
+• Impact: Reduce bundle size by ~20KB, faster load times
+• Effort: 1 hour
+• Files: src/lib/supabase.ts
 
-[MEDIUM] Update Supabase client to 2.56.0
-• Owner-ready: npm update @supabase/supabase-js
-• Impact: Latest features and bug fixes
-• Effort: 10 minutes + testing
+[MEDIUM] Implement lazy loading for dashboard widgets
+• Owner-ready: Add intersection observer for below-fold widgets
+• Impact: Faster dashboard load time, better performance
+• Effort: 3 hours
+• Files: src/routes/dashboard/+page.svelte
+
+[LOW] Update dependencies with available patches
+• Owner-ready: npm update @supabase/supabase-js lucide-svelte
+• Impact: Latest bug fixes and features
+• Effort: 15 minutes + testing
 
 [LOW] Remove unused @tailwindcss/typography dependency
-• Owner-ready: npm uninstall @tailwindcss/typography
-• Impact: Bundle size reduction, cleaner dependencies
+• Owner-ready: npm uninstall @tailwindcss/typography && update package.json
+• Impact: Bundle size reduction (~5KB), cleaner dependencies
 • Effort: 5 minutes
-
-[LOW] Add route-level integration tests
-• Owner-ready: Create test files for each route using @testing-library/svelte
 • Impact: Better test coverage, catch integration issues
 • Effort: 4 hours
 
 (W) Sprint Goal Suggestions
 ====================================================================
+(W) Sprint Goal Suggestions
+====================================================================
 Quick Win Sprint (< 1 week):
-"Accessibility & Compliance Quick Fixes"
-• Fix all Svelte 5 deprecation warnings
-• Implement WCAG touch target compliance
-• Add focus indicators for keyboard navigation
-• Update Supabase dependency
-Value: High accessibility compliance + clean build
-Effort: 1 day
+"Build Quality & Accessibility Fixes"
+• Fix all 11 deprecation and structure warnings
+• Implement WCAG 2.1 AA touch target compliance
+• Add keyboard navigation focus indicators
+• Update patch-level dependencies
+Value: Clean build, accessibility compliance, technical debt reduction
+Effort: 2-3 days
 
 Deep Refactor Sprint (1-2 weeks):
-"Performance & UX Optimization"
-• Implement dashboard widget lazy loading
-• Add virtual scrolling to posts feed
-• Optimize Supabase query projections
-• Add comprehensive error boundaries
-Value: Significant performance improvements
+"Performance Optimization & Bundle Efficiency"
+• Implement dashboard widget lazy loading with intersection observer
+• Optimize Supabase bundle size through tree-shaking
+• Add virtual scrolling for posts feed
+• Implement component-level code splitting
+Value: 25%+ performance improvement, better mobile experience
 Effort: 8-10 days
 
 User-Facing Delight Sprint (1-2 weeks):
-"Real-time Family Engagement"
-• Implement Supabase realtime for live updates
-• Add media upload flow improvements
-• Implement comment threading (parent_id usage)
-• Add push notification foundations
-Value: Enhanced family interaction experience
-Effort: 10-12 days
+"Enhanced Family Interaction Experience"
+• Implement real-time updates with Supabase realtime
+• Add comment threading using existing parent_id schema
+• Improve media upload UX with progress indicators
+• Add offline support with background sync
+Value: Significantly enhanced family engagement and interaction
+Effort: 10-14 days
 
 Technical Excellence Sprint (2-3 weeks):
-"Testing & Code Quality"
-• Add route-level integration testing
-• Implement comprehensive accessibility testing
-• Add performance monitoring
-• Create automated dependency updates
-Value: Long-term maintainability and quality
+"Testing & Maintainability Enhancement"
+• Add comprehensive route-level integration tests
+• Implement automated accessibility testing
+• Add performance monitoring and alerting
+• Create automated dependency update workflow
+Value: Long-term maintainability, quality assurance, reduced maintenance burden
 Effort: 15-20 days
 
 Ranked by Value vs Effort:
-1. Quick Win Sprint (High value, Low effort)
-2. User-Facing Delight Sprint (High value, Medium effort)
-3. Deep Refactor Sprint (Medium value, Medium effort)
-4. Technical Excellence Sprint (Medium value, High effort)
+1. Quick Win Sprint (High value, Very Low effort) - Immediate impact
+2. User-Facing Delight Sprint (Very High value, Medium effort) - Family engagement
+3. Deep Refactor Sprint (High value, Medium effort) - Performance gains
+4. Technical Excellence Sprint (Medium value, High effort) - Long-term investment
 
 (X) Appendix: Evidence Index
 ====================================================================
 Build & Configuration Evidence:
-1. package.json:4-51 - Dependency versions and scripts configuration
-2. vite.config.ts:1-15 - Build tool configuration and plugins
-3. tsconfig.json:1-25 - TypeScript compiler settings
-4. svelte.config.js:1-20 - Svelte framework configuration
-5. tailwind.config.js:1-15 - CSS framework configuration
+1. package.json:1-52 - Updated dependency versions, 24 direct dependencies confirmed
+2. vite.config.ts:1-15 - Build configuration, production build 6.04s + 13.24s server
+3. tsconfig.json:1-25 - TypeScript configuration, 0 compilation errors
+4. tailwind.config.js:1-28 - CSS framework configuration with custom color scheme
+5. svelte.config.js:1-15 - Svelte/SvelteKit framework configuration
 
 Code Quality & Testing Evidence:
 6. test/auth.test.ts:1-167 - Authentication schema validation (13 tests)
-7. test/items.test.ts:1-350 - Content schema validation (19 tests)
-8. npm test output - 101 tests passing across 6 test files
-9. npm audit output - 0 vulnerabilities found in dependency tree
-10. npm outdated output - 3 packages with available updates
+7. test/items.test.ts:1-350 - Content schema validation (19 tests)  
+8. npm test output - 108 tests passing across 6 test files (updated count)
+9. npm audit output - 0 vulnerabilities found in 300-package dependency tree
+10. npm outdated output - 3 packages with available updates (@supabase, lucide, tailwind)
 
 Schema & Database Evidence:
-11. PHASE 0 LOCKED SCHEMA (1).txt:1-100 - Canonical database schema
-12. src/lib/schema/auth.ts:1-50 - Zod authentication schemas
-13. src/lib/schema/items.ts:1-80 - Content validation schemas
-14. src/lib/server/allowlist.ts:1-52 - Server-side email validation
+11. PHASE 0 LOCKED SCHEMA (1).txt:8-100 - Canonical database schema with 3 tables + RLS
+12. src/lib/schema/auth.ts:1-50 - Zod v4 authentication schemas
+13. src/lib/schema/items.ts:1-80 - Content validation schemas  
+14. src/lib/server/allowlist.ts:6-11 - Server-side 4-email allowlist validation
 
 Security & Access Evidence:
-15. src/lib/server/allowlist.ts:6-11 - 4-person family allowlist
+15. src/lib/server/allowlist.ts:43-52 - Role-based access control implementation
+16. src/routes/+layout.server.ts:1-25 - Session validation middleware
+17. AGENTS.md:58-68 - Engineering contract with locked-in technology stack
+
+Performance & Bundle Evidence:
+18. .svelte-kit/output/client - 460KB total bundle size measurement
+19. vite build output - Bundle analysis with DSUY_1VX.js (123KB Supabase client)
+20. find src test command output - 43 source files totaling 4,523 lines of code
+
+Component Architecture Evidence:
+21. src/components/cards/ - 6 smart card components for widget system
+22. src/components/ui/ - 4 UI components including ErrorBoundary implementation
+23. src/routes/ structure - 9 routes (6 authenticated, 2 public, 1 error)
+24. src/lib/stores/ - 3 Svelte stores for state management
+
+Warnings & Technical Debt Evidence:
+25. Build warnings output - 11 deprecation warnings in src/routes/posts/+page.svelte
+26. Component structure warnings - 6 implicitly closed div elements in card components
 16. src/routes/+layout.server.ts:1-25 - Session validation middleware
 17. npm audit output - Zero security vulnerabilities confirmed
 
