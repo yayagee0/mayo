@@ -103,28 +103,29 @@
 
 			<div>
 				<p class="text-sm font-medium text-gray-700 mb-3">How are you feeling?</p>
-				<div class="grid grid-cols-5 gap-2">
+				<div class="grid grid-cols-5 gap-1 sm:gap-2">
 					{#each moodOptions as mood}
 						<button
 							type="button"
 							onclick={() => selectedMood = mood.value}
-							class="flex flex-col items-center p-2 rounded-lg border transition-colors min-h-11 focus:outline-none focus:ring-2 focus:ring-primary-500"
+							class="flex flex-col items-center p-1 sm:p-2 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
 							class:bg-primary-100={selectedMood === mood.value}
 							class:border-primary-300={selectedMood === mood.value}
 							class:bg-gray-50={selectedMood !== mood.value}
 							class:border-gray-200={selectedMood !== mood.value}
+							style="min-height: 44px;"
 							aria-label="Rate mood as {mood.label}"
 						>
 							{#if mood.value === 'great'}
-								<Sparkles class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+								<Sparkles class="w-4 h-4 sm:w-5 sm:h-5 mb-1 {mood.color}" aria-hidden="true" />
 							{:else if mood.value === 'good'}
-								<Smile class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+								<Smile class="w-4 h-4 sm:w-5 sm:h-5 mb-1 {mood.color}" aria-hidden="true" />
 							{:else if mood.value === 'okay'}
-								<Meh class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+								<Meh class="w-4 h-4 sm:w-5 sm:h-5 mb-1 {mood.color}" aria-hidden="true" />
 							{:else}
-								<Frown class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+								<Frown class="w-4 h-4 sm:w-5 sm:h-5 mb-1 {mood.color}" aria-hidden="true" />
 							{/if}
-							<span class="text-xs font-medium">{mood.label}</span>
+							<span class="text-xs font-medium hidden sm:block">{mood.label}</span>
 						</button>
 					{/each}
 				</div>

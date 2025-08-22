@@ -22,6 +22,7 @@
 	let postContent = $state('');
 	let uploading = $state(false);
 	let error = $state('');
+	let expandedPosts = $state(new Set<string>());
 
 	async function createPost() {
 		if (!postContent.trim() || !session?.user?.email) return;
@@ -102,6 +103,25 @@
 
 	function getLikeCount(itemId: string): number {
 		return interactions.filter(i => i.item_id === itemId && i.type === 'like').length;
+	}
+
+	function shouldTruncateText(text: string): boolean {
+		// Estimate if text would exceed 3 lines (rough calculation)
+		return text.length > 150 || text.split('\n').length > 3;
+	}
+
+	function truncateText(text: string): string {
+		if (text.length <= 150) return text;
+		return text.substring(0, 150) + '...';
+	}
+
+	function toggleExpanded(postId: string) {
+		if (expandedPosts.has(postId)) {
+			expandedPosts.delete(postId);
+		} else {
+			expandedPosts.add(postId);
+		}
+		expandedPosts = new Set(expandedPosts);
 	}
 </script>
 
@@ -222,9 +242,27 @@
 								</span>
 							</div>
 							
-							<p class="text-gray-700 whitespace-pre-wrap">
-								{post.body}
-							</p>
+							<div class="text-gray-700 whitespace-pre-wrap">
+								{#if shouldTruncateText(post.body) && !expandedPosts.has(post.id)}
+									<p>{truncateText(post.body)}</p>
+									<button
+										onclick={() => toggleExpanded(post.id)}
+										class="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
+									>
+										Show more
+									</button>
+								{:else}
+									<p>{post.body}</p>
+									{#if shouldTruncateText(post.body)}
+										<button
+											onclick={() => toggleExpanded(post.id)}
+											class="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
+										>
+											Show less
+										</button>
+									{/if}
+								{/if}
+							</div>
 							
 							<div class="flex items-center gap-4 mt-3">
 								<button
