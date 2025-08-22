@@ -1,38 +1,85 @@
-# sv
+# Mayo - Family Engagement Platform
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Mayo is a private SvelteKit-based family engagement app with Supabase backend, featuring role-aware smart cards, Google OAuth authentication, and a widget-based dashboard system.
 
-## Creating a project
+## 🔧 Stack
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Framework**: SvelteKit 2 + TypeScript
+- **Styling**: Tailwind CSS + @tailwindcss/forms
+- **Icons**: lucide-svelte
+- **State**: Svelte stores
+- **Validation**: Zod v4
+- **Dates**: Day.js
+- **Auth**: Supabase (Google OAuth only)
+- **Package Manager**: pnpm
 
-```sh
-# create a new project in the current directory
-npx sv create
+## 🚀 Getting Started
 
-# create a new project in my-app
-npx sv create my-app
+### Prerequisites
+
+- Node.js 18+
+- pnpm (automatically managed via package.json)
+
+### Installation
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm run dev
+
+# Build for production
+pnpm run build
 ```
 
-## Developing
+### Development Commands
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+```bash
+# Type checking
+pnpm run check
 
-```sh
-npm run dev
+# Watch mode type checking
+pnpm run check:watch
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# Run tests
+pnpm test
+
+# Run tests with UI
+pnpm test:ui
+
+# Run tests once
+pnpm test:run
 ```
 
-## Building
+## 🧪 Testing
 
-To create a production version of your app:
+This project uses Vitest for unit testing with jsdom environment for DOM testing.
 
-```sh
-npm run build
-```
+Test coverage includes:
+- Zod v4 validation schemas (auth, items, interactions, UI)
+- Auth allowlist validation
+- Widget configuration validation
+- Notification handling
 
-You can preview the production build with `npm run preview`.
+## 🔒 Security & Access
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- **4-person allowlist**: Only specific family emails are allowed
+- **Server-side validation**: Allowlist enforced at server level
+- **RLS policies**: Database-level security with Row Level Security
+- **Google OAuth only**: No other auth methods supported
+
+## 📦 Schema & Database
+
+- **Locked schema**: Database schema is frozen and immutable
+- **3 core tables**: profiles, items, interactions
+- **Comprehensive RLS**: 18 policies across all tables
+- **No migrations**: Schema changes not permitted in this phase
+
+## 🧱 Architecture Principles
+
+- **Schema-First**: Data drives design decisions
+- **Mobile-First**: Responsive design prioritizing mobile experience  
+- **Widget-Based**: Modular dashboard with smart cards
+- **Single-Family**: All data scoped to one household context
+- **No Dead Ends**: Every screen offers clear CTAs or smart cards
