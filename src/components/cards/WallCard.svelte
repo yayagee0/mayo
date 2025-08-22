@@ -6,6 +6,7 @@
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import { Home, Plus, X, Camera, Video, MapPin, Heart, MessageCircle, Share2 } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
 	dayjs.extend(relativeTime);
@@ -129,6 +130,7 @@
 	}
 </script>
 
+<ComponentErrorBoundary componentName="WallCard">
 <div class="card">
 	<div class="flex items-center justify-between mb-4">
 		<div class="flex items-center gap-2">
@@ -314,4 +316,4 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</ComponentErrorBoundary>

@@ -7,21 +7,25 @@
 	import type { Database } from '$lib/supabase';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
+	import Loading from '$lib/../components/ui/Loading.svelte';
+	import { profileStore } from '$lib/stores/profileStore';
 
 	dayjs.extend(relativeTime);
 
-	let posts: Database['public']['Tables']['items']['Row'][] = [];
-	let profiles: Database['public']['Tables']['profiles']['Row'][] = [];
-	let interactions: Database['public']['Tables']['interactions']['Row'][] = [];
-	let loading = true;
-	let loadingMore = false;
-	let page = 0;
+	let posts: Database['public']['Tables']['items']['Row'][] = $state([]);
+	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
+	let loading = $state(true);
+	let loadingMore = $state(false);
+	let page = $state(0);
 	const postsPerPage = 10;
 
+	// Use profileStore instead of local profiles state
+	let profiles = $derived($profileStore);
+
 	// Post composer state
-	let showComposer = false;
-	let postContent = '';
-	let uploading = false;
+	let showComposer = $state(false);
+	let postContent = $state('');
+	let uploading = $state(false);
 
 	onMount(async () => {
 		if (!$session) {
@@ -36,7 +40,6 @@
 	async function loadData() {
 		await Promise.all([
 			loadPosts(),
-			loadProfiles(),
 			loadInteractions()
 		]);
 	}
@@ -60,18 +63,6 @@
 			}
 		} catch (error) {
 			console.error('Error loading posts:', error);
-		}
-	}
-
-	async function loadProfiles() {
-		try {
-			const { data } = await supabase
-				.from('profiles')
-				.select('*');
-			
-			profiles = data || [];
-		} catch (error) {
-			console.error('Error loading profiles:', error);
 		}
 	}
 
@@ -235,9 +226,7 @@
 		{/if}
 
 		{#if loading}
-			<div class="flex justify-center items-center h-64">
-				<div class="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-			</div>
+			<Loading text="Loading posts..." />
 		{:else}
 			<div class="space-y-6">
 				{#if posts.length === 0}

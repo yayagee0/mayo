@@ -100,19 +100,63 @@ describe('Items Schema Validation', () => {
 			}
 		})
 
-		it('should reject invalid UUID (skipped - investigating issue)', () => {
-			// TODO: Fix this test - seems to be a Zod v4 compatibility issue
-			expect(true).toBe(true)
+		it('should reject invalid UUID', () => {
+			const itemWithInvalidUUID = {
+				kind: 'post' as ItemKind,
+				author_email: 'test@example.com',
+				id: 'invalid-uuid-format'
+			}
+
+			const result = itemSchema.safeParse(itemWithInvalidUUID)
+			expect(result.success).toBe(false)
+			if (!result.success) {
+				expect(result.error.issues).toContainEqual(
+					expect.objectContaining({
+						path: ['id'],
+						code: 'invalid_format',
+						format: 'uuid'
+					})
+				)
+			}
 		})
 
-		it('should reject invalid email (skipped - investigating issue)', () => {
-			// TODO: Fix this test - seems to be a Zod v4 compatibility issue
-			expect(true).toBe(true)
+		it('should reject invalid email', () => {
+			const itemWithInvalidEmail = {
+				kind: 'post' as ItemKind,
+				author_email: 'not-a-valid-email'
+			}
+
+			const result = itemSchema.safeParse(itemWithInvalidEmail)
+			expect(result.success).toBe(false)
+			if (!result.success) {
+				expect(result.error.issues).toContainEqual(
+					expect.objectContaining({
+						path: ['author_email'],
+						code: 'invalid_format',
+						format: 'email'
+					})
+				)
+			}
 		})
 
-		it('should reject invalid media URLs (skipped - investigating issue)', () => {
-			// TODO: Fix this test - seems to be a Zod v4 compatibility issue
-			expect(true).toBe(true)
+		it('should reject invalid media URLs', () => {
+			const itemWithInvalidMediaUrls = {
+				kind: 'post' as ItemKind,
+				author_email: 'test@example.com',
+				media_urls: ['not-a-valid-url', 'also-invalid']
+			}
+
+			const result = itemSchema.safeParse(itemWithInvalidMediaUrls)
+			expect(result.success).toBe(false)
+			if (!result.success) {
+				expect(result.error.issues).toContainEqual(
+					expect.objectContaining({
+						path: ['media_urls', 0],
+						code: 'invalid_format',
+						format: 'url'
+					})
+				)
+			}
 		})
 	})
 

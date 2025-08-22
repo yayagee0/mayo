@@ -3,6 +3,7 @@
 	import dayjs from 'dayjs';
 	import { BookOpen, Share2 } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
@@ -38,6 +39,7 @@
 	let displayAyah = $derived(todayAyah?.data || sampleAyahs[dayjs().day() % sampleAyahs.length]);
 </script>
 
+<ComponentErrorBoundary componentName="AyahCard">
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
 		<BookOpen class="w-6 h-6 text-green-600" aria-hidden="true" />
@@ -91,4 +93,5 @@
 		</div>
 	{/if}
 </div>
+</ComponentErrorBoundary>
 

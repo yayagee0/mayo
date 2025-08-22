@@ -3,6 +3,7 @@
 	import { eventBus } from '$lib/eventBus';
 	import { MessageCircle, Check, Shuffle } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
@@ -55,6 +56,7 @@
 	}
 </script>
 
+<ComponentErrorBoundary componentName="PromptCard">
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
 		<MessageCircle class="w-6 h-6 text-blue-500" aria-hidden="true" />
@@ -106,4 +108,4 @@
 		</div>
 	</div>
 {/if}
-</div>
+</ComponentErrorBoundary>
