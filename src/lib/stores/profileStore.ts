@@ -50,7 +50,11 @@ class ProfileStore {
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('Error loading profiles:', error)
+        this.errorStore.set(error.message)
+        return
+      }
 
       this.profiles = data || []
       this.store.set(this.profiles)
@@ -60,6 +64,36 @@ class ProfileStore {
       console.error('Error loading profiles:', err)
     } finally {
       this.loadingStore.set(false)
+    }
+  }
+
+  async loadProfile(email: string): Promise<Profile | null> {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', email)
+        .single()
+
+      if (error || !data) {
+        // Don't log as error - missing profile is expected
+        return null
+      }
+
+      // Update the local store if profile was found
+      const existingIndex = this.profiles.findIndex(p => p.email === email)
+      if (existingIndex >= 0) {
+        this.profiles[existingIndex] = data
+      } else {
+        this.profiles.push(data)
+      }
+      this.store.set(this.profiles)
+
+      return data
+    } catch (err) {
+      // Never throw - return null on any error
+      console.error('Error loading profile for email:', email, err)
+      return null
     }
   }
 
@@ -73,7 +107,12 @@ class ProfileStore {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        const errorMessage = error.message || 'Failed to create profile'
+        this.errorStore.set(errorMessage)
+        console.error('Error creating profile:', error)
+        return null
+      }
 
       if (data) {
         this.profiles = [data, ...this.profiles]
@@ -85,7 +124,7 @@ class ProfileStore {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create profile'
       this.errorStore.set(errorMessage)
       console.error('Error creating profile:', err)
-      throw err
+      return null
     }
   }
 
@@ -100,7 +139,12 @@ class ProfileStore {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        const errorMessage = error.message || 'Failed to update profile'
+        this.errorStore.set(errorMessage)
+        console.error('Error updating profile:', error)
+        return null
+      }
 
       if (data) {
         this.profiles = this.profiles.map(profile =>
@@ -114,7 +158,7 @@ class ProfileStore {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile'
       this.errorStore.set(errorMessage)
       console.error('Error updating profile:', err)
-      throw err
+      return null
     }
   }
 

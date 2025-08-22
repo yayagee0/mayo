@@ -3,13 +3,17 @@
 	import { eventBus } from '$lib/eventBus';
 	import { MessageCircle, Check, Shuffle } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
 
-	let { session, profiles, items, interactions }: Props = $props();
+	let { session, items, interactions }: Props = $props();
+
+	// Subscribe to profileStore instead of using props
+	let profiles = $derived($profileStore);
 
 	// Get user's role from profile
-	let userProfile = $derived(profiles.find(p => p.email === session?.user?.email));
+	let userProfile = $derived(profiles.find(p => p?.email === session?.user?.email));
 	let userRole = $derived(userProfile?.role || 'member');
 
 	const promptsByRole = {

@@ -2,12 +2,16 @@
 	import type { WidgetProps } from '$lib/types/widget';
 	import dayjs from 'dayjs';
 	import { Clock, Sparkles } from 'lucide-svelte';
+	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
 
-	let { session, profiles, items, interactions }: Props = $props();
+	let { session, items, interactions }: Props = $props();
 
-	let familyMembers = $derived(profiles.filter(p => p.dob));
+	// Subscribe to profileStore instead of using props
+	let profiles = $derived($profileStore);
+
+	let familyMembers = $derived(profiles.filter(p => p?.dob));
 
 	let selectedProfile = $state('');
 	let calculatedAge = $state('');

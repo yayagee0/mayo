@@ -3,10 +3,14 @@
 	import dayjs from 'dayjs';
 	import { BookOpen, Share2 } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
 
-	let { session, profiles, items, interactions }: Props = $props();
+	let { session, items, interactions }: Props = $props();
+
+	// Subscribe to profileStore instead of using props
+	let profiles = $derived($profileStore);
 
 	let todayAyah = $derived(items
 		.filter(item => item.kind === 'ayah')

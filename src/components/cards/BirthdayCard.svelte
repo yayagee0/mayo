@@ -3,13 +3,17 @@
 	import dayjs from 'dayjs';
 	import { Cake, PartyPopper, Gift } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
 
-	let { session, profiles, items, interactions }: Props = $props();
+	let { session, items, interactions }: Props = $props();
+
+	// Subscribe to profileStore instead of using props
+	let profiles = $derived($profileStore);
 
 	let upcomingBirthdays = $derived(profiles
-		.filter(profile => profile.dob)
+		.filter(profile => profile?.dob)
 		.map(profile => {
 			const birthday = dayjs(profile.dob);
 			const thisYear = dayjs().year();
