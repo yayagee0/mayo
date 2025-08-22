@@ -1,0 +1,192 @@
+-- =========================================================
+-- FAMILYNEST — PHASE 0 LOCKED SCHEMA (NO DRIFT)
+-- =========================================================
+
+-- Extensions
+create extension if not exists "uuid-ossp";
+
+-- TABLE: profiles
+create table if not exists profiles (
+  user_id uuid primary key,
+  email text not null unique,
+  display_name text,
+  avatar_url text,
+  role text,
+  dob date,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- TABLE: items
+create table if not exists items (
+  id uuid primary key default uuid_generate_v4(),
+  kind text not null check (kind in ('post','comment','event','ayah','poll','tip','system')),
+  author_id uuid,
+  author_email text not null,
+  visibility text default 'all' check (visibility in ('all','parents','owner')),
+  body text,
+  media_urls text[],
+  parent_id uuid,
+  start_at timestamptz,
+  end_at timestamptz,
+  data jsonb default '{}'::jsonb,
+  is_deleted boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create index if not exists items_created_at_idx on items (created_at desc);
+create index if not exists items_kind_idx on items (kind);
+create index if not exists items_author_email_idx on items (author_email);
+
+-- TABLE: interactions
+create table if not exists interactions (
+  item_id uuid,
+  user_email text not null,
+  type text not null check (type in ('like','love','vote','bookmark','seen','thanks')),
+  answer_index int,
+  created_at timestamptz default now(),
+  primary key (item_id, user_email, type)
+);
+
+-- RLS
+alter table profiles enable row level security;
+alter table items enable row level security;
+alter table interactions enable row level security;
+
+-- Central allowlist policies (hardcoded Phase-0)
+do $$
+begin
+  if not exists (select 1 from pg_policies where polname = 'profiles_allowlist_select') then
+    create policy "profiles_allowlist_select"
+      on profiles for select
+      using ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'profiles_allowlist_insert') then
+    create policy "profiles_allowlist_insert"
+      on profiles for insert
+      with check ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'profiles_allowlist_update') then
+    create policy "profiles_allowlist_update"
+      on profiles for update
+      using ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) )
+      with check ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'profiles_allowlist_delete') then
+    create policy "profiles_allowlist_delete"
+      on profiles for delete
+      using ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'items_allowlist_select') then
+    create policy "items_allowlist_select"
+      on items for select
+      using ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'items_allowlist_insert') then
+    create policy "items_allowlist_insert"
+      on items for insert
+      with check ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'items_allowlist_update') then
+    create policy "items_allowlist_update"
+      on items for update
+      using ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) )
+      with check ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'items_allowlist_delete') then
+    create policy "items_allowlist_delete"
+      on items for delete
+      using ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'interactions_allowlist_select') then
+    create policy "interactions_allowlist_select"
+      on interactions for select
+      using ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'interactions_allowlist_insert') then
+    create policy "interactions_allowlist_insert"
+      on interactions for insert
+      with check ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+
+  if not exists (select 1 from pg_policies where polname = 'interactions_allowlist_delete') then
+    create policy "interactions_allowlist_delete"
+      on interactions for delete
+      using ( (auth.jwt() ->> 'email') in (
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'nilezat@gmail.com'
+      ) );
+  end if;
+end $$;
