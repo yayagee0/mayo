@@ -6,12 +6,16 @@
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import { Home, Plus, X, Camera, Video, MapPin, Heart, MessageCircle, Share2 } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import { profileStore } from '$lib/stores/profileStore';
 
 	dayjs.extend(relativeTime);
 
 	interface Props extends WidgetProps {}
 
-	let { session, profiles, items, interactions }: Props = $props();
+	let { session, items, interactions }: Props = $props();
+
+	// Subscribe to profileStore instead of using props
+	let profiles = $derived($profileStore);
 
 	let recentPosts = $derived(items
 		.filter(item => item.kind === 'post' && !item.is_deleted)
@@ -243,7 +247,7 @@
 							</div>
 							
 							<div class="text-gray-700 whitespace-pre-wrap">
-								{#if shouldTruncateText(post.body) && !expandedPosts.has(post.id)}
+								{#if post.body && shouldTruncateText(post.body) && !expandedPosts.has(post.id)}
 									<p>{truncateText(post.body)}</p>
 									<button
 										onclick={() => toggleExpanded(post.id)}
@@ -252,8 +256,8 @@
 										Show more
 									</button>
 								{:else}
-									<p>{post.body}</p>
-									{#if shouldTruncateText(post.body)}
+									<p>{post.body || ''}</p>
+									{#if post.body && shouldTruncateText(post.body)}
 										<button
 											onclick={() => toggleExpanded(post.id)}
 											class="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
