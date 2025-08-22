@@ -3,6 +3,7 @@
 	import { eventBus } from '$lib/eventBus';
 	import { supabase } from '$lib/supabase';
 	import { Heart, Smile, Meh, Frown, Sparkles } from 'lucide-svelte';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -36,6 +37,8 @@
 	let selectedMood = $state('');
 	let feedbackText = $state('');
 	let submitted = $state(false);
+	let submitting = $state(false);
+	let error = $state('');
 
 	const moodOptions = [
 		{ value: 'great', icon: Sparkles, label: 'Great', color: 'text-green-500' },
@@ -46,10 +49,12 @@
 	];
 
 	async function submitFeedback() {
-		if (!selectedMood) return;
+		if (!selectedMood || submitting) return;
 
 		try {
-			const { error } = await supabase.from('items').insert({
+			submitting = true;
+			error = '';
+			const { error: submitError } = await supabase.from('items').insert({
 				kind: 'poll',
 				author_email: session?.user?.email || '',
 				author_id: session?.user?.id,
@@ -63,7 +68,7 @@
 				visibility: 'all'
 			});
 
-			if (error) throw error;
+			if (submitError) throw submitError;
 
 			submitted = true;
 			eventBus.emit('pollAnswered', {
@@ -71,8 +76,11 @@
 				answerIndex: moodOptions.findIndex(m => m.value === selectedMood),
 				userId: session?.user?.id || ''
 			});
-		} catch (error) {
-			console.error('Error submitting feedback:', error);
+		} catch (err) {
+			console.error('Error submitting feedback:', err);
+			error = 'Failed to submit reflection. Please try again.';
+		} finally {
+			submitting = false;
 		}
 	}
 </script>
@@ -135,13 +143,24 @@
 				></textarea>
 			</div>
 
+			{#if error}
+				<div class="bg-red-50 border border-red-200 rounded-lg p-3">
+					<p class="text-red-700 text-sm">{error}</p>
+				</div>
+			{/if}
+
 			<button
 				type="button"
 				onclick={submitFeedback}
-				disabled={!selectedMood}
-				class="w-full btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+				disabled={!selectedMood || submitting}
+				class="w-full btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
 			>
-				Share Reflection
+				{#if submitting}
+					<Loading size="sm" text="" />
+					Submitting...
+				{:else}
+					Share Reflection
+				{/if}
 			</button>
 		</div>
 	{:else}

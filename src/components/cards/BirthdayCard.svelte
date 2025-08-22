@@ -2,6 +2,7 @@
 	import type { WidgetProps } from '$lib/types/widget';
 	import dayjs from 'dayjs';
 	import { Cake, PartyPopper, Gift } from 'lucide-svelte';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -37,7 +38,9 @@
 		<h3 class="text-lg font-semibold text-gray-900">Upcoming Birthdays</h3>
 	</div>
 
-	{#if upcomingBirthdays.length === 0}
+	{#if !profiles || profiles.length === 0}
+		<Loading size="md" text="Loading birthdays..." />
+	{:else if upcomingBirthdays.length === 0}
 		<div class="text-center py-8">
 			<Cake class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
 			<p class="text-gray-500 text-sm">No upcoming birthdays in the next year.</p>

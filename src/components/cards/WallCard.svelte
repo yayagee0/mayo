@@ -5,6 +5,7 @@
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import { Home, Plus, X, Camera, Video, MapPin, Heart, MessageCircle, Share2 } from 'lucide-svelte';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	dayjs.extend(relativeTime);
 
@@ -20,6 +21,7 @@
 	let showComposer = $state(false);
 	let postContent = $state('');
 	let uploading = $state(false);
+	let error = $state('');
 
 	async function createPost() {
 		if (!postContent.trim() || !session?.user?.email) return;
@@ -47,8 +49,9 @@
 
 			// Refresh items by triggering a re-fetch (simplified for demo)
 			location.reload();
-		} catch (error) {
-			console.error('Error creating post:', error);
+		} catch (err) {
+			console.error('Error creating post:', err);
+			error = 'Failed to create post. Please try again.';
 		} finally {
 			uploading = false;
 		}
@@ -127,10 +130,18 @@
 		<div class="border border-gray-200 rounded-lg p-4 mb-4">
 			<textarea
 				bind:value={postContent}
+				oninput={() => error = ''}
 				placeholder="Share something with your family..."
 				rows="3"
 				class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
 			></textarea>
+			
+			{#if error}
+				<div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
+					<p class="text-red-700 text-sm">{error}</p>
+				</div>
+			{/if}
+			
 			<div class="flex justify-between items-center mt-3">
 				<div class="flex gap-2">
 					<button 
@@ -158,9 +169,14 @@
 				<button
 					onclick={createPost}
 					disabled={!postContent.trim() || uploading}
-					class="btn btn-primary text-sm disabled:opacity-50"
+					class="btn btn-primary text-sm disabled:opacity-50 flex items-center gap-2"
 				>
-					{uploading ? 'Posting...' : 'Post'}
+					{#if uploading}
+						<Loading size="sm" text="" />
+						Posting...
+					{:else}
+						Post
+					{/if}
 				</button>
 			</div>
 		</div>

@@ -2,6 +2,7 @@
 	import type { WidgetProps } from '$lib/types/widget';
 	import dayjs from 'dayjs';
 	import { BookOpen, Share2 } from 'lucide-svelte';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -39,7 +40,9 @@
 		<h3 class="text-lg font-semibold text-gray-900">Daily Ayah</h3>
 	</div>
 
-	{#if displayAyah}
+	{#if !items}
+		<Loading size="md" text="Loading daily ayah..." />
+	{:else if displayAyah}
 		<div class="space-y-4">
 			<div class="text-right">
 				<p class="text-xl text-gray-800 leading-relaxed" dir="rtl" style="font-family: 'Amiri', 'Scheherazade', serif;">
