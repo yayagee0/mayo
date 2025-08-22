@@ -8,13 +8,16 @@
 	import { supabase } from '$lib/supabase';
 	import { Leaf } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import { profileStore } from '$lib/stores/profileStore';
 
 	let widgets: WidgetConfig[] = $state([]);
-	let profiles: Database['public']['Tables']['profiles']['Row'][] = $state([]);
 	let items: Database['public']['Tables']['items']['Row'][] = $state([]);
 	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
 	let loading = $state(true);
 	let userName = $derived($user?.user_metadata?.full_name || $user?.email?.split('@')[0] || 'Friend');
+
+	// Use profileStore instead of local profiles state
+	let profiles = $derived($profileStore);
 
 	onMount(async () => {
 		// Redirect if not authenticated
@@ -33,14 +36,6 @@
 
 	async function loadData() {
 		try {
-			// Load profiles
-			const { data: profilesData } = await supabase
-				.from('profiles')
-				.select('*')
-				.order('created_at', { ascending: false });
-			
-			profiles = profilesData || [];
-
 			// Load recent items
 			const { data: itemsData } = await supabase
 				.from('items')

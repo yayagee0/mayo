@@ -2,6 +2,7 @@
 	import type { WidgetProps } from '$lib/types/widget';
 	import dayjs from 'dayjs';
 	import { Clock, Sparkles } from 'lucide-svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
@@ -41,6 +42,7 @@
 	});
 </script>
 
+<ComponentErrorBoundary componentName="HowOldCard">
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
 		<Clock class="w-6 h-6 text-purple-500" aria-hidden="true" />
@@ -95,4 +97,4 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</ComponentErrorBoundary>

@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { supabase } from '$lib/supabase';
 	import type { Database } from '$lib/supabase';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	let profile: Database['public']['Tables']['profiles']['Row'] | null = null;
 	let loading = true;
@@ -112,9 +113,7 @@
 
 	<main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 		{#if loading}
-			<div class="flex justify-center items-center h-64">
-				<div class="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-			</div>
+			<Loading text="Loading profile..." />
 		{:else}
 			<div class="card">
 				<h2 class="text-lg font-semibold text-gray-900 mb-6">Profile Information</h2>

@@ -3,6 +3,7 @@
 	import dayjs from 'dayjs';
 	import { Cake, PartyPopper, Gift } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
@@ -36,6 +37,7 @@
 		.slice(0, 3));
 </script>
 
+<ComponentErrorBoundary componentName="BirthdayCard">
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
 		<Cake class="w-6 h-6 text-pink-500" aria-hidden="true" />
@@ -84,3 +86,4 @@
 		</div>
 	{/if}
 </div>
+</ComponentErrorBoundary>

@@ -6,6 +6,7 @@
 	import type { Notification } from '$lib/stores/notificationStore';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	dayjs.extend(relativeTime);
 
@@ -85,9 +86,7 @@
 
 	<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 		{#if loading}
-			<div class="flex justify-center items-center h-64">
-				<div class="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-			</div>
+			<Loading text="Loading notifications..." />
 		{:else if notifications.length === 0}
 			<div class="text-center py-12">
 				<Bell class="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />

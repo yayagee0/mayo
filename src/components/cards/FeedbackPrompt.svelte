@@ -4,6 +4,7 @@
 	import { supabase } from '$lib/supabase';
 	import { Heart, Smile, Meh, Frown, Sparkles } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
 	interface Props extends WidgetProps {}
@@ -89,6 +90,7 @@
 	}
 </script>
 
+<ComponentErrorBoundary componentName="FeedbackPrompt">
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
 		<Heart class="w-6 h-6 text-pink-500" aria-hidden="true" />
@@ -175,4 +177,4 @@
 			<p class="text-green-600 text-sm mt-1">Your reflection helps strengthen our family bond.</p>
 		</div>
 	{/if}
-</div>
+</ComponentErrorBoundary>
