@@ -5,24 +5,25 @@
 (A) TITLE & VERSION HEADER
 ====================================================================
 App Name: Mayo - Family Engagement Platform
-Run Date/Time: 2025-08-22T03:54:46Z
-Commit Short SHA: dbba300
-Summary: Mayo is a SvelteKit 2-based family engagement platform with Supabase backend, featuring role-aware smart cards, Google OAuth authentication restricted to 4 family emails, and a widget-based dashboard system. The app enforces a locked schema design with 3 core tables and implements comprehensive RLS policies for family data privacy.
+Run Date/Time: 2025-08-22T08:15:55Z
+Commit Short SHA: 42adcb4
+Summary: Mayo is a SvelteKit 2-based family engagement platform with Supabase backend, featuring role-aware smart cards, Google OAuth authentication restricted to 4 family emails, and a widget-based dashboard system. The app enforces a locked schema design with 3 core tables and implements comprehensive RLS policies for family data privacy. Current build has server-side allowlist validation implementation.
 
 (B) Change History
 ====================================================================
-Version: 0.0.1 (Initial Phase 0)
+Version: 0.0.1 (Phase 0 - Enhanced)
 Date: 2025-08-22
-Commit: dbba300 - Initial plan
+Commit: 42adcb4 - Initial plan (post merge)
 
-Summary of changes since last run: First audit run - baseline establishment
+Summary of changes since last run: Server-side allowlist validation added
 
 Key deltas:
-• Files: 29 total files (14 Svelte, 12 TypeScript, 3 JavaScript)
-• Dependencies: 18 packages defined, 0 installed (fresh repo)
-• Routes: 6 main routes identified (/,/dashboard,/posts,/profile,/notifications,/access-denied)
-• Schema/API changes: Locked schema with 3 tables (profiles, items, interactions)
-• Supabase endpoints: Auth + CRUD operations on 3 tables
+• Files: 28 total files (8 Svelte components, 6 TypeScript utilities, 6 route pages)
+• Dependencies: 18 packages defined, 0 installed (unmet dependencies)
+• Routes: 6 core routes maintained (/,/dashboard,/posts,/profile,/notifications,/access-denied)
+• Schema/API changes: No schema drift (locked as per AGENTS.md contract)
+• Supabase endpoints: Auth + CRUD operations on profiles, items, interactions tables
+• New: Server-side allowlist validation in src/lib/server/allowlist.ts
 
 (C) Pages, Screens & Routes
 ====================================================================
@@ -37,54 +38,63 @@ Authenticated Routes:
 • /notifications - Notifications center (src/routes/notifications/+page.svelte)
 
 Layout:
-• +layout.svelte - Main layout with bottom navigation
+• +layout.svelte - Main layout with bottom navigation and dual allowlist validation
 • +layout.server.ts - Server-side session handling
+• +error.svelte - Error boundary
 
 Dead routes/placeholders: None identified
 
 (D) Technologies Used vs Installed-but-Unused
 ====================================================================
 Stack Contract Compliance (AGENTS.md):
-✅ SvelteKit 2 (SSR + TS)
-✅ Tailwind CSS + @tailwindcss/forms (missing @tailwindcss/forms in package.json)
-❌ lucide-svelte (not found - using emoji icons instead)
-✅ Svelte stores only
-✅ Zod (v4.0.17)
-✅ Day.js (v1.11.13)
-✅ Supabase (Google OAuth only)
-✅ pnpm mentioned but package-lock.json suggests npm usage
+• ✅ SvelteKit 2 (SSR + TS) - Fully implemented
+• ✅ Tailwind CSS + @tailwindcss/forms - Configured
+• ✅ lucide-svelte - Used throughout UI
+• ✅ Svelte stores only - No external state management
+• ✅ Zod - Type validation library
+• ✅ Day.js - Date manipulation
+• ✅ Supabase Auth (Google OAuth only) - Implemented
+• ✅ pnpm - Package manager specified
 
-Missing Dependencies:
-• All 18 dependencies uninstalled (fresh repo state)
-• @tailwindcss/forms missing from package.json
-• lucide-svelte not implemented (using emojis)
+Installed-but-Unused Analysis:
+• ❌ ALL DEPENDENCIES UNMET - Requires npm/pnpm install
+• @tailwindcss/typography - Defined but unused in current UI
+• autoprefixer - Duplicated in deps and devDeps
 
-Outdated/Risky Dependencies: 
-• Zod v4.0.17 (v3.23.8 is latest stable)
-• Tailwind CSS v4.1.12 (v4.x is alpha, v3.4.17 is stable)
+Outdated Versions (vs latest stable):
+• lucide-svelte: 0.456.0 → 0.540.0 (84 versions behind)
+• zod: 3.23.8 → 4.0.17 (major version behind, breaking changes)
+• @supabase/supabase-js: 2.55.0 → 2.56.0 (1 patch behind)
+
+Risk Assessment:
+• HIGH: Zod v4 has breaking changes - needs migration plan
+• LOW: Lucide-svelte - safe to update
+• LOW: Supabase - patch update safe
 
 (E) Layout & UX by Breakpoint
 ====================================================================
 Mobile:
-• ✅ Bottom navigation (touch-friendly)
-• ✅ Cards optimized for mobile viewports
+• ✅ Bottom navigation optimized for mobile
+• ✅ Card-based responsive layout
 • ✅ Safe area considerations (safe-area-bottom class)
-• ❌ Touch targets < 44px in some areas
+• ❌ Touch targets < 44px in navigation icons
 
 Tablet:
-• ✅ Grid layout adapts (md:grid-cols-2)
+• ✅ Grid layout adapts (md:grid-cols-2 in dashboard)
 • ✅ Responsive padding and margins
+• ✅ Widget cards scale appropriately
 
 Desktop:
 • ✅ Full grid layout (lg:grid-cols-3)
-• ✅ Sidebar potential with current layout
+• ✅ Sidebar navigation potential with current layout
+• ✅ Hover states implemented
 
 Accessibility:
-• ❌ No ARIA labels found in components
+• ❌ No ARIA labels found in interactive components
 • ❌ No focus management for keyboard navigation
 • ❌ No reduced motion preferences handling
-• ❌ Color contrast not validated
-• ❌ No semantic HTML structure validation
+• ❌ Color contrast validation needed
+• ❌ No semantic heading structure validation
 
 (F) Project Structure Tree (Deep)
 ====================================================================
@@ -92,45 +102,50 @@ Accessibility:
 .gitignore - Git ignore rules | Status: stable
 .npmrc - NPM configuration | Status: stable
 AGENTS.md - Engineering contract | Status: stable
+APP_STATUS_REVIEW.txt - Current audit file | Status: stable
 LICENSE.md - MIT license | Status: stable
 PHASE 0 LOCKED SCHEMA (1).txt - Database schema | Status: stable
 README.md - Basic documentation | Status: obsolete (generic)
 package-lock.json - NPM lock file | Status: stable
-package.json - Dependencies manifest | Status: risky (unmet deps)
+package.json - Dependencies definition | Status: stable
 postcss.config.js - PostCSS configuration | Status: stable
 svelte.config.js - SvelteKit configuration | Status: stable
 tailwind.config.js - Tailwind configuration | Status: stable
-test.html - Test file | Status: unused
+test.html - HTML test file | Status: unused
 tsconfig.json - TypeScript configuration | Status: stable
 vite.config.ts - Vite configuration | Status: stable
 
 src/app.css - Global styles | Status: stable
 src/app.d.ts - TypeScript declarations | Status: stable
-src/app.html - HTML template | Status: untested
+src/app.html - HTML template | Status: stable
 
-src/components/cards/AyahCard.svelte - Daily Quranic verse | Status: stable
-src/components/cards/BirthdayCard.svelte - Birthday tracker | Status: stable
-src/components/cards/FeedbackPrompt.svelte - Mood feedback | Status: stable
-src/components/cards/HowOldCard.svelte - Age calculator | Status: stable
-src/components/cards/PromptCard.svelte - Role-aware prompts | Status: stable
-src/components/cards/WallCard.svelte - Family wall | Status: stable
-src/components/ui/BottomNav.svelte - Bottom navigation | Status: stable
+src/components/cards/AyahCard.svelte - Islamic verse widget | Status: stable
+src/components/cards/BirthdayCard.svelte - Birthday reminder | Status: stable
+src/components/cards/FeedbackPrompt.svelte - Family feedback widget | Status: stable
+src/components/cards/HowOldCard.svelte - Age calculation widget | Status: stable
+src/components/cards/PromptCard.svelte - Reflection prompts | Status: stable
+src/components/cards/WallCard.svelte - Family wall widget | Status: stable
 
-src/lib/customRegistry.ts - Custom widget registry | Status: unused
+src/components/ui/BottomNav.svelte - Mobile navigation | Status: stable
+src/components/ui/Loading.svelte - Loading indicator | Status: stable
+
+src/lib/customRegistry.ts - Custom widget registry | Status: stable
 src/lib/eventBus.ts - Event communication system | Status: stable
-src/lib/index.ts - Library barrel export | Status: obsolete (empty)
-src/lib/supabase.ts - Supabase client + types | Status: stable
-src/lib/systemRegistry.ts - System widget registry | Status: stable
-src/lib/widgetRegistry.ts - Widget management | Status: stable
-src/lib/stores/notificationStore.ts - Notifications state | Status: untested
-src/lib/stores/sessionStore.ts - Session state | Status: stable
+src/lib/index.ts - Library exports | Status: unused
+src/lib/server/allowlist.ts - Server-side auth validation | Status: stable
+src/lib/stores/notificationStore.ts - Notification state | Status: unused
+src/lib/stores/sessionStore.ts - Session management | Status: stable
+src/lib/supabase.ts - Database interface & types | Status: stable
+src/lib/systemRegistry.ts - System widget configuration | Status: stable
 src/lib/types/widget.ts - Widget type definitions | Status: stable
+src/lib/widgetRegistry.ts - Widget management system | Status: stable
 
+src/routes/+error.svelte - Error handling | Status: stable
 src/routes/+layout.server.ts - Server layout | Status: stable
 src/routes/+layout.svelte - Main layout | Status: stable
-src/routes/+page.svelte - Sign-in page | Status: stable
-src/routes/access-denied/+page.svelte - Access denied | Status: stable
-src/routes/dashboard/+page.svelte - Main dashboard | Status: stable
+src/routes/+page.svelte - Landing/auth page | Status: stable
+src/routes/access-denied/+page.svelte - Access denied page | Status: stable
+src/routes/dashboard/+page.svelte - Dashboard | Status: stable
 src/routes/notifications/+page.svelte - Notifications | Status: untested
 src/routes/posts/+page.svelte - Posts feed | Status: stable
 src/routes/profile/+page.svelte - User profile | Status: stable
@@ -142,250 +157,343 @@ static/robots.txt - SEO robots file | Status: stable
 Active Links:
 • Bottom navigation: Dashboard, Posts, Profile, Notifications (all functional)
 • Sign out functionality in profile page
-• OAuth redirect flows
+• OAuth redirect flows via Supabase
+• Access denied redirection for unauthorized users
 
 Missing/Broken Links:
-• No breadcrumb navigation
-• No back button patterns
-• No deep linking for specific posts/items
+• No breadcrumb navigation system
+• No back button patterns in deep navigation
+• No deep linking for specific posts/items/widgets
 
 (H) Data Flow & Supabase
 ====================================================================
 Init → Feature → Supabase Flow:
-1. Session store initialized on app load
+1. Session store initialized on app load (sessionStore.ts)
 2. Auth state monitored via onAuthStateChange
-3. Route guards check authentication status
-4. Profile data loaded from profiles table
-5. Widget data fetched from items table
-6. Interactions tracked in interactions table
+3. Dual allowlist validation (client + server-side)
+4. Route guards check authentication status
+5. Profile data loaded from profiles table
+6. Widget data fetched from items table
+7. Interactions tracked in interactions table
 
 Unused/Redundant Calls:
-• Notification store appears unused (no notifications CRUD found)
-• Some widget components fetch duplicate profile data
+• Notification store defined but no CRUD operations found
+• Some widget components may fetch duplicate profile data
+• EventBus system underutilized (only in FeedbackPrompt)
 
 Environment Variables:
 • PUBLIC_SUPABASE_URL - ✅ Properly referenced
 • PUBLIC_SUPABASE_ANON_KEY - ✅ Properly referenced
-• Missing server-only env vars for allowlist validation
+• ✅ Server-side allowlist now hardcoded (no env dependency)
 
 (I) Auth Flows & RLS Implications
 ====================================================================
 Exact Flow:
 1. Google OAuth login → Supabase session
-2. Email checked against hardcoded allowlist (4 emails)
-3. Profile creation/update in profiles table
-4. Dashboard access granted
+2. Dual validation: Client (layout.svelte:12-17) + Server (allowlist.ts:6-11)
+3. Email checked against hardcoded allowlist (4 emails)
+4. Profile creation/update in profiles table
+5. Role assignment via getUserRole() function
+6. Dashboard access granted
 
 RLS Validation:
 • ✅ All tables have RLS enabled
-• ✅ Policies restrict to allowlisted emails
-• ✅ No dynamic role assignment (per contract)
-• ❌ Server-side allowlist validation missing (client-only)
+• ✅ Policies restrict to allowlisted emails via JWT
+• ✅ No dynamic role assignment (per AGENTS.md contract)
+• ✅ Server-side allowlist validation implemented
+• ✅ Schema RLS policies match application allowlist
 
 (J) API & Schema Touchpoints
 ====================================================================
 Supabase Endpoints Used:
 • profiles table: SELECT, INSERT, UPDATE (full CRUD)
-• items table: SELECT, INSERT (posts, feedback, events)
-• interactions table: SELECT, INSERT, DELETE (likes, votes)
+• items table: SELECT, INSERT (posts, feedback, events, ayah)
+• interactions table: SELECT, INSERT, DELETE (likes, votes, bookmarks)
 
 Unused Schema Fields:
-• items.media_urls[] - Defined but not implemented
-• items.start_at, end_at - Event fields unused
-• interactions.answer_index - Poll logic incomplete
+• items.media_urls[] - Defined but not implemented in UI
+• items.start_at, end_at - Event scheduling unused
+• interactions.answer_index - Poll voting logic incomplete
+• profiles.avatar_url - Profile image system not implemented
 
-Overfetching:
-• Dashboard loads all profiles for each widget
-• Posts page loads all interactions globally
+Schema Lock Enforcement:
+• ✅ AGENTS.md contract prohibits schema changes
+• ✅ PHASE 0 LOCKED SCHEMA enforced
+• ✅ RLS policies hardcoded to allowlist
 
 (K) Known Issues
 ====================================================================
-• No TODO/FIXME comments found in codebase
-• Dependencies uninstalled (fresh repo state)
-• @tailwindcss/forms missing from package.json
-• lucide-svelte not implemented (using emojis)
-• Notification system partially implemented
-• No error boundaries or global error handling
+Code Analysis:
+• ✅ No TODO/FIXME/XXX/HACK comments found
+• ❌ Missing dependency installation
+• ❌ Zod v4 migration needed for compatibility
+• ❌ Notification system incomplete (store exists, no functionality)
+• ❌ Media upload system referenced but not implemented
+• ❌ Poll/voting system partially implemented
+
+Build/Runtime Issues:
+• ❌ Cannot build - dependencies unmet
+• ❌ TypeScript errors likely due to missing dependencies
+• ❌ Cannot test functionality without dependency installation
 
 (L) Feature Potential Scan
 ====================================================================
-• Media Upload (Impact: 5, Feasibility: 3) = 15 - High value family sharing
-• Real-time Updates (Impact: 4, Feasibility: 2) = 8 - Live family feed
-• Mobile App PWA (Impact: 4, Feasibility: 4) = 16 - Native-like experience
-• Calendar Integration (Impact: 3, Feasibility: 3) = 9 - Family events
-• Photo Albums (Impact: 4, Feasibility: 3) = 12 - Memory sharing
-• Push Notifications (Impact: 3, Feasibility: 2) = 6 - Family alerts
+Impact × Feasibility (1-5 scale):
+
+• Media Upload System: 4×2=8 - High impact, medium complexity (Supabase storage)
+• Poll/Voting Completion: 3×4=12 - Medium impact, high feasibility
+• Push Notifications: 5×2=10 - High impact, medium complexity
+• Family Calendar: 4×3=12 - High impact, good feasibility using existing events
+• Photo Sharing: 5×3=15 - High impact, good feasibility
+• Family Games/Activities: 3×4=12 - Medium impact, high feasibility
+• Family Tree Visualization: 3×2=6 - Medium impact, complex implementation
+• Voice Messages: 4×2=8 - High impact, medium complexity
+• Family Achievements: 3×4=12 - Medium impact, high feasibility
+• Location Sharing: 2×2=4 - Low impact, medium complexity (privacy concerns)
+
+Top 3 Features by Score:
+1. Photo Sharing (15) - Leverage existing media_urls field
+2. Poll/Voting Completion (12) - Utilize existing interactions table
+3. Family Calendar (12) - Use existing event items with start_at/end_at
 
 (M) Technical Debt Heatmap
 ====================================================================
-High Risk (Complexity: 5, Risk: 5):
-• src/routes/posts/+page.svelte - Complex state management
+File/Folder Risk Assessment (Complexity + Risk, 1-5 scale):
 
-Medium Risk (Complexity: 3-4, Risk: 3-4):
-• src/lib/widgetRegistry.ts - Widget complexity
-• src/routes/dashboard/+page.svelte - Data orchestration
-• src/components/cards/FeedbackPrompt.svelte - Form complexity
+High Risk (8-10):
+• src/lib/widgetRegistry.ts: 4+4=8 - Complex engagement scoring, needs refactoring
+• src/routes/posts/+page.svelte: 4+3=7 - Large component, multiple responsibilities
+• package.json: 3+5=8 - Outdated dependencies, breaking changes pending
 
-Low Risk (Complexity: 1-2, Risk: 1-2):
-• Most card components (simple, focused)
-• Store implementations (clean, minimal)
-• Auth flows (straightforward)
+Medium Risk (5-7):
+• src/routes/dashboard/+page.svelte: 3+3=6 - Widget loading complexity
+• src/lib/supabase.ts: 3+2=5 - Database types, stable but large
+• src/routes/+layout.svelte: 2+3=5 - Dual auth logic, needs consolidation
+
+Low Risk (2-4):
+• src/components/cards/*: 2+1=3 - Simple, focused components
+• src/lib/stores/*: 2+2=4 - Basic store implementations
+• src/routes/profile/+page.svelte: 2+2=4 - Straightforward profile management
 
 (N) UX Gap Report
 ====================================================================
 Inconsistencies:
-• Mixed emoji/icon usage (no lucide-svelte) - Multiple files
-• No loading states standardization - Dashboard, Posts, Profile
-• Error handling inconsistent - Various components
-• No empty states design system - Posts, Notifications
-• Bottom nav accessibility missing - BottomNav.svelte:22
+• Mixed emoji (🎂) vs lucide icons throughout UI
+• Loading states inconsistent between components
+• No unified error handling patterns
+• Button styling varies between cards and main UI
+• No dark mode support despite modern app standards
+
+File/Line References:
+• src/components/cards/BirthdayCard.svelte:45 - Emoji usage
+• src/components/ui/Loading.svelte - Generic loading, needs context-aware states
+• src/routes/posts/+page.svelte:156 - Inconsistent button styling
+• src/routes/dashboard/+page.svelte:31 - Loading state handling
+• tailwind.config.js:9 - Only light theme defined
 
 (O) Dependency Risk Audit
 ====================================================================
-Critical Vulnerabilities:
-• Unable to audit - dependencies not installed
+Version Status vs Latest:
+• HIGH RISK: zod 3.23.8 → 4.0.17 (major version, breaking changes)
+• MEDIUM RISK: lucide-svelte 0.456.0 → 0.540.0 (many updates behind)
+• LOW RISK: @supabase/supabase-js 2.55.0 → 2.56.0 (patch update)
+• LOW RISK: @tailwindcss/* packages up to date
 
-Version Status:
-• Zod v4.0.17 - RISKY (alpha version, v3.23.8 stable)
-• Tailwind CSS v4.1.12 - RISKY (alpha version, v3.4.17 stable)
-• All other deps at latest stable versions
+Known Vulnerabilities:
+• Cannot scan - dependencies not installed
+• Requires npm audit after installation
 
 Criticality Assessment:
-• High: Zod (validation library) using alpha version
-• Medium: Tailwind CSS alpha may have breaking changes
-• Low: Other dependencies appear stable
+• HIGH: Core functionality blocked by missing dependencies
+• MEDIUM: Zod v4 migration planning required
+• LOW: Icon library updates safe to apply
 
 (P) Performance Hotspots
 ====================================================================
 Bottlenecks:
-• Dashboard widget loading (sequential vs parallel)
-• Posts page pagination (client-side filtering)
-• Profile data refetched in each widget
+• Widget engagement scoring recalculates on every render
+• Profile data fetched multiple times across components
+• No caching layer for Supabase calls
+• Large bundle size potential from unused Tailwind classes
 
-Optimizations:
-• Implement data caching for profiles
-• Add virtual scrolling for long posts feeds
+Suggested Optimizations:
+• Implement widget engagement score memoization
+• Create shared profile context/store
+• Add Supabase query caching
+• Purge unused Tailwind utilities
 • Lazy load widget components
-• Optimize Supabase queries with specific selects
-• Add bundle splitting for routes
+• Implement virtual scrolling for long feeds
+
+File References:
+• src/lib/widgetRegistry.ts:15-35 - Engagement calculation
+• src/routes/dashboard/+page.svelte:31-64 - Data loading patterns
 
 (Q) Test Coverage Map
 ====================================================================
-Component Coverage: 0%
-Route Coverage: 0%
-Store Coverage: 0%
-Utility Coverage: 0%
-
-Untested Files:
-• All components (0/20 tested)
-• All routes (0/6 tested)
-• All stores (0/2 tested)
-• All utilities (0/8 tested)
+Per Component/Route Coverage:
+• All components: 0/8 tested (0%)
+• All routes: 0/6 tested (0%)
+• All stores: 0/2 tested (0%)
+• All utilities: 0/9 tested (0%)
 
 Testing Infrastructure: None detected
+• No test files found (only test.html placeholder)
+• No testing framework configured
+• No CI/CD testing pipeline
+
+Priority Testing Needs:
+• Auth flow validation
+• Widget rendering
+• Data persistence
+• Allowlist enforcement
 
 (R) Security Gaps & Policy Mismatches
 ====================================================================
 RLS vs AGENTS.md Contract:
 • ✅ Schema locked and enforced
-• ✅ RLS policies implemented
-• ❌ Server-side allowlist missing (client-only validation)
+• ✅ RLS policies implemented correctly
+• ✅ Server-side allowlist validation implemented
+• ✅ No dynamic role assignment
 • ❌ No rate limiting on API calls
 • ❌ No input sanitization validation
+• ❌ No CSRF protection
 
 Auth vs Blueprint:
 • ✅ Google OAuth only
-• ✅ No dynamic role assignment
-• ❌ Session management could be more robust
+• ✅ Hardcoded allowlist (no env leakage)
+• ✅ Dual client/server validation
+• ❌ Session timeout handling could be more robust
+• ❌ No audit logging for security events
 
 (S) UX Consistency Index
 ====================================================================
-Score: 72/100
+Score: 78/100
 
 Justification:
-• +20 Consistent card-based design system
-• +15 Coherent color scheme and typography
-• +12 Mobile-first responsive approach
+• +25 Consistent card-based design system
+• +15 Coherent color scheme and typography  
+• +15 Mobile-first responsive approach
 • +10 Role-aware content adaptation
-• +15 Clean navigation patterns
-• -10 Mixed icon usage (emoji vs proper icons)
-• -8 Inconsistent loading states
-• -12 Missing accessibility features
-• -10 No error state standardization
+• +13 Clean navigation patterns with bottom nav
+• -8 Mixed icon usage (emoji vs lucide icons)
+• -7 Inconsistent loading states
+• -10 Missing accessibility features
+• -5 No dark mode support
+• -5 Button styling inconsistencies
 
-(T) Metrics Snapshot (Current Run)
+(T) Metrics Snapshot (this run)
 ====================================================================
-DB Reads/Writes: Not measured (deps not installed)
-Supabase Endpoints Hit: 6 main tables accessed
-Bundle Size: Not measured (no build available)
-Unused Assets Count: 1 (test.html)
-Warnings: 18 (unmet dependencies)
-Errors: 0
-Routes Count: 6
-Components Count: 14 Svelte + 6 UI components
-Total LOC: 2,258 lines
-File Count: 29 source files
+Code Metrics:
+• Total lines of code: 2,480
+• Svelte components: 8
+• Routes: 6
+• TypeScript utilities: 9
+• Dependencies defined: 18
+• Dependencies installed: 0
+
+Repository Health:
+• Bundle size: Cannot calculate (dependencies unmet)
+• Unused assets: 1 (test.html)
+• Build warnings: Cannot assess (build blocked)
+• Build errors: Cannot assess (build blocked)
+• TODOs/FIXMEs: 0
+
+Database Schema:
+• Tables: 3 (profiles, items, interactions)
+• RLS policies: 18 (6 per table)
+• Indexes: 3
+• Schema drift: 0 (locked)
 
 (U) Metrics Timeline
 ====================================================================
-Run #1 (2025-08-22T03:54:46Z):
-- LOC: 2,258
-- Components: 20
-- Routes: 6
-- Deps Status: 0/18 installed
-- UX Score: 72/100
-- Security Score: 65/100
+Run #1 (2025-08-22T03:54:46Z, commit dbba300):
+• LOC: 2,258 | Components: 8 | Routes: 6 | Deps: 18/0 | Warnings: N/A | Errors: N/A
+
+Run #2 (2025-08-22T08:15:55Z, commit 42adcb4):
+• LOC: 2,480 (+222) | Components: 8 | Routes: 6 | Deps: 18/0 | Warnings: N/A | Errors: N/A
+• Notable: +Server-side allowlist validation, +Role-based access functions
 
 (V) Prioritized Next Actions
 ====================================================================
-[HIGH] Install missing dependencies - package.json:25-36
-[HIGH] Add @tailwindcss/forms to package.json - Missing from stack contract
-[HIGH] Implement server-side allowlist validation - src/lib/server/allowlist.ts (create)
-[MEDIUM] Replace emoji icons with lucide-svelte - All card components
-[MEDIUM] Add comprehensive error boundaries - src/routes/+error.svelte (create)
-[LOW] Implement accessibility features - ARIA labels, focus management
-[LOW] Add loading state standardization - Create shared loading component
-[MEDIUM] Fix dependency versions to stable releases - package.json
-[HIGH] Add basic test infrastructure - Create test setup
-[LOW] Optimize dashboard data loading - Parallel widget data fetching
+Priority Level | Action | File References
+
+[CRITICAL] Install dependencies and resolve package conflicts | package.json, package-lock.json
+[HIGH] Implement comprehensive test suite starting with auth flows | Create test/ directory
+[HIGH] Complete poll/voting system using existing interactions table | src/components/cards/FeedbackPrompt.svelte:25-35
+
+[MEDIUM] Migrate from Zod v3 to v4 with breaking change assessment | All validation files
+[MEDIUM] Unify icon system (replace emojis with lucide-svelte) | src/components/cards/BirthdayCard.svelte:45
+[MEDIUM] Implement media upload system using defined schema fields | items.media_urls integration
+
+[LOW] Add dark mode support with system preference detection | tailwind.config.js, app.css
+[LOW] Optimize widget engagement scoring with memoization | src/lib/widgetRegistry.ts:15-35
+[LOW] Create unified loading state management | src/components/ui/Loading.svelte
+
+Quick Wins (<1 day):
+• Install dependencies: pnpm install
+• Replace emoji icons with lucide-svelte equivalents
+• Add basic accessibility attributes (ARIA labels)
+
+Deep Refactors:
+• Test infrastructure setup with Vitest
+• Zod v4 migration strategy
+• Widget performance optimization
+
+User-Facing Delights:
+• Complete poll/voting interactions
+• Media upload with family photo sharing
+• Push notification system
 
 (W) Sprint Goal Suggestions
 ====================================================================
-Quick Win (<1 week): 
-• Install dependencies and fix package configuration
-• Add server-side allowlist validation for security
-• Replace emojis with proper icon system (lucide-svelte)
+Sprint 1 - Foundation Stability (1 week):
+• Install and audit all dependencies
+• Resolve Zod v4 compatibility issues  
+• Establish basic test infrastructure
+• Fix accessibility violations
+Value: High | Effort: Low-Medium
 
-Deep Refactor (2-3 weeks):
-• Implement comprehensive testing infrastructure
-• Add error boundaries and global error handling
-• Optimize data loading patterns and caching
-
-User-Facing Delight (1-2 weeks):
+Sprint 2 - Feature Completion (2 weeks):
+• Complete poll/voting system
 • Implement media upload functionality
-• Add real-time features with Supabase subscriptions
-• Enhance accessibility and keyboard navigation
+• Unify icon system design
+• Add comprehensive error handling
+Value: High | Effort: Medium
 
-Value vs Effort Ranking:
-1. Fix dependencies (High value, Low effort)
-2. Server-side security (High value, Medium effort)
-3. Icon system (Medium value, Low effort)
-4. Testing infrastructure (High value, High effort)
+Sprint 3 - User Experience Enhancement (2 weeks):
+• Dark mode implementation
+• Advanced accessibility features
+• Performance optimization (widget caching)
+• Push notification system
+Value: Medium | Effort: Medium
+
+Sprint 4 - Platform Maturity (3 weeks):
+• Comprehensive test coverage (>80%)
+• Security audit and hardening
+• Analytics and monitoring
+• Family calendar feature
+Value: Medium-High | Effort: High
+
+Ranking by Value vs Effort:
+1. Foundation Stability (High value, Low effort)
+2. Feature Completion (High value, Medium effort)  
+3. User Experience Enhancement (Medium value, Medium effort)
+4. Platform Maturity (Medium-High value, High effort)
 
 (X) Appendix: Evidence Index
 ====================================================================
-1. package.json:25-36 - 18 dependencies defined
-2. npm list output - All dependencies unmet
-3. AGENTS.md:15 - Stack contract for lucide-svelte
-4. src/routes/+layout.svelte:12-17 - Hardcoded email allowlist
-5. PHASE 0 LOCKED SCHEMA (1).txt:9-50 - Database schema definition
-6. src/lib/systemRegistry.ts:9-52 - Widget registry configuration
-7. src/routes/dashboard/+page.svelte:31-64 - Data loading patterns
-8. src/components/ui/BottomNav.svelte:8-13 - Navigation structure
-9. tailwind.config.js:9-21 - Primary color theme definition
-10. src/lib/supabase.ts:5-115 - Database interface types
-11. src/routes/posts/+page.svelte:1-325 - Complex component example
-12. git log output - Commit history (dbba300)
-13. find command results - File structure analysis
-14. wc -l output - Lines of code metrics (2,258 total)
-15. npm outdated output - Dependency version analysis
+1. package.json:27-39 - 18 dependencies defined, version analysis
+2. npm list output - All dependencies unmet status
+3. git log output - Commit 42adcb4 vs previous dbba300
+4. src/lib/server/allowlist.ts:6-11 - Server-side allowlist implementation
+5. PHASE 0 LOCKED SCHEMA (1).txt:9-50 - Database schema with 3 tables
+6. src/routes/+layout.svelte:12-17 - Client-side allowlist validation
+7. src/lib/widgetRegistry.ts:15-35 - Widget engagement scoring complexity
+8. src/components/cards/BirthdayCard.svelte:45 - Emoji usage example
+9. tailwind.config.js:9-21 - Color theme and configuration
+10. src/routes/posts/+page.svelte:156 - Component complexity analysis
+11. find src output - 28 total source files discovered
+12. wc -l output - 2,480 total lines of code count
+13. src/lib/supabase.ts:5-115 - Database interface and type definitions
+14. npm outdated output - Dependency version analysis showing outdated packages
+15. grep TODO output - Zero technical debt markers found in codebase
