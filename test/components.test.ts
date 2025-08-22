@@ -192,4 +192,60 @@ describe('Component Logic Tests', () => {
 			expect(preventTextOverflow(100, 0)).toBe(true);
 		});
 	});
+
+	describe('WallCard Null Safety', () => {
+		// Copy the improved functions from WallCard for testing
+		function shouldTruncateText(text: string | null | undefined): boolean {
+			// Guard against null/undefined text
+			if (!text) return false;
+			// Estimate if text would exceed 3 lines (rough calculation)
+			return text.length > 150 || text.split('\n').length > 3;
+		}
+
+		function truncateText(text: string | null | undefined): string {
+			// Guard against null/undefined text
+			if (!text) return '';
+			if (text.length <= 150) return text;
+			return text.substring(0, 150) + '...';
+		}
+
+		it('should handle null text gracefully in shouldTruncateText', () => {
+			expect(shouldTruncateText(null)).toBe(false);
+			expect(shouldTruncateText(undefined)).toBe(false);
+		});
+
+		it('should handle empty text gracefully in shouldTruncateText', () => {
+			expect(shouldTruncateText('')).toBe(false);
+		});
+
+		it('should handle normal text correctly in shouldTruncateText', () => {
+			const shortText = 'This is short text';
+			const longText = 'A'.repeat(200);
+			
+			expect(shouldTruncateText(shortText)).toBe(false);
+			expect(shouldTruncateText(longText)).toBe(true);
+		});
+
+		it('should handle null text gracefully in truncateText', () => {
+			expect(truncateText(null)).toBe('');
+			expect(truncateText(undefined)).toBe('');
+		});
+
+		it('should handle empty text gracefully in truncateText', () => {
+			expect(truncateText('')).toBe('');
+		});
+
+		it('should truncate long text correctly', () => {
+			const longText = 'A'.repeat(200);
+			const result = truncateText(longText);
+			
+			expect(result.length).toBe(153); // 150 + '...'
+			expect(result.endsWith('...')).toBe(true);
+		});
+
+		it('should not truncate short text', () => {
+			const shortText = 'This is short text';
+			expect(truncateText(shortText)).toBe(shortText);
+		});
+	});
 });

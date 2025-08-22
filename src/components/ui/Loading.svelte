@@ -28,9 +28,9 @@
 
 {#if skeleton}
 	<!-- Skeleton Loading Cards -->
-	<div class="space-y-4">
+	<div class="space-y-4" role="status" aria-label="Loading content">
 		{#each Array(skeletonCount) as _, i}
-			<div class="bg-white rounded-lg shadow-sm border p-6 animate-pulse">
+			<div class="bg-white rounded-lg shadow-sm border p-6 motion-safe:animate-pulse">
 				<div class="flex items-center gap-4 mb-4">
 					<div class="w-8 h-8 bg-gray-200 rounded-full"></div>
 					<div class="h-5 bg-gray-200 rounded w-1/3"></div>
@@ -46,11 +46,13 @@
 				</div>
 			</div>
 		{/each}
+		<span class="sr-only">Loading content, please wait...</span>
 	</div>
 {:else}
 	<!-- Spinner Loading -->
-	<div class="flex flex-col items-center justify-center py-12">
-		<Loader2 class="{sizeClasses[size]} text-primary-600 animate-spin mb-4" />
+	<div class="flex flex-col items-center justify-center py-12" role="status" aria-label="Loading">
+		<Loader2 class="{sizeClasses[size]} text-primary-600 motion-safe:animate-spin mb-4" />
 		<p class="text-gray-600 text-sm">{text}</p>
+		<span class="sr-only">{text}</span>
 	</div>
 {/if}
