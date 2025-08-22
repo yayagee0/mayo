@@ -6,12 +6,15 @@
 	import type { WidgetConfig } from '$lib/types/widget';
 	import type { Database } from '$lib/supabase';
 	import { supabase } from '$lib/supabase';
+	import { Leaf } from 'lucide-svelte';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
-	let widgets: WidgetConfig[] = [];
-	let profiles: Database['public']['Tables']['profiles']['Row'][] = [];
-	let items: Database['public']['Tables']['items']['Row'][] = [];
-	let interactions: Database['public']['Tables']['interactions']['Row'][] = [];
-	let loading = true;
+	let widgets: WidgetConfig[] = $state([]);
+	let profiles: Database['public']['Tables']['profiles']['Row'][] = $state([]);
+	let items: Database['public']['Tables']['items']['Row'][] = $state([]);
+	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
+	let loading = $state(true);
+	let userName = $derived($user?.user_metadata?.full_name || $user?.email?.split('@')[0] || 'Friend');
 
 	onMount(async () => {
 		// Redirect if not authenticated
@@ -80,9 +83,14 @@
 	<header class="bg-white shadow-sm border-b">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between items-center h-16">
-				<h1 class="text-xl font-semibold text-gray-900">Dashboard</h1>
-				<div class="flex items-center gap-4">
-					<span class="text-sm text-gray-600">Welcome, {$user?.user_metadata?.full_name || $user?.email}</span>
+				<div class="flex items-center gap-3">
+					<Leaf class="w-6 h-6 text-green-500" aria-hidden="true" />
+					<div>
+						<h1 class="text-xl font-semibold text-gray-900">
+							Salam {userName}, here's today's verse
+						</h1>
+						<p class="text-sm text-gray-600">Your family dashboard</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -90,17 +98,17 @@
 
 	<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 		{#if loading}
-			<div class="flex justify-center items-center h-64">
-				<div class="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-			</div>
+			<Loading skeleton={true} skeletonCount={4} />
 		{:else}
+			<!-- SmartCards First - Always show these before any posts -->
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{#each widgets as widget (widget.id)}
 					<button
 						type="button"
-						class="transition-transform hover:scale-105 w-full"
-						on:mouseenter={() => handleWidgetView(widget.id)}
-						on:click={() => handleWidgetInteraction(widget.id)}
+						class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+						onmouseenter={() => handleWidgetView(widget.id)}
+						onclick={() => handleWidgetInteraction(widget.id)}
+						aria-label="View {widget.name} widget"
 					>
 						<svelte:component 
 							this={widget.component} 
@@ -116,7 +124,9 @@
 
 			{#if widgets.length === 0}
 				<div class="text-center py-12">
-					<p class="text-gray-500">No widgets available. Check your widget settings.</p>
+					<Leaf class="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />
+					<h2 class="text-xl font-semibold text-gray-900 mb-2">No SmartCards available</h2>
+					<p class="text-gray-500">Check your widget settings or reload the page.</p>
 				</div>
 			{/if}
 		{/if}

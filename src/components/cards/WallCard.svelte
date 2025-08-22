@@ -4,6 +4,7 @@
 	import { eventBus } from '$lib/eventBus';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
+	import { Home, Plus, X, Camera, Video, MapPin, Heart, MessageCircle, Share2 } from 'lucide-svelte';
 
 	dayjs.extend(relativeTime);
 
@@ -104,14 +105,21 @@
 <div class="card">
 	<div class="flex items-center justify-between mb-4">
 		<div class="flex items-center gap-2">
-			<span class="text-2xl">🏠</span>
+			<Home class="w-6 h-6 text-blue-500" aria-hidden="true" />
 			<h3 class="text-lg font-semibold text-gray-900">Family Wall</h3>
 		</div>
 		<button
 			onclick={() => showComposer = !showComposer}
-			class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+			class="flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+			aria-label={showComposer ? 'Cancel post' : 'Create new post'}
 		>
-			{showComposer ? 'Cancel' : '+ Post'}
+			{#if showComposer}
+				<X class="w-4 h-4" aria-hidden="true" />
+				Cancel
+			{:else}
+				<Plus class="w-4 h-4" aria-hidden="true" />
+				Post
+			{/if}
 		</button>
 	</div>
 
@@ -125,9 +133,27 @@
 			></textarea>
 			<div class="flex justify-between items-center mt-3">
 				<div class="flex gap-2">
-					<button class="text-gray-400 hover:text-gray-600 text-sm">📷 Photo</button>
-					<button class="text-gray-400 hover:text-gray-600 text-sm">🎥 Video</button>
-					<button class="text-gray-400 hover:text-gray-600 text-sm">📍 Location</button>
+					<button 
+						class="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm transition-colors"
+						aria-label="Add photo"
+					>
+						<Camera class="w-4 h-4" aria-hidden="true" />
+						Photo
+					</button>
+					<button 
+						class="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm transition-colors"
+						aria-label="Add video"
+					>
+						<Video class="w-4 h-4" aria-hidden="true" />
+						Video
+					</button>
+					<button 
+						class="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm transition-colors"
+						aria-label="Add location"
+					>
+						<MapPin class="w-4 h-4" aria-hidden="true" />
+						Location
+					</button>
 				</div>
 				<button
 					onclick={createPost}
@@ -142,11 +168,12 @@
 
 	<div class="space-y-4">
 		{#if recentPosts.length === 0}
-			<div class="text-center py-6 text-gray-500">
-				<p class="mb-2">No posts yet!</p>
+			<div class="text-center py-8">
+				<Home class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
+				<p class="text-gray-500 mb-2">No posts yet!</p>
 				<button
 					onclick={() => showComposer = true}
-					class="text-primary-600 hover:text-primary-700 font-medium"
+					class="text-primary-600 hover:text-primary-700 font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-2 py-1"
 				>
 					Be the first to share
 				</button>
@@ -186,18 +213,30 @@
 							<div class="flex items-center gap-4 mt-3">
 								<button
 									onclick={() => toggleLike(post.id)}
-									class="flex items-center gap-1 text-sm transition-colors"
+									class="flex items-center gap-1 text-sm transition-colors min-h-8 min-w-8 rounded p-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
 									class:text-red-600={isLiked(post.id)}
 									class:text-gray-500={!isLiked(post.id)}
+									aria-label="{isLiked(post.id) ? 'Unlike' : 'Like'} this post"
 								>
-									<span>{isLiked(post.id) ? '❤️' : '🤍'}</span>
+									<Heart 
+										class="w-4 h-4 {isLiked(post.id) ? 'fill-current' : ''}" 
+										aria-hidden="true"
+									/>
 									<span>{getLikeCount(post.id)}</span>
 								</button>
-								<button class="text-gray-500 hover:text-gray-700 text-sm">
-									💬 Comment
+								<button 
+									class="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm transition-colors min-h-8 rounded p-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+									aria-label="Comment on post"
+								>
+									<MessageCircle class="w-4 h-4" aria-hidden="true" />
+									Comment
 								</button>
-								<button class="text-gray-500 hover:text-gray-700 text-sm">
-									🔗 Share
+								<button 
+									class="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm transition-colors min-h-8 rounded p-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+									aria-label="Share post"
+								>
+									<Share2 class="w-4 h-4" aria-hidden="true" />
+									Share
 								</button>
 							</div>
 						</div>
@@ -208,7 +247,10 @@
 
 		{#if recentPosts.length > 0}
 			<div class="text-center">
-				<a href="/posts" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+				<a 
+					href="/posts" 
+					class="text-primary-600 hover:text-primary-700 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-2 py-1"
+				>
 					View all posts →
 				</a>
 			</div>

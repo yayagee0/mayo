@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
 	import dayjs from 'dayjs';
+	import { BookOpen, Share2 } from 'lucide-svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -34,7 +35,7 @@
 
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
-		<span class="text-2xl">📖</span>
+		<BookOpen class="w-6 h-6 text-green-600" aria-hidden="true" />
 		<h3 class="text-lg font-semibold text-gray-900">Daily Ayah</h3>
 	</div>
 
@@ -60,7 +61,7 @@
 					{dayjs().format('dddd, MMMM D, YYYY')}
 				</span>
 				<button 
-					class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+					class="flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded px-2 py-1"
 					onclick={() => {
 						if (navigator.share) {
 							navigator.share({
@@ -69,13 +70,18 @@
 							});
 						}
 					}}
+					aria-label="Share this ayah"
 				>
+					<Share2 class="w-4 h-4" aria-hidden="true" />
 					Share
 				</button>
 			</div>
 		</div>
 	{:else}
-		<p class="text-gray-500 text-sm">No ayah available for today.</p>
+		<div class="text-center py-8">
+			<BookOpen class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
+			<p class="text-gray-500 text-sm">No ayah available for today.</p>
+		</div>
 	{/if}
 </div>
 

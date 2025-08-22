@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
 	import { eventBus } from '$lib/eventBus';
+	import { MessageCircle, Check, Shuffle } from 'lucide-svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -51,7 +52,7 @@
 
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
-		<span class="text-2xl">💭</span>
+		<MessageCircle class="w-6 h-6 text-blue-500" aria-hidden="true" />
 		<h3 class="text-lg font-semibold text-gray-900">Today's Prompt</h3>
 	</div>
 
@@ -66,8 +67,9 @@
 			<div class="flex gap-2">
 				<button
 					onclick={handlePromptResponse}
-					class="btn btn-primary text-sm"
+					class="btn btn-primary text-sm flex items-center gap-2"
 				>
+					<Check class="w-4 h-4" aria-hidden="true" />
 					I did this!
 				</button>
 				<button
@@ -76,15 +78,16 @@
 						const newIndex = (new Date().getDay() + 1) % rolePrompts.length;
 						todayPrompt = rolePrompts[newIndex];
 					}}
-					class="btn btn-secondary text-sm"
+					class="btn btn-secondary text-sm flex items-center gap-2"
 				>
+					<Shuffle class="w-4 h-4" aria-hidden="true" />
 					Different prompt
 				</button>
 			</div>
 		{:else}
 			<div class="bg-green-50 border border-green-200 rounded-lg p-3">
 				<div class="flex items-center gap-2">
-					<span class="text-green-600">✓</span>
+					<Check class="w-5 h-5 text-green-600" aria-hidden="true" />
 					<span class="text-green-700 text-sm font-medium">Great job! Keep connecting with your family.</span>
 				</div>
 			</div>
