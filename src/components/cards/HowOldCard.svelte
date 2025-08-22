@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
 	import dayjs from 'dayjs';
+	import { Clock, Sparkles } from 'lucide-svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -38,13 +39,16 @@
 
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
-		<span class="text-2xl">⏰</span>
+		<Clock class="w-6 h-6 text-purple-500" aria-hidden="true" />
 		<h3 class="text-lg font-semibold text-gray-900">How Old Calculator</h3>
 	</div>
 
 	<div class="space-y-4">
 		{#if familyMembers.length === 0}
-			<p class="text-gray-500 text-sm">No family members with birthdays recorded.</p>
+			<div class="text-center py-8">
+				<Clock class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
+				<p class="text-gray-500 text-sm">No family members with birthdays recorded.</p>
+			</div>
 		{:else}
 			<div>
 				<label for="family-member" class="block text-sm font-medium text-gray-700 mb-2">
@@ -78,9 +82,12 @@
 			{/if}
 
 			<div class="bg-gray-50 rounded-lg p-3">
-				<p class="text-xs text-gray-600 text-center">
-					🌟 Ages are calculated in real-time down to the minute!
-				</p>
+				<div class="flex items-center justify-center gap-2">
+					<Sparkles class="w-4 h-4 text-yellow-500" aria-hidden="true" />
+					<p class="text-xs text-gray-600 text-center">
+						Ages are calculated in real-time down to the minute!
+					</p>
+				</div>
 			</div>
 		{/if}
 	</div>

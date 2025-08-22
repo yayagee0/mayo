@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
 	import dayjs from 'dayjs';
+	import { Cake, PartyPopper, Gift } from 'lucide-svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -32,12 +33,15 @@
 
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
-		<span class="text-2xl">🎂</span>
+		<Cake class="w-6 h-6 text-pink-500" aria-hidden="true" />
 		<h3 class="text-lg font-semibold text-gray-900">Upcoming Birthdays</h3>
 	</div>
 
 	{#if upcomingBirthdays.length === 0}
-		<p class="text-gray-500 text-sm">No upcoming birthdays in the next year.</p>
+		<div class="text-center py-8">
+			<Cake class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
+			<p class="text-gray-500 text-sm">No upcoming birthdays in the next year.</p>
+		</div>
 	{:else}
 		<div class="space-y-3">
 			{#each upcomingBirthdays as person (person.user_id)}
@@ -63,7 +67,7 @@
 							</p>
 							<p class="text-sm text-gray-600">
 								{#if person.isToday}
-									🎉 Today! Turning {person.age}
+									Today! Turning {person.age}
 								{:else if person.daysUntil === 1}
 									Tomorrow, turning {person.age}
 								{:else if person.daysUntil <= 7}
@@ -76,9 +80,9 @@
 					</div>
 					
 					{#if person.isToday}
-						<span class="text-2xl animate-bounce">🎉</span>
+						<PartyPopper class="w-6 h-6 text-yellow-500 animate-bounce" aria-hidden="true" />
 					{:else if person.daysUntil <= 7}
-						<span class="text-lg">🎈</span>
+						<Gift class="w-5 h-5 text-pink-400" aria-hidden="true" />
 					{/if}
 				</div>
 			{/each}

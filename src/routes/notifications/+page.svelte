@@ -12,7 +12,7 @@
 	let notifications: Notification[] = [];
 	let loading = true;
 
-	onMount(async () => {
+	onMount(() => {
 		if (!$session) {
 			goto('/');
 			return;
@@ -40,12 +40,14 @@
 		return unsubscribe;
 	});
 
+	import { CheckCircle, AlertTriangle, XCircle, Info, Bell, X } from 'lucide-svelte';
+
 	function getNotificationIcon(type: Notification['type']) {
 		switch (type) {
-			case 'success': return '✅';
-			case 'warning': return '⚠️';
-			case 'error': return '❌';
-			default: return 'ℹ️';
+			case 'success': return CheckCircle;
+			case 'warning': return AlertTriangle;
+			case 'error': return XCircle;
+			default: return Info;
 		}
 	}
 
@@ -88,7 +90,7 @@
 			</div>
 		{:else if notifications.length === 0}
 			<div class="text-center py-12">
-				<div class="text-gray-400 text-6xl mb-4">🔔</div>
+				<Bell class="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />
 				<h2 class="text-xl font-semibold text-gray-900 mb-2">No notifications yet</h2>
 				<p class="text-gray-500">When something happens in your family, you'll see it here.</p>
 			</div>
@@ -100,7 +102,11 @@
 						class:opacity-60={notification.read}
 					>
 						<div class="flex items-start gap-3">
-							<span class="text-xl">{getNotificationIcon(notification.type)}</span>
+							<svelte:component 
+								this={getNotificationIcon(notification.type)} 
+								class="w-5 h-5 mt-0.5 flex-shrink-0" 
+								aria-hidden="true"
+							/>
 							<div class="flex-1">
 								<div class="flex items-center justify-between mb-1">
 									<h3 class="font-semibold">{notification.title}</h3>
@@ -112,7 +118,7 @@
 											<button
 												type="button"
 												on:click={() => notificationStore.markAsRead(notification.id)}
-												class="text-xs px-2 py-1 bg-white bg-opacity-50 rounded"
+												class="text-xs px-2 py-1 bg-white bg-opacity-50 rounded hover:bg-opacity-75 transition-colors"
 											>
 												Mark read
 											</button>
@@ -124,9 +130,10 @@
 							<button
 								type="button"
 								on:click={() => notificationStore.remove(notification.id)}
-								class="text-xs opacity-50 hover:opacity-75"
+								class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded focus:outline-none focus:ring-2 focus:ring-gray-300"
+								aria-label="Remove notification"
 							>
-								✕
+								<X class="w-4 h-4" aria-hidden="true" />
 							</button>
 						</div>
 					</div>

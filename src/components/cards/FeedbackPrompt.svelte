@@ -2,6 +2,7 @@
 	import type { WidgetProps } from '$lib/types/widget';
 	import { eventBus } from '$lib/eventBus';
 	import { supabase } from '$lib/supabase';
+	import { Heart, Smile, Meh, Frown, Sparkles } from 'lucide-svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -37,11 +38,11 @@
 	let submitted = $state(false);
 
 	const moodOptions = [
-		{ value: 'great', emoji: '😊', label: 'Great' },
-		{ value: 'good', emoji: '🙂', label: 'Good' },
-		{ value: 'okay', emoji: '😐', label: 'Okay' },
-		{ value: 'difficult', emoji: '😔', label: 'Difficult' },
-		{ value: 'challenging', emoji: '😟', label: 'Challenging' }
+		{ value: 'great', icon: Sparkles, label: 'Great', color: 'text-green-500' },
+		{ value: 'good', icon: Smile, label: 'Good', color: 'text-blue-500' },
+		{ value: 'okay', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
+		{ value: 'difficult', icon: Frown, label: 'Difficult', color: 'text-orange-500' },
+		{ value: 'challenging', icon: Frown, label: 'Challenging', color: 'text-red-500' }
 	];
 
 	async function submitFeedback() {
@@ -78,7 +79,7 @@
 
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
-		<span class="text-2xl">💝</span>
+		<Heart class="w-6 h-6 text-pink-500" aria-hidden="true" />
 		<h3 class="text-lg font-semibold text-gray-900">
 			{isParent ? 'Parent' : 'Child'} Reflection
 		</h3>
@@ -99,13 +100,22 @@
 						<button
 							type="button"
 							onclick={() => selectedMood = mood.value}
-							class="flex flex-col items-center p-2 rounded-lg border transition-colors"
+							class="flex flex-col items-center p-2 rounded-lg border transition-colors min-h-11 focus:outline-none focus:ring-2 focus:ring-primary-500"
 							class:bg-primary-100={selectedMood === mood.value}
 							class:border-primary-300={selectedMood === mood.value}
 							class:bg-gray-50={selectedMood !== mood.value}
 							class:border-gray-200={selectedMood !== mood.value}
+							aria-label="Rate mood as {mood.label}"
 						>
-							<span class="text-xl mb-1">{mood.emoji}</span>
+							{#if mood.value === 'great'}
+								<Sparkles class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+							{:else if mood.value === 'good'}
+								<Smile class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+							{:else if mood.value === 'okay'}
+								<Meh class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+							{:else}
+								<Frown class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+							{/if}
 							<span class="text-xs font-medium">{mood.label}</span>
 						</button>
 					{/each}
@@ -136,7 +146,7 @@
 		</div>
 	{:else}
 		<div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-			<span class="text-green-600 text-2xl mb-2 block">✨</span>
+			<Sparkles class="w-8 h-8 text-green-600 mx-auto mb-2" aria-hidden="true" />
 			<p class="text-green-700 font-medium">Thank you for sharing!</p>
 			<p class="text-green-600 text-sm mt-1">Your reflection helps strengthen our family bond.</p>
 		</div>
