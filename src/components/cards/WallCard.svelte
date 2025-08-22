@@ -105,12 +105,14 @@
 		return interactions.filter(i => i.item_id === itemId && i.type === 'like').length;
 	}
 
-	function shouldTruncateText(text: string): boolean {
+	function shouldTruncateText(text: string | null): boolean {
+		if (!text) return false;
 		// Estimate if text would exceed 3 lines (rough calculation)
 		return text.length > 150 || text.split('\n').length > 3;
 	}
 
-	function truncateText(text: string): string {
+	function truncateText(text: string | null): string {
+		if (!text) return '';
 		if (text.length <= 150) return text;
 		return text.substring(0, 150) + '...';
 	}
@@ -243,24 +245,28 @@
 							</div>
 							
 							<div class="text-gray-700 whitespace-pre-wrap">
-								{#if shouldTruncateText(post.body) && !expandedPosts.has(post.id)}
-									<p>{truncateText(post.body)}</p>
-									<button
-										onclick={() => toggleExpanded(post.id)}
-										class="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
-									>
-										Show more
-									</button>
-								{:else}
-									<p>{post.body}</p>
-									{#if shouldTruncateText(post.body)}
+								{#if post.body}
+									{#if shouldTruncateText(post.body) && !expandedPosts.has(post.id)}
+										<p>{truncateText(post.body)}</p>
 										<button
 											onclick={() => toggleExpanded(post.id)}
 											class="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
 										>
-											Show less
+											Show more
 										</button>
+									{:else}
+										<p>{post.body}</p>
+										{#if shouldTruncateText(post.body)}
+											<button
+												onclick={() => toggleExpanded(post.id)}
+												class="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
+											>
+												Show less
+											</button>
+										{/if}
 									{/if}
+								{:else}
+									<p class="text-gray-500 italic">No content</p>
 								{/if}
 							</div>
 							

@@ -142,6 +142,26 @@ This document defines the technical, architectural, and behavioral constraints f
 
 
 
+\## 🚧 SPRINT 1 CONSTRAINTS (MAYO SEPT 2025)
+
+
+
+\- ❌ Do not change login flow (/ → Google OAuth → /dashboard).
+
+\- ❌ Do not modify Supabase auth, allowlist, or RLS policies.
+
+\- ✅ Focus on quality & stability improvements only.
+
+\- ✅ Fix TypeScript errors and add error boundaries.
+
+\- ✅ Implement shared stores for better state management.
+
+
+
+---
+
+
+
 \## 📁 CONTRACT FILES
 
 
