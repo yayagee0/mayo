@@ -60,7 +60,7 @@
 					feedback: feedbackText,
 					role: userRole
 				},
-				visibility: 'family'
+				visibility: 'all'
 			});
 
 			if (error) throw error;

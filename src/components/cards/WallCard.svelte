@@ -31,7 +31,7 @@
 				author_email: session.user.email,
 				author_id: session.user.id,
 				body: postContent.trim(),
-				visibility: 'family'
+				visibility: 'all'
 			});
 
 			if (error) throw error;
