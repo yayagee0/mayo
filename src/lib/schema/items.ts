@@ -50,16 +50,34 @@ export const postCreateSchema = z.object({
 export type PostCreateData = z.infer<typeof postCreateSchema>
 
 /**
- * Poll data schema for the data field
+ * Poll data schema for feedback polls
  */
-export const pollDataSchema = z.object({
+export const feedbackPollDataSchema = z.object({
 	type: z.literal('feedback'),
 	mood: z.string().min(1, 'Mood is required'),
 	feedback: z.string().min(1, 'Feedback is required'),
 	role: z.string().min(1, 'Role is required')
 })
 
+/**
+ * Poll data schema for option-based polls
+ */
+export const optionsPollDataSchema = z.object({
+	type: z.literal('options'),
+	options: z.array(z.string().min(1, 'Option cannot be empty')).min(2, 'Poll must have at least 2 options').max(6, 'Poll can have at most 6 options')
+})
+
+/**
+ * Combined poll data schema
+ */
+export const pollDataSchema = z.discriminatedUnion('type', [
+	feedbackPollDataSchema,
+	optionsPollDataSchema
+])
+
 export type PollData = z.infer<typeof pollDataSchema>
+export type FeedbackPollData = z.infer<typeof feedbackPollDataSchema>
+export type OptionsPollData = z.infer<typeof optionsPollDataSchema>
 
 /**
  * Poll creation schema
@@ -74,3 +92,31 @@ export const pollCreateSchema = z.object({
 })
 
 export type PollCreateData = z.infer<typeof pollCreateSchema>
+
+/**
+ * Comment creation schema
+ */
+export const commentCreateSchema = z.object({
+	kind: z.literal('comment'),
+	author_email: z.string().email(),
+	author_id: z.string().uuid().optional(),
+	body: z.string().min(1, 'Comment content is required'),
+	parent_id: z.string().uuid(),
+	visibility: itemVisibilitySchema.default('all')
+})
+
+export type CommentCreateData = z.infer<typeof commentCreateSchema>
+
+/**
+ * Media post creation schema
+ */
+export const mediaPostCreateSchema = z.object({
+	kind: z.literal('post'),
+	author_email: z.string().email(),
+	author_id: z.string().uuid().optional(),
+	body: z.string().optional(),
+	media_urls: z.array(z.string().url()).min(1, 'At least one media URL is required'),
+	visibility: itemVisibilitySchema.default('all')
+})
+
+export type MediaPostCreateData = z.infer<typeof mediaPostCreateSchema>
