@@ -3,6 +3,7 @@
 	import { eventBus } from '$lib/eventBus';
 	import { supabase } from '$lib/supabase';
 	import { Heart, Smile, Meh, Frown, Sparkles } from 'lucide-svelte';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -36,6 +37,8 @@
 	let selectedMood = $state('');
 	let feedbackText = $state('');
 	let submitted = $state(false);
+	let submitting = $state(false);
+	let error = $state('');
 
 	const moodOptions = [
 		{ value: 'great', icon: Sparkles, label: 'Great', color: 'text-green-500' },
@@ -46,10 +49,12 @@
 	];
 
 	async function submitFeedback() {
-		if (!selectedMood) return;
+		if (!selectedMood || submitting) return;
 
 		try {
-			const { error } = await supabase.from('items').insert({
+			submitting = true;
+			error = '';
+			const { error: submitError } = await supabase.from('items').insert({
 				kind: 'poll',
 				author_email: session?.user?.email || '',
 				author_id: session?.user?.id,
@@ -63,7 +68,7 @@
 				visibility: 'all'
 			});
 
-			if (error) throw error;
+			if (submitError) throw submitError;
 
 			submitted = true;
 			eventBus.emit('pollAnswered', {
@@ -71,8 +76,11 @@
 				answerIndex: moodOptions.findIndex(m => m.value === selectedMood),
 				userId: session?.user?.id || ''
 			});
-		} catch (error) {
-			console.error('Error submitting feedback:', error);
+		} catch (err) {
+			console.error('Error submitting feedback:', err);
+			error = 'Failed to submit reflection. Please try again.';
+		} finally {
+			submitting = false;
 		}
 	}
 </script>
@@ -95,28 +103,29 @@
 
 			<div>
 				<p class="text-sm font-medium text-gray-700 mb-3">How are you feeling?</p>
-				<div class="grid grid-cols-5 gap-2">
+				<div class="grid grid-cols-5 gap-1 sm:gap-2">
 					{#each moodOptions as mood}
 						<button
 							type="button"
 							onclick={() => selectedMood = mood.value}
-							class="flex flex-col items-center p-2 rounded-lg border transition-colors min-h-11 focus:outline-none focus:ring-2 focus:ring-primary-500"
+							class="flex flex-col items-center p-1 sm:p-2 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
 							class:bg-primary-100={selectedMood === mood.value}
 							class:border-primary-300={selectedMood === mood.value}
 							class:bg-gray-50={selectedMood !== mood.value}
 							class:border-gray-200={selectedMood !== mood.value}
+							style="min-height: 44px;"
 							aria-label="Rate mood as {mood.label}"
 						>
 							{#if mood.value === 'great'}
-								<Sparkles class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+								<Sparkles class="w-4 h-4 sm:w-5 sm:h-5 mb-1 {mood.color}" aria-hidden="true" />
 							{:else if mood.value === 'good'}
-								<Smile class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+								<Smile class="w-4 h-4 sm:w-5 sm:h-5 mb-1 {mood.color}" aria-hidden="true" />
 							{:else if mood.value === 'okay'}
-								<Meh class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+								<Meh class="w-4 h-4 sm:w-5 sm:h-5 mb-1 {mood.color}" aria-hidden="true" />
 							{:else}
-								<Frown class="w-5 h-5 mb-1 {mood.color}" aria-hidden="true" />
+								<Frown class="w-4 h-4 sm:w-5 sm:h-5 mb-1 {mood.color}" aria-hidden="true" />
 							{/if}
-							<span class="text-xs font-medium">{mood.label}</span>
+							<span class="text-xs font-medium hidden sm:block">{mood.label}</span>
 						</button>
 					{/each}
 				</div>
@@ -135,13 +144,24 @@
 				></textarea>
 			</div>
 
+			{#if error}
+				<div class="bg-red-50 border border-red-200 rounded-lg p-3">
+					<p class="text-red-700 text-sm">{error}</p>
+				</div>
+			{/if}
+
 			<button
 				type="button"
 				onclick={submitFeedback}
-				disabled={!selectedMood}
-				class="w-full btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+				disabled={!selectedMood || submitting}
+				class="w-full btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
 			>
-				Share Reflection
+				{#if submitting}
+					<Loading size="sm" text="" />
+					Submitting...
+				{:else}
+					Share Reflection
+				{/if}
 			</button>
 		</div>
 	{:else}

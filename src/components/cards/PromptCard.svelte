@@ -2,6 +2,7 @@
 	import type { WidgetProps } from '$lib/types/widget';
 	import { eventBus } from '$lib/eventBus';
 	import { MessageCircle, Check, Shuffle } from 'lucide-svelte';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	interface Props extends WidgetProps {}
 
@@ -56,12 +57,15 @@
 		<h3 class="text-lg font-semibold text-gray-900">Today's Prompt</h3>
 	</div>
 
-	<div class="space-y-4">
-		<div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
-			<p class="text-primary-800 font-medium">
-				{todayPrompt}
-			</p>
-		</div>
+	{#if !profiles || profiles.length === 0}
+		<Loading size="md" text="Loading prompt..." />
+	{:else}
+		<div class="space-y-4">
+			<div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+				<p class="text-primary-800 font-medium">
+					{todayPrompt}
+				</p>
+			</div>
 
 		{#if !responded}
 			<div class="flex gap-2">
@@ -97,4 +101,5 @@
 			<span class="capitalize">{userRole}</span> prompt • Updates daily
 		</div>
 	</div>
+{/if}
 </div>
