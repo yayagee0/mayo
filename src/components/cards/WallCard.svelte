@@ -110,12 +110,16 @@
 		return interactions.filter(i => i.item_id === itemId && i.type === 'like').length;
 	}
 
-	function shouldTruncateText(text: string): boolean {
+	function shouldTruncateText(text: string | null | undefined): boolean {
+		// Guard against null/undefined text
+		if (!text) return false;
 		// Estimate if text would exceed 3 lines (rough calculation)
 		return text.length > 150 || text.split('\n').length > 3;
 	}
 
-	function truncateText(text: string): string {
+	function truncateText(text: string | null | undefined): string {
+		// Guard against null/undefined text
+		if (!text) return '';
 		if (text.length <= 150) return text;
 		return text.substring(0, 150) + '...';
 	}

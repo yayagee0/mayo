@@ -3,6 +3,7 @@
 	import { supabase } from '$lib/supabase';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import Loading from '$lib/../components/ui/Loading.svelte';
 
 	let loading = false;
 	let error = '';
@@ -76,7 +77,7 @@
 				class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 			>
 				{#if loading}
-					<div class="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+					<Loading size="sm" text="" />
 					Signing in...
 				{:else}
 					<svg class="w-5 h-5" viewBox="0 0 24 24">
