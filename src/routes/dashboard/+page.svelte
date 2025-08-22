@@ -103,6 +103,7 @@
 			<!-- SmartCards First - Always show these before any posts -->
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{#each widgets as widget (widget.id)}
+					{@const Component = widget.component}
 					<button
 						type="button"
 						class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -110,8 +111,7 @@
 						onclick={() => handleWidgetInteraction(widget.id)}
 						aria-label="View {widget.name} widget"
 					>
-						<svelte:component 
-							this={widget.component} 
+						<Component 
 							session={$session}
 							{profiles}
 							{items}
