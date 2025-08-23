@@ -211,7 +211,7 @@
 					</div>
 
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">
+						<label for="avatar-upload" class="block text-sm font-medium text-gray-700 mb-2">
 							Profile Picture
 						</label>
 						
@@ -220,7 +220,7 @@
 							<div class="mb-4">
 								<img 
 									src={avatarUrl} 
-									alt="Current profile picture"
+									alt=""
 									class="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
 									onerror={() => avatarUrl = ''}
 								/>

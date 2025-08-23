@@ -257,12 +257,13 @@
 					{/if}
 				{:else if isImageUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
-						<img src={mediaUrl} alt="Posted image" class="w-full h-auto object-cover" />
+						<img src={mediaUrl} alt="" class="w-full h-auto object-cover" />
 					</div>
 				{:else if isVideoUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
 						<video controls class="w-full h-auto">
 							<source src={mediaUrl} type="video/mp4" />
+							<track kind="captions" src="" srclang="en" label="English" />
 							Your browser does not support the video tag.
 						</video>
 					</div>
