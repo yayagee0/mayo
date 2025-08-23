@@ -74,7 +74,6 @@ class ProfileStore {
         .from('profiles')
         .select('*')
         .eq('email', email)
-        .limit(1)
         .maybeSingle()
 
       if (error || !data) {
@@ -138,7 +137,6 @@ class ProfileStore {
         .from('profiles')
         .update(updates as Database['public']['Tables']['profiles']['Update'])
         .eq('user_id', userId)
-        .limit(1)
         .select()
         .maybeSingle()
 
