@@ -66,10 +66,7 @@
 					>
 						<div class="relative flex items-center min-w-0 flex-1">
 							<IconComponent 
-								class="w-5 h-5 mr-3 flex-shrink-0" 
-								class:text-primary-600={currentPath === item.href}
-								class:text-gray-400={currentPath !== item.href}
-								class:group-hover:text-gray-600={currentPath !== item.href}
+								class="w-5 h-5 mr-3 flex-shrink-0 {currentPath === item.href ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}" 
 								aria-hidden="true" 
 							/>
 							<div class="min-w-0 flex-1">
