@@ -5,16 +5,21 @@
 	import { supabase } from '$lib/supabase';
 	import type { Database } from '$lib/supabase';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import imageCompression from 'browser-image-compression';
 
 	let profile: Database['public']['Tables']['profiles']['Row'] | null = null;
 	let loading = true;
 	let saving = false;
+	let uploading = false;
 
 	// Form fields
 	let displayName = '';
 	let avatarUrl = '';
 	let role = 'member';
 	let dob = '';
+
+	// File upload
+	let fileInput: HTMLInputElement;
 
 	onMount(async () => {
 		if (!$session) {
@@ -89,6 +94,65 @@
 		await supabase.auth.signOut();
 		goto('/');
 	}
+
+	async function handleFileSelect(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
+		
+		if (!file) return;
+		
+		// Validate file type
+		if (!file.type.startsWith('image/')) {
+			alert('Please select an image file');
+			return;
+		}
+		
+		// Validate file size (max 5MB)
+		if (file.size > 5 * 1024 * 1024) {
+			alert('Image size must be less than 5MB');
+			return;
+		}
+		
+		try {
+			uploading = true;
+			
+			// Compress image
+			const options = {
+				maxSizeMB: 1,
+				maxWidthOrHeight: 800,
+				useWebWorker: true,
+			};
+			
+			const compressedFile = await imageCompression(file, options);
+			
+			// Generate unique filename
+			const fileName = `avatar-${$user?.id}-${Date.now()}.${compressedFile.name.split('.').pop()}`;
+			
+			// Upload to Supabase Storage
+			const { data, error: uploadError } = await supabase.storage
+				.from('post-media')
+				.upload(fileName, compressedFile);
+			
+			if (uploadError) throw uploadError;
+			
+			// Get signed URL
+			const { data: signedUrlData } = await supabase.storage
+				.from('post-media')
+				.createSignedUrl(data.path, 60 * 60 * 24 * 365); // 1 year
+			
+			if (signedUrlData?.signedUrl) {
+				avatarUrl = signedUrlData.signedUrl;
+				// Auto-save the profile with new avatar
+				await saveProfile();
+			}
+			
+		} catch (error) {
+			console.error('Error uploading image:', error);
+			alert('Failed to upload image. Please try again.');
+		} finally {
+			uploading = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -102,7 +166,7 @@
 				<h1 class="text-xl font-semibold text-gray-900">Profile</h1>
 				<button
 					type="button"
-					on:click={signOut}
+					onclick={signOut}
 					class="text-red-600 hover:text-red-700 font-medium"
 				>
 					Sign Out
@@ -118,7 +182,7 @@
 			<div class="card">
 				<h2 class="text-lg font-semibold text-gray-900 mb-6">Profile Information</h2>
 
-				<form on:submit|preventDefault={saveProfile} class="space-y-6">
+				<form onsubmit={async (e) => { e.preventDefault(); await saveProfile(); }} class="space-y-6">
 					<div>
 						<label for="email" class="block text-sm font-medium text-gray-700 mb-2">
 							Email Address
@@ -147,26 +211,66 @@
 					</div>
 
 					<div>
-						<label for="avatarUrl" class="block text-sm font-medium text-gray-700 mb-2">
-							Avatar URL
+						<label class="block text-sm font-medium text-gray-700 mb-2">
+							Profile Picture
 						</label>
-						<input
-							type="url"
-							id="avatarUrl"
-							bind:value={avatarUrl}
-							placeholder="https://example.com/avatar.jpg"
-							class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-						/>
+						
+						<!-- Current avatar preview -->
 						{#if avatarUrl}
-							<div class="mt-2">
+							<div class="mb-4">
 								<img 
 									src={avatarUrl} 
-									alt="Avatar preview"
-									class="w-16 h-16 rounded-full object-cover"
-									on:error={() => avatarUrl = ''}
+									alt="Current profile picture"
+									class="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+									onerror={() => avatarUrl = ''}
 								/>
 							</div>
 						{/if}
+						
+						<!-- File upload -->
+						<div class="space-y-3">
+							<input
+								type="file"
+								bind:this={fileInput}
+								onchange={handleFileSelect}
+								accept="image/*"
+								class="hidden"
+								id="avatar-upload"
+							/>
+							
+							<button
+								type="button"
+								onclick={() => fileInput.click()}
+								disabled={uploading}
+								class="btn btn-secondary disabled:opacity-50 flex items-center gap-2"
+							>
+								{#if uploading}
+									<div class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+									Uploading...
+								{:else}
+									📷 Upload Photo
+								{/if}
+							</button>
+							
+							<!-- URL input as fallback -->
+							<details class="text-sm">
+								<summary class="cursor-pointer text-gray-600 hover:text-gray-800">
+									Or enter image URL manually
+								</summary>
+								<div class="mt-2">
+									<input
+										type="url"
+										bind:value={avatarUrl}
+										placeholder="https://example.com/avatar.jpg"
+										class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+									/>
+								</div>
+							</details>
+						</div>
+						
+						<p class="text-xs text-gray-500 mt-2">
+							Supported formats: JPG, PNG, GIF. Max size: 5MB.
+						</p>
 					</div>
 
 					<div>
