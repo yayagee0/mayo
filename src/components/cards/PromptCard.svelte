@@ -65,6 +65,11 @@
 
 	{#if !profiles || profiles.length === 0}
 		<Loading size="md" text="Loading prompt..." />
+	{:else if !todayPrompt}
+		<div class="text-center py-8">
+			<MessageCircle class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
+			<p class="text-gray-500 text-sm">No prompts available</p>
+		</div>
 	{:else}
 		<div class="space-y-4">
 			<div class="bg-primary-50 border border-primary-200 rounded-lg p-4">

@@ -49,7 +49,7 @@
 	{:else if upcomingBirthdays.length === 0}
 		<div class="text-center py-8">
 			<Cake class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
-			<p class="text-gray-500 text-sm">No upcoming birthdays in the next year.</p>
+			<p class="text-gray-500 text-sm">No upcoming birthdays</p>
 		</div>
 	{:else}
 		<div class="space-y-3">
