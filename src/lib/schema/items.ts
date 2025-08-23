@@ -32,7 +32,7 @@ export const itemSchema = z.object({
 	is_deleted: z.boolean().nullish().default(false),
 	created_at: z.string().datetime().nullish(),
 	updated_at: z.string().datetime().nullish()
-})
+}).passthrough()
 
 export type ItemData = z.infer<typeof itemSchema>
 

@@ -13,7 +13,7 @@ export const widgetConfigSchema = z.object({
 	viewCount: z.number().int().min(0).default(0),
 	interactionCount: z.number().int().min(0).default(0),
 	engagementScore: z.number().min(0).optional()
-})
+}).passthrough()
 
 export type WidgetConfigData = z.infer<typeof widgetConfigSchema>
 
@@ -38,7 +38,7 @@ export const notificationSchema = z.object({
 	read: z.boolean().default(false),
 	createdAt: z.number().int().positive(),
 	data: z.any().optional()
-})
+}).passthrough()
 
 export type NotificationData = z.infer<typeof notificationSchema>
 
