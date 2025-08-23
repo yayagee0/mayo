@@ -51,13 +51,13 @@
 </script>
 
 <svelte:head>
-	<title>Mayo - Sign In</title>
+	<title>Family - Sign In</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
 	<div class="max-w-md w-full">
 		<div class="text-center mb-8">
-			<h1 class="text-4xl font-bold text-primary-800 mb-2">Mayo</h1>
+			<h1 class="text-4xl font-bold text-primary-800 mb-2">Family</h1>
 			<p class="text-primary-600">Family Engagement Platform</p>
 		</div>
 

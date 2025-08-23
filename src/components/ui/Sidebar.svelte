@@ -36,10 +36,10 @@
 	<!-- Header -->
 	<div class="p-6 border-b border-gray-200">
 		<div class="flex items-center">
-			<div class="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center mr-3">
-				<span class="text-white font-bold text-sm">M</span>
+			<div class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 w-8 h-8 flex items-center justify-center text-white font-bold mr-3" aria-label="Family (Ghassan & Mariem)">
+				GM
 			</div>
-			<h1 class="text-xl font-bold text-gray-900">Mayo</h1>
+			<h1 class="text-xl font-bold text-gray-900">Family</h1>
 		</div>
 		<p class="text-sm text-gray-500 mt-1">Family Connection Hub</p>
 	</div>
@@ -90,7 +90,7 @@
 	<!-- Footer -->
 	<div class="p-4 border-t border-gray-200">
 		<div class="text-xs text-gray-500 text-center">
-			<p>Mayo Family App</p>
+			<p>Family App</p>
 			<p class="mt-1">Stay connected, grow together</p>
 		</div>
 	</div>

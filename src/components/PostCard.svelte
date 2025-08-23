@@ -7,7 +7,7 @@
 	import LiteYouTubeEmbed from './LiteYouTubeEmbed.svelte';
 	import { getAuthorAvatar } from '$lib/utils/avatar';
 	import SafeText from './ui/SafeText.svelte';
-	import type { Database } from '$lib/supabase';
+	import type { Database, PollData } from '$lib/supabase';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	
@@ -61,8 +61,11 @@
 	let pollData = $derived(() => {
 		if (post.kind !== 'poll' || !post.data) return null;
 		
-		if (post.data.type === 'options') {
-			return post.data as { type: 'options'; options: string[] };
+		// Type guard for PollData
+		const data = post.data;
+		if (typeof data === 'object' && !Array.isArray(data) && data && 
+		    'type' in data && data.type === 'options') {
+			return data as unknown as PollData;
 		}
 		
 		return null;
@@ -171,10 +174,11 @@
 	}
 	
 	function getPollResults() {
-		if (!pollData()) return [];
+		const data = pollData();
+		if (!data || !data.options) return [];
 		
 		const totalVotes = pollVotes().length;
-		return pollData()!.options.map((option, index) => {
+		return data.options.map((option, index) => {
 			const votes = pollVotes().filter(v => v.answer_index === index).length;
 			const percentage = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
 			return {

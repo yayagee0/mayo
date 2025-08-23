@@ -117,7 +117,7 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard - Mayo</title>
+	<title>Dashboard - Family</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50 pb-20">

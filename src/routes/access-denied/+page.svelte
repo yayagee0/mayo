@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-	<title>Access Denied - Mayo</title>
+	<title>Access Denied - Family</title>
 </svelte:head>
 
 <div class="min-h-screen bg-red-50 flex items-center justify-center p-4">

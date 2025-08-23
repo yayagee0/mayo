@@ -178,7 +178,7 @@
 </script>
 
 <svelte:head>
-	<title>Profile - Mayo</title>
+	<title>Profile - Family</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50 pb-20">
