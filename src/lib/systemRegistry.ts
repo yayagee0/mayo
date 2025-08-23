@@ -1,51 +1,53 @@
-import type { WidgetRegistry } from './types/widget'
-import BirthdayCard from '../components/cards/BirthdayCard.svelte'
-import AyahCard from '../components/cards/AyahCard.svelte'
-import PromptCard from '../components/cards/PromptCard.svelte'
-import FeedbackPrompt from '../components/cards/FeedbackPrompt.svelte'
-import WallCard from '../components/cards/WallCard.svelte'
-import AgePlaygroundCard from '../components/cards/AgePlaygroundCard.svelte'
+import type { WidgetRegistry, WidgetConfig } from './types/widget'
+
+// Lazy loading functions for widgets
+const loadBirthdayCard = () => import('../components/cards/BirthdayCard.svelte');
+const loadAyahCard = () => import('../components/cards/AyahCard.svelte');
+const loadPromptCard = () => import('../components/cards/PromptCard.svelte');
+const loadFeedbackPrompt = () => import('../components/cards/FeedbackPrompt.svelte');
+const loadWallCard = () => import('../components/cards/WallCard.svelte');
+const loadAgePlaygroundCard = () => import('../components/cards/AgePlaygroundCard.svelte');
 
 export const systemRegistry: WidgetRegistry = {
   birthday: {
     id: 'birthday',
     name: 'Birthday Card',
-    component: BirthdayCard,
+    component: loadBirthdayCard,
     priority: 100,
     enabled: true
   },
   wall: {
     id: 'wall',
     name: 'Wall Card',
-    component: WallCard,
+    component: loadWallCard,
     priority: 95,
     enabled: true
   },
   agePlayground: {
     id: 'agePlayground',
     name: 'Age Playground',
-    component: AgePlaygroundCard,
+    component: loadAgePlaygroundCard,
     priority: 88,
     enabled: true // Feature flag - can be set to false to disable
   },
   ayah: {
     id: 'ayah',
     name: 'Daily Ayah',
-    component: AyahCard,
+    component: loadAyahCard,
     priority: 85,
     enabled: true
   },
   prompt: {
     id: 'prompt',
     name: 'Role-aware Prompts',
-    component: PromptCard,
+    component: loadPromptCard,
     priority: 80,
     enabled: true
   },
   feedback: {
     id: 'feedback',
     name: 'Feedback Prompt',
-    component: FeedbackPrompt,
+    component: loadFeedbackPrompt,
     priority: 75,
     enabled: true
   }

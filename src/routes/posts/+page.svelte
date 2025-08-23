@@ -11,6 +11,7 @@
 	import PostComposer from '$lib/../components/PostComposer.svelte';
 	import PostCard from '$lib/../components/PostCard.svelte';
 	import ErrorBoundary from '$lib/../components/ui/ErrorBoundary.svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 	import { getAuthorAvatar, getAuthorName, findProfileByEmail } from '$lib/utils/avatar';
 
@@ -265,11 +266,13 @@
 					</div>
 				{:else}
 					{#each posts as post (post.id)}
-						<PostCard 
-							{post}
-							{interactions}
-							onInteraction={() => loadInteractions()}
-						/>
+						<ComponentErrorBoundary componentName="Post">
+							<PostCard 
+								{post}
+								{interactions}
+								onInteraction={() => loadInteractions()}
+							/>
+						</ComponentErrorBoundary>
 					{/each}
 					
 					{#if posts.length >= postsPerPage}

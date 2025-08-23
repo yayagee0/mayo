@@ -274,6 +274,7 @@
 	<div class="flex gap-2 border-b border-gray-200 pb-3">
 		<button
 			onclick={() => handleModeChange('text')}
+			aria-label="Text post mode"
 			class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
 			class:bg-primary-100={mode === 'text'}
 			class:text-primary-700={mode === 'text'}
@@ -285,6 +286,7 @@
 		
 		<button
 			onclick={() => handleModeChange('media')}
+			aria-label="Photo or video post mode"
 			class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
 			class:bg-primary-100={mode === 'media'}
 			class:text-primary-700={mode === 'media'}
@@ -297,6 +299,7 @@
 		
 		<button
 			onclick={() => handleModeChange('poll')}
+			aria-label="Poll post mode"
 			class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
 			class:bg-primary-100={mode === 'poll'}
 			class:text-primary-700={mode === 'poll'}
@@ -309,6 +312,7 @@
 		
 		<button
 			onclick={() => handleModeChange('youtube')}
+			aria-label="YouTube video post mode"
 			class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
 			class:bg-primary-100={mode === 'youtube'}
 			class:text-primary-700={mode === 'youtube'}
@@ -322,19 +326,25 @@
 	
 	<!-- Content based on mode -->
 	{#if mode === 'text'}
+		<label for="text-content" class="sr-only">Post content</label>
 		<textarea
+			id="text-content"
 			bind:value={content}
 			{placeholder}
 			rows="4"
+			aria-label="Post content"
 			class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
 		></textarea>
 		
 	{:else if mode === 'media'}
 		<div class="space-y-3">
+			<label for="media-caption" class="sr-only">Media caption</label>
 			<textarea
+				id="media-caption"
 				bind:value={content}
 				placeholder="Add a caption (optional)..."
 				rows="3"
+				aria-label="Media caption"
 				class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
 			></textarea>
 			
@@ -394,7 +404,8 @@
 					<button
 						onclick={addPollOption}
 						disabled={pollOptions.length >= 6}
-						class="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 disabled:text-gray-400 disabled:hover:text-gray-400"
+						aria-label="Add poll option"
+						class="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 disabled:text-gray-400 disabled:hover:text-gray-400 min-h-[44px] px-2 py-2"
 					>
 						<Plus class="w-4 h-4" />
 						Add Option
@@ -403,17 +414,20 @@
 				
 				{#each pollOptions as option, index}
 					<div class="flex items-center gap-2">
+						<label for="poll-option-{index}" class="sr-only">Poll option {index + 1}</label>
 						<input
+							id="poll-option-{index}"
 							type="text"
 							bind:value={pollOptions[index]}
 							placeholder={`Option ${index + 1}`}
+							aria-label="Poll option {index + 1}"
 							class="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
 						/>
 						{#if pollOptions.length > 2}
 							<button
 								onclick={() => removePollOption(index)}
-								class="text-red-500 hover:text-red-700"
-								aria-label="Remove option"
+								class="text-red-500 hover:text-red-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+								aria-label="Remove poll option {index + 1}"
 							>
 								<Minus class="w-4 h-4" />
 							</button>
@@ -451,10 +465,13 @@
 				</div>
 			{/if}
 			
+			<label for="youtube-description" class="sr-only">YouTube video description</label>
 			<textarea
+				id="youtube-description"
 				bind:value={content}
 				placeholder="Add a description (optional)..."
 				rows="3"
+				aria-label="YouTube video description"
 				class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
 			></textarea>
 		</div>

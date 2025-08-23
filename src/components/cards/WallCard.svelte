@@ -81,12 +81,14 @@
 			</div>
 		{:else}
 			{#each recentPosts as post (post.id)}
-				<PostCard 
-					{post} 
-					{interactions}
-					onInteraction={handlePostCreated}
-					showComments={false}
-				/>
+				<ComponentErrorBoundary componentName="Post">
+					<PostCard 
+						{post} 
+						{interactions}
+						onInteraction={handlePostCreated}
+						showComments={false}
+					/>
+				</ComponentErrorBoundary>
 			{/each}
 		{/if}
 

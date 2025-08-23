@@ -13,7 +13,7 @@ export interface WidgetProps {
 export interface WidgetConfig {
   id: string
   name: string
-  component: Component<WidgetProps>
+  component: Component<WidgetProps> | (() => Promise<{ default: Component<WidgetProps> }>)
   priority: number
   enabled: boolean
   pinned?: boolean
