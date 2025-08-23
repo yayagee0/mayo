@@ -5,6 +5,7 @@ import PromptCard from '../components/cards/PromptCard.svelte'
 import FeedbackPrompt from '../components/cards/FeedbackPrompt.svelte'
 import HowOldCard from '../components/cards/HowOldCard.svelte'
 import WallCard from '../components/cards/WallCard.svelte'
+import AgePlaygroundCard from '../components/cards/AgePlaygroundCard.svelte'
 
 export const systemRegistry: WidgetRegistry = {
   birthday: {
@@ -14,6 +15,13 @@ export const systemRegistry: WidgetRegistry = {
     priority: 100,
     enabled: true
   },
+  wall: {
+    id: 'wall',
+    name: 'Wall Card',
+    component: WallCard,
+    priority: 95,
+    enabled: true
+  },
   howOld: {
     id: 'howOld',
     name: 'How Old Calculator',
@@ -21,12 +29,12 @@ export const systemRegistry: WidgetRegistry = {
     priority: 90,
     enabled: true
   },
-  wall: {
-    id: 'wall',
-    name: 'Wall Card',
-    component: WallCard,
-    priority: 95,
-    enabled: true
+  agePlayground: {
+    id: 'agePlayground',
+    name: 'Age Playground',
+    component: AgePlaygroundCard,
+    priority: 88,
+    enabled: true // Feature flag - can be set to false to disable
   },
   ayah: {
     id: 'ayah',
