@@ -6,7 +6,7 @@
 export interface Profile {
   avatar_url?: string | null;
   email?: string;
-  display_name?: string;
+  display_name?: string | null;
 }
 
 /**

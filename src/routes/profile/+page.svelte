@@ -33,7 +33,7 @@
 	});
 
 	// File upload
-	let fileInput: HTMLInputElement = $state();
+	let fileInput: HTMLInputElement;
 
 	onMount(async () => {
 		if (!$session) {
