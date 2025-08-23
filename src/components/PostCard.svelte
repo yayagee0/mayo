@@ -71,14 +71,15 @@
 	});
 	
 	let userVote = $derived(() => {
-		return pollVotes.find(v => v.user_email === $session?.user?.email);
+		if (!pollData) return null;
+		return pollVotes().find(v => v.user_email === $session?.user?.email) || null;
 	});
 	
 	// Check if user has already voted
 	$effect(() => {
-		hasVoted = !!userVote;
-		if (userVote) {
-			selectedPollOption = userVote.answer_index;
+		hasVoted = !!userVote();
+		if (userVote()) {
+			selectedPollOption = userVote()?.answer_index || null;
 		}
 	});
 	
@@ -121,7 +122,7 @@
 	}
 	
 	async function submitVote(optionIndex: number) {
-		if (!$session?.user?.email || hasVoted || !pollData) return;
+		if (!$session?.user?.email || hasVoted || !pollData()) return;
 		
 		try {
 			await supabase.from('interactions').insert({
@@ -167,11 +168,11 @@
 	}
 	
 	function getPollResults() {
-		if (!pollData) return [];
+		if (!pollData()) return [];
 		
-		const totalVotes = pollVotes.length;
-		return pollData.options.map((option, index) => {
-			const votes = pollVotes.filter(v => v.answer_index === index).length;
+		const totalVotes = pollVotes().length;
+		return pollData()!.options.map((option, index) => {
+			const votes = pollVotes().filter(v => v.answer_index === index).length;
 			const percentage = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
 			return {
 				option,
@@ -293,11 +294,11 @@
 						</div>
 					</div>
 				{/each}
-				<p class="text-xs text-gray-500 mt-2">Total votes: {pollVotes.length}</p>
+				<p class="text-xs text-gray-500 mt-2">Total votes: {pollVotes().length}</p>
 			{:else}
 				<!-- Show voting options -->
 				<div class="space-y-2">
-					{#each pollData.options as option, index}
+					{#each pollData()?.options || [] as option, index}
 						<button
 							onclick={() => submitVote(index)}
 							class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"

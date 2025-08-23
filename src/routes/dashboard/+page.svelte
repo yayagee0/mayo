@@ -18,9 +18,27 @@
 	let loading = $state(true);
 	let userName = $derived($user?.user_metadata?.full_name || $user?.email?.split('@')[0] || 'Friend');
 
-	// Collapsible section state
-	let spiritualExpanded = $state(true);
-	let socialExpanded = $state(false); // Start collapsed if more than 5 posts
+	// Individual widget collapse states
+	let widgetCollapseStates = $state<Record<string, boolean>>({});
+	
+	// Initialize widget collapse states
+	function initializeWidgetStates(allWidgets: WidgetConfig[]) {
+		const initialStates: Record<string, boolean> = {};
+		allWidgets.forEach(widget => {
+			// Default to expanded, except 'wall' which starts collapsed if more than 5 posts
+			if (widget.id === 'wall') {
+				const posts = items.filter(item => item.kind === 'post');
+				initialStates[widget.id] = posts.length <= 5;
+			} else {
+				initialStates[widget.id] = true;
+			}
+		});
+		widgetCollapseStates = initialStates;
+	}
+	
+	function toggleWidget(widgetId: string) {
+		widgetCollapseStates[widgetId] = !widgetCollapseStates[widgetId];
+	}
 
 	// Use profileStore instead of local profiles state
 	let profiles = $derived($profileStore);
@@ -56,13 +74,8 @@
 		// Load data for widgets
 		await loadData();
 		
-		// Determine if social section should start collapsed (if feed > 5 posts)
-		const posts = items.filter(item => item.kind === 'post');
-		if (posts.length > 5) {
-			socialExpanded = false;
-		} else {
-			socialExpanded = true;
-		}
+		// Initialize widget collapse states  
+		initializeWidgetStates(widgets);
 		
 		loading = false;
 	});
@@ -241,7 +254,7 @@
 						</h2>
 						
 						<div class="space-y-4">
-							{#each widgets.filter(w => ['howOld', 'agePlayground'].includes(w.id)) as widget (widget.id)}
+							{#each widgets.filter(w => ['agePlayground'].includes(w.id)) as widget (widget.id)}
 								{@const Component = widget.component}
 								<button
 									type="button"
@@ -264,30 +277,31 @@
 				</div>
 			</div>
 
-			<!-- Mobile and tablet layout: Grouped sections as specified -->
+			<!-- Mobile and tablet layout: Individual collapsible widgets -->
 			<div class="lg:hidden space-y-6">
-				<!-- Spiritual Section -->
-				<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-					<button
-						type="button"
-						onclick={() => spiritualExpanded = !spiritualExpanded}
-						class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500"
-						aria-expanded={spiritualExpanded}
-					>
-						<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
-							🌿 Spiritual
-						</h2>
-						<ChevronDown 
-							class="w-5 h-5 text-gray-500 transition-transform duration-300 ease-in-out {spiritualExpanded ? 'rotate-180' : ''}"
-							aria-hidden="true"
-						/>
-					</button>
-					
-					{#if spiritualExpanded}
-						<div class="px-4 pb-4 space-y-4 transition-all duration-300 ease-in-out">
-							{#each widgets.filter(w => ['ayah', 'prompt'].includes(w.id)) as widget (widget.id)}
-								{@const Component = widget.component}
-								<div class="min-h-[120px]">
+				<!-- Spiritual Widgets -->
+				<div class="space-y-4">
+					<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+						🌿 Spiritual
+					</h2>
+					{#each widgets.filter(w => ['ayah', 'prompt'].includes(w.id)) as widget (widget.id)}
+						{@const Component = widget.component}
+						<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+							<button
+								type="button"
+								onclick={() => toggleWidget(widget.id)}
+								class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500"
+								aria-expanded={widgetCollapseStates[widget.id]}
+							>
+								<h3 class="text-sm font-medium text-gray-900">{widget.name}</h3>
+								<ChevronDown 
+									class="w-5 h-5 text-gray-500 transition-transform duration-300 ease-in-out {widgetCollapseStates[widget.id] ? 'rotate-180' : ''}"
+									aria-hidden="true"
+								/>
+							</button>
+							
+							{#if widgetCollapseStates[widget.id]}
+								<div class="px-4 pb-4 transition-all duration-300 ease-in-out">
 									<button
 										type="button"
 										class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -304,33 +318,34 @@
 										/>
 									</button>
 								</div>
-							{/each}
+							{/if}
 						</div>
-					{/if}
+					{/each}
 				</div>
 
-				<!-- Family Wall Section -->
-				<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-					<button
-						type="button"
-						onclick={() => socialExpanded = !socialExpanded}
-						class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500"
-						aria-expanded={socialExpanded}
-					>
-						<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
-							👨‍👩‍👧 Family Wall
-						</h2>
-						<ChevronDown 
-							class="w-5 h-5 text-gray-500 transition-transform duration-300 ease-in-out {socialExpanded ? 'rotate-180' : ''}"
-							aria-hidden="true"
-						/>
-					</button>
-					
-					{#if socialExpanded}
-						<div class="px-4 pb-4 space-y-4 transition-all duration-300 ease-in-out">
-							{#each widgets.filter(w => ['birthday', 'wall', 'feedback'].includes(w.id)) as widget (widget.id)}
-								{@const Component = widget.component}
-								<div class="min-h-auto">
+				<!-- Social Widgets -->
+				<div class="space-y-4">
+					<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+						👨‍👩‍👧 Social
+					</h2>
+					{#each widgets.filter(w => ['birthday', 'wall', 'feedback'].includes(w.id)) as widget (widget.id)}
+						{@const Component = widget.component}
+						<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+							<button
+								type="button"
+								onclick={() => toggleWidget(widget.id)}
+								class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500"
+								aria-expanded={widgetCollapseStates[widget.id]}
+							>
+								<h3 class="text-sm font-medium text-gray-900">{widget.name}</h3>
+								<ChevronDown 
+									class="w-5 h-5 text-gray-500 transition-transform duration-300 ease-in-out {widgetCollapseStates[widget.id] ? 'rotate-180' : ''}"
+									aria-hidden="true"
+								/>
+							</button>
+							
+							{#if widgetCollapseStates[widget.id]}
+								<div class="px-4 pb-4 transition-all duration-300 ease-in-out">
 									<button
 										type="button"
 										class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -347,9 +362,53 @@
 										/>
 									</button>
 								</div>
-							{/each}
+							{/if}
 						</div>
-					{/if}
+					{/each}
+				</div>
+				
+				<!-- Interactive Widgets -->
+				<div class="space-y-4">
+					<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+						🎮 Interactive
+					</h2>
+					{#each widgets.filter(w => ['agePlayground'].includes(w.id)) as widget (widget.id)}
+						{@const Component = widget.component}
+						<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+							<button
+								type="button"
+								onclick={() => toggleWidget(widget.id)}
+								class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500"
+								aria-expanded={widgetCollapseStates[widget.id]}
+							>
+								<h3 class="text-sm font-medium text-gray-900">{widget.name}</h3>
+								<ChevronDown 
+									class="w-5 h-5 text-gray-500 transition-transform duration-300 ease-in-out {widgetCollapseStates[widget.id] ? 'rotate-180' : ''}"
+									aria-hidden="true"
+								/>
+							</button>
+							
+							{#if widgetCollapseStates[widget.id]}
+								<div class="px-4 pb-4 transition-all duration-300 ease-in-out">
+									<button
+										type="button"
+										class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+										onmouseenter={() => handleWidgetView(widget.id)}
+										onclick={() => handleWidgetInteraction(widget.id)}
+										aria-label="View {widget.name} widget"
+									>
+										<Component 
+											session={$session}
+											{profiles}
+											{items}
+											{interactions}
+											{widget}
+										/>
+									</button>
+								</div>
+							{/if}
+						</div>
+					{/each}
 				</div>
 			</div>
 
