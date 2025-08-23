@@ -201,7 +201,7 @@
 </script>
 
 <svelte:head>
-	<title>Posts - Mayo</title>
+	<title>Posts - Family</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50 pb-20">

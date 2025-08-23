@@ -27,7 +27,7 @@
 		if (notifications.length === 0) {
 			notificationStore.add({
 				type: 'info',
-				title: 'Welcome to Mayo!',
+				title: 'Welcome to Family!',
 				message: 'Start by updating your profile and sharing your first post.'
 			});
 
@@ -63,7 +63,7 @@
 </script>
 
 <svelte:head>
-	<title>Notifications - Mayo</title>
+	<title>Notifications - Family</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50 pb-20">

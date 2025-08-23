@@ -44,7 +44,7 @@
 </script>
 
 <svelte:head>
-	<title>Mayo - Family Engagement App</title>
+	<title>Family - Family Engagement App</title>
 	<meta name="description" content="A family engagement platform for sharing, connecting, and growing together." />
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 	<link rel="preconnect" href="https://fonts.googleapis.com">
