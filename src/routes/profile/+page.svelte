@@ -151,29 +151,35 @@
 			// Generate unique filename using the user ID and timestamp
 			const path = `${$user?.id}/${Date.now()}-avatar.${compressedFile.name.split('.').pop()}`;
 			
-			// Upload to Supabase Storage
+			// Upload to Supabase Storage with upsert to overwrite existing
 			const { data, error: uploadError } = await supabase.storage
 				.from('post-media')
-				.upload(path, compressedFile);
+				.upload(path, compressedFile, { upsert: true });
 			
 			if (uploadError) throw uploadError;
 			
-			// Update the profiles table with the new avatar path
-			await supabase.from('profiles')
+			// Update the profiles table with the new avatar path (must include .select())
+			const { data: updateData, error: updateError } = await supabase
+				.from('profiles')
 				.update({ avatar_url: data.path })
-				.eq('user_id', $user.id);
+				.eq('user_id', $user!.id)
+				.select();
+			
+			if (updateError) throw updateError;
 			
 			// Get a fresh signed URL for immediate display
-			const { data: signedUrlData } = await supabase.storage
+			const { data: signedUrlData, error: urlError } = await supabase.storage
 				.from('post-media')
 				.createSignedUrl(data.path, 60 * 60 * 24 * 365); // 1 year
+			
+			if (urlError) throw urlError;
 			
 			if (signedUrlData?.signedUrl) {
 				// Update local state immediately for UI refresh
 				avatarUrl = signedUrlData.signedUrl;
 				
 				// Update the profile store to reflect the change across the app
-				await profileStore.updateProfile($user.id, { 
+				await profileStore.updateProfile($user!.id, { 
 					avatar_url: data.path 
 				});
 				
@@ -181,9 +187,15 @@
 				await saveProfile();
 			}
 			
-		} catch (error) {
+		} catch (error: any) {
 			console.error('Error uploading image:', error);
-			alert('Failed to upload image. Please try again.');
+			if (error?.message?.includes('413')) {
+				alert('Upload failed. Please try a smaller image.');
+			} else if (error?.message?.includes('storage')) {
+				alert('Upload failed. Please check your connection and try again.');
+			} else {
+				alert('Upload failed. Please try again.');
+			}
 		} finally {
 			uploading = false;
 		}
