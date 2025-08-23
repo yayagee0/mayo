@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase';
 	import BottomNav from '$lib/../components/ui/BottomNav.svelte';
+	import TopNav from '$lib/../components/ui/TopNav.svelte';
 	import PostComposer from '$lib/../components/PostComposer.svelte';
 
 	let { children } = $props();
@@ -21,6 +22,7 @@
 	let userEmail = $derived($user?.email);
 	let isAllowedUser = $derived(userEmail && ALLOWED_EMAILS.includes(userEmail));
 	let showBottomNav = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
+	let showTopNav = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
 
 	// PostComposer modal state
 	let showComposer = $state(false);
@@ -51,10 +53,18 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
+	<!-- Top Navigation for Desktop -->
+	{#if showTopNav}
+		<div class="hidden lg:block">
+			<TopNav />
+		</div>
+	{/if}
+	
 	{@render children?.()}
 	
+	<!-- Bottom Navigation for Mobile and Tablet -->
 	{#if showBottomNav}
-		<div class="md:hidden">
+		<div class="lg:hidden">
 			<BottomNav onComposerOpen={handleComposerOpen} />
 		</div>
 	{/if}
