@@ -6,7 +6,7 @@
 	import type { Database } from '$lib/supabase';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import imageCompression from 'browser-image-compression';
-	import { getUserRole, type AllowedEmail } from '$lib/utils/roles';
+	import { getUserRole, getRoleDisplayName, type AllowedEmail } from '$lib/utils/roles';
 
 	let profile: Database['public']['Tables']['profiles']['Row'] | null = $state(null);
 	let loading = $state(true);
@@ -25,6 +25,14 @@
 			return getUserRole($user.email as AllowedEmail);
 		}
 		return 'member';
+	});
+
+	// Computed role display name for UI
+	let roleDisplayName = $derived(() => {
+		if ($user?.email) {
+			return getRoleDisplayName($user.email);
+		}
+		return 'Member';
 	});
 
 	// Check if DOB is already set (read-only once set)
@@ -292,7 +300,7 @@
 							Role
 						</label>
 						<div class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
-							{computedRole().charAt(0).toUpperCase() + computedRole().slice(1)}
+							{roleDisplayName()}
 						</div>
 						<p class="text-xs text-gray-500 mt-1">Role is determined by your email and cannot be changed</p>
 					</div>

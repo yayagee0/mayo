@@ -3,6 +3,8 @@
  * This mirrors the server-side logic from allowlist.ts
  */
 
+import type { UserRole, RoleDisplayName } from '$lib/schema/auth';
+
 export const ALLOWED_EMAILS = [
 	'nilezat@gmail.com',
 	'abdessamia.mariem@gmail.com', 
@@ -16,17 +18,36 @@ export type AllowedEmail = typeof ALLOWED_EMAILS[number];
  * Get user role based on email (client-side version)
  * This mirrors the server-side logic for UI display
  */
-export function getUserRole(email: string | null | undefined): 'parent' | 'child' | 'member' {
+export function getUserRole(email: string | null | undefined): UserRole {
 	if (!email) return 'member';
 	
-	// Simple role mapping - mirrors server logic
-	if (email === 'nilezat@gmail.com' || email === 'yazidgeemail@gmail.com') {
+	// Correct family role mapping - mirrors server logic
+	if (email === 'nilezat@gmail.com' || email === 'abdessamia.mariem@gmail.com') {
 		return 'parent';
 	}
-	if (email === 'yahyageemail@gmail.com') {
+	if (email === 'yazidgeemail@gmail.com' || email === 'yahyageemail@gmail.com') {
 		return 'child';
 	}
 	return 'member';
+}
+
+/**
+ * Get specific role display name for family members
+ */
+export function getRoleDisplayName(email: string | null | undefined): RoleDisplayName {
+	if (!email) return 'Member';
+	
+	// Specific family role labels
+	if (email === 'nilezat@gmail.com') {
+		return 'Father';
+	}
+	if (email === 'abdessamia.mariem@gmail.com') {
+		return 'Mother';
+	}
+	if (email === 'yazidgeemail@gmail.com' || email === 'yahyageemail@gmail.com') {
+		return 'Child';
+	}
+	return 'Member';
 }
 
 /**

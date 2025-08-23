@@ -3,6 +3,8 @@
  * This matches the schema RLS policies and frontend allowlist
  */
 
+import type { UserRole } from '$lib/schema/auth';
+
 export const ALLOWED_EMAILS = [
 	'nilezat@gmail.com',
 	'abdessamia.mariem@gmail.com', 
@@ -40,12 +42,12 @@ export function validateUserAccess(userEmail: string | null | undefined): Allowe
  * Get user role based on email (basic implementation)
  * In a real app, this might come from a database
  */
-export function getUserRole(email: AllowedEmail): 'parent' | 'child' | 'member' {
-	// Simple role mapping - could be expanded
-	if (email === 'nilezat@gmail.com' || email === 'yazidgeemail@gmail.com') {
+export function getUserRole(email: AllowedEmail): UserRole {
+	// Correct family role mapping per requirements
+	if (email === 'nilezat@gmail.com' || email === 'abdessamia.mariem@gmail.com') {
 		return 'parent';
 	}
-	if (email === 'yahyageemail@gmail.com') {
+	if (email === 'yazidgeemail@gmail.com' || email === 'yahyageemail@gmail.com') {
 		return 'child';
 	}
 	return 'member';
