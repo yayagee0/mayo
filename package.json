@@ -39,6 +39,7 @@
 		"@tailwindcss/forms": "^0.5.9",
 		"@tailwindcss/typography": "^0.5.16",
 		"autoprefixer": "^10.4.21",
+		"browser-image-compression": "^2.0.2",
 		"dayjs": "^1.11.13",
 		"lucide-svelte": "^0.456.0",
 		"postcss": "^8.5.6",

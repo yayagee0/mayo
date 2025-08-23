@@ -8,11 +8,14 @@
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import PostComposer from '$lib/../components/PostComposer.svelte';
+	import PostCard from '$lib/../components/PostCard.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
 	dayjs.extend(relativeTime);
 
 	let posts: Database['public']['Tables']['items']['Row'][] = $state([]);
+	let allItems: Database['public']['Tables']['items']['Row'][] = $state([]); // Include posts and comments
 	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
 	let loading = $state(true);
 	let loadingMore = $state(false);
@@ -24,8 +27,28 @@
 
 	// Post composer state
 	let showComposer = $state(false);
-	let postContent = $state('');
-	let uploading = $state(false);
+	
+	// Get comments for each post
+	let commentsMap = $derived(() => {
+		const map = new Map<string, Database['public']['Tables']['items']['Row'][]>();
+		
+		allItems
+			.filter(item => item.kind === 'comment' && item.parent_id)
+			.forEach(comment => {
+				const parentId = comment.parent_id!;
+				if (!map.has(parentId)) {
+					map.set(parentId, []);
+				}
+				map.get(parentId)!.push(comment);
+			});
+			
+		// Sort comments by creation date
+		map.forEach((comments, postId) => {
+			comments.sort((a, b) => dayjs(a.created_at).unix() - dayjs(b.created_at).unix());
+		});
+		
+		return map;
+	});
 
 	onMount(async () => {
 		if (!$session) {
@@ -40,6 +63,7 @@
 	async function loadData() {
 		await Promise.all([
 			loadPosts(),
+			loadAllItems(),
 			loadInteractions()
 		]);
 	}
@@ -66,6 +90,20 @@
 		}
 	}
 
+	async function loadAllItems() {
+		try {
+			const { data } = await supabase
+				.from('items')
+				.select('*')
+				.eq('is_deleted', false)
+				.order('created_at', { ascending: false });
+
+			allItems = data || [];
+		} catch (error) {
+			console.error('Error loading all items:', error);
+		}
+	}
+
 	async function loadInteractions() {
 		try {
 			const { data } = await supabase
@@ -87,93 +125,10 @@
 		loadingMore = false;
 	}
 
-	async function createPost() {
-		if (!postContent.trim() || !$session?.user?.email) return;
-
-		try {
-			uploading = true;
-			const { error } = await supabase.from('items').insert({
-				kind: 'post',
-				author_email: $session.user.email,
-				author_id: $session.user.id,
-				body: postContent.trim(),
-				visibility: 'all'
-			});
-
-			if (error) throw error;
-
-			postContent = '';
-			showComposer = false;
-			
-			eventBus.emit('postCreated', {
-				itemId: '',
-				authorEmail: $session.user.email,
-				content: postContent
-			});
-
-			// Refresh posts
-			page = 0;
-			await loadPosts();
-		} catch (error) {
-			console.error('Error creating post:', error);
-		} finally {
-			uploading = false;
-		}
-	}
-
-	function getAuthorName(email: string) {
-		const profile = profiles.find(p => p.email === email);
-		return profile?.display_name || email.split('@')[0];
-	}
-
-	function getAuthorAvatar(email: string) {
-		const profile = profiles.find(p => p.email === email);
-		return profile?.avatar_url;
-	}
-
-	async function toggleLike(itemId: string) {
-		if (!$session?.user?.email) return;
-
-		const existingLike = interactions.find(
-			i => i.item_id === itemId && i.user_email === $session.user.email && i.type === 'like'
-		);
-
-		try {
-			if (existingLike) {
-				await supabase
-					.from('interactions')
-					.delete()
-					.eq('item_id', itemId)
-					.eq('user_email', $session.user.email)
-					.eq('type', 'like');
-
-				interactions = interactions.filter(i => 
-					!(i.item_id === itemId && i.user_email === $session.user.email && i.type === 'like')
-				);
-			} else {
-				const { data } = await supabase.from('interactions').insert({
-					item_id: itemId,
-					user_email: $session.user.email,
-					type: 'like'
-				}).select().single();
-
-				if (data) {
-					interactions = [...interactions, data];
-				}
-			}
-		} catch (error) {
-			console.error('Error toggling like:', error);
-		}
-	}
-
-	function isLiked(itemId: string): boolean {
-		return interactions.some(
-			i => i.item_id === itemId && i.user_email === $session?.user?.email && i.type === 'like'
-		);
-	}
-
-	function getLikeCount(itemId: string): number {
-		return interactions.filter(i => i.item_id === itemId && i.type === 'like').length;
+	function handlePostCreated() {
+		showComposer = false;
+		// Refresh all data
+		loadData();
 	}
 </script>
 
@@ -188,7 +143,7 @@
 				<h1 class="text-xl font-semibold text-gray-900">Family Posts</h1>
 				<button
 					type="button"
-					on:click={() => showComposer = !showComposer}
+					onclick={() => showComposer = !showComposer}
 					class="btn btn-primary"
 				>
 					{showComposer ? 'Cancel' : '+ New Post'}
@@ -199,29 +154,12 @@
 
 	<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 		{#if showComposer}
-			<div class="card mb-6">
-				<h3 class="text-lg font-semibold text-gray-900 mb-4">Share with your family</h3>
-				<textarea
-					bind:value={postContent}
+			<div class="mb-6">
+				<PostComposer 
+					onPostCreated={handlePostCreated}
+					onCancel={() => showComposer = false}
 					placeholder="What's on your mind? Share something meaningful..."
-					rows="4"
-					class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
-				></textarea>
-				<div class="flex justify-between items-center mt-4">
-					<div class="flex gap-2">
-						<button class="text-gray-400 hover:text-gray-600 text-sm">📷 Photo</button>
-						<button class="text-gray-400 hover:text-gray-600 text-sm">🎥 Video</button>
-						<button class="text-gray-400 hover:text-gray-600 text-sm">📍 Location</button>
-					</div>
-					<button
-						type="button"
-						on:click={createPost}
-						disabled={!postContent.trim() || uploading}
-						class="btn btn-primary disabled:opacity-50"
-					>
-						{uploading ? 'Posting...' : 'Post'}
-					</button>
-				</div>
+				/>
 			</div>
 		{/if}
 
@@ -234,7 +172,7 @@
 						<p class="text-gray-500 mb-4">No posts yet!</p>
 						<button
 							type="button"
-							on:click={() => showComposer = true}
+							onclick={() => showComposer = true}
 							class="btn btn-primary"
 						>
 							Share the first post
@@ -275,7 +213,7 @@
 									<div class="flex items-center gap-6">
 										<button
 											type="button"
-											on:click={() => toggleLike(post.id)}
+											onclick={() => toggleLike(post.id)}
 											class="flex items-center gap-2 text-sm transition-colors"
 											class:text-red-600={isLiked(post.id)}
 											class:text-gray-500={!isLiked(post.id)}
@@ -299,7 +237,7 @@
 						<div class="text-center py-6">
 							<button
 								type="button"
-								on:click={loadMorePosts}
+								onclick={loadMorePosts}
 								disabled={loadingMore}
 								class="btn btn-secondary disabled:opacity-50"
 							>

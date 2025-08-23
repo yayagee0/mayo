@@ -1,0 +1,333 @@
+<script lang="ts">
+	import { Heart, MessageCircle, Share2, Play, Vote } from 'lucide-svelte';
+	import { supabase } from '$lib/supabase';
+	import { session } from '$lib/stores/sessionStore';
+	import { profileStore } from '$lib/stores/profileStore';
+	import { parseYouTubeUrl, getYouTubeEmbedUrl } from '$lib/utils/youtubeParser';
+	import type { Database } from '$lib/supabase';
+	import dayjs from 'dayjs';
+	import relativeTime from 'dayjs/plugin/relativeTime';
+	
+	dayjs.extend(relativeTime);
+	
+	interface PostCardProps {
+		post: Database['public']['Tables']['items']['Row'];
+		interactions: Database['public']['Tables']['interactions']['Row'][];
+		onInteraction?: () => void;
+		showComments?: boolean;
+		level?: number; // For comment threading (0 = post, 1 = comment, 2 = reply)
+	}
+	
+	let { 
+		post, 
+		interactions = [], 
+		onInteraction, 
+		showComments = true, 
+		level = 0 
+	}: PostCardProps = $props();
+	
+	let profiles = $derived($profileStore);
+	let showReplyComposer = $state(false);
+	let replyContent = $state('');
+	let submittingReply = $state(false);
+	let selectedPollOption = $state<number | null>(null);
+	let hasVoted = $state(false);
+	
+	// Get author info
+	let authorProfile = $derived(profiles.find(p => p.email === post.author_email));
+	let authorName = $derived(authorProfile?.display_name || post.author_email.split('@')[0]);
+	let authorAvatar = $derived(authorProfile?.avatar_url);
+	
+	// Interaction counts and status
+	let likeCount = $derived(interactions.filter(i => i.item_id === post.id && i.type === 'like').length);
+	let isLiked = $derived(interactions.some(i => 
+		i.item_id === post.id && 
+		i.type === 'like' && 
+		i.user_email === $session?.user?.email
+	));
+	
+	// Poll-specific data
+	let pollData = $derived(() => {
+		if (post.kind !== 'poll' || !post.data) return null;
+		
+		if (post.data.type === 'options') {
+			return post.data as { type: 'options'; options: string[] };
+		}
+		
+		return null;
+	});
+	
+	let pollVotes = $derived(() => {
+		if (!pollData) return [];
+		return interactions.filter(i => i.item_id === post.id && i.type === 'vote');
+	});
+	
+	let userVote = $derived(() => {
+		return pollVotes.find(v => v.user_email === $session?.user?.email);
+	});
+	
+	// Check if user has already voted
+	$effect(() => {
+		hasVoted = !!userVote;
+		if (userVote) {
+			selectedPollOption = userVote.answer_index;
+		}
+	});
+	
+	// Media rendering helpers
+	function isYouTubeEmbed(url: string): boolean {
+		return url.includes('youtube.com/embed/');
+	}
+	
+	function isImageUrl(url: string): boolean {
+		return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
+	}
+	
+	function isVideoUrl(url: string): boolean {
+		return /\.(mp4|webm|mov|avi)(\?|$)/i.test(url);
+	}
+	
+	async function toggleLike() {
+		if (!$session?.user?.email) return;
+		
+		try {
+			if (isLiked) {
+				await supabase
+					.from('interactions')
+					.delete()
+					.eq('item_id', post.id)
+					.eq('user_email', $session.user.email)
+					.eq('type', 'like');
+			} else {
+				await supabase.from('interactions').insert({
+					item_id: post.id,
+					user_email: $session.user.email,
+					type: 'like'
+				});
+			}
+			
+			onInteraction?.();
+		} catch (error) {
+			console.error('Error toggling like:', error);
+		}
+	}
+	
+	async function submitVote(optionIndex: number) {
+		if (!$session?.user?.email || hasVoted || !pollData) return;
+		
+		try {
+			await supabase.from('interactions').insert({
+				item_id: post.id,
+				user_email: $session.user.email,
+				type: 'vote',
+				answer_index: optionIndex
+			});
+			
+			selectedPollOption = optionIndex;
+			hasVoted = true;
+			onInteraction?.();
+		} catch (error) {
+			console.error('Error submitting vote:', error);
+		}
+	}
+	
+	async function submitReply() {
+		if (!replyContent.trim() || !$session?.user?.email || submittingReply) return;
+		
+		try {
+			submittingReply = true;
+			
+			const { error } = await supabase.from('items').insert({
+				kind: 'comment',
+				author_email: $session.user.email,
+				author_id: $session.user.id,
+				body: replyContent.trim(),
+				parent_id: post.id,
+				visibility: 'all'
+			});
+			
+			if (error) throw error;
+			
+			replyContent = '';
+			showReplyComposer = false;
+			onInteraction?.();
+		} catch (error) {
+			console.error('Error submitting reply:', error);
+		} finally {
+			submittingReply = false;
+		}
+	}
+	
+	function getPollResults() {
+		if (!pollData) return [];
+		
+		const totalVotes = pollVotes.length;
+		return pollData.options.map((option, index) => {
+			const votes = pollVotes.filter(v => v.answer_index === index).length;
+			const percentage = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+			return {
+				option,
+				votes,
+				percentage: Math.round(percentage)
+			};
+		});
+	}
+</script>
+
+<div class="bg-white rounded-lg border border-gray-200 p-4" style="margin-left: {level * 1.5}rem">
+	<!-- Author info -->
+	<div class="flex items-center gap-3 mb-3">
+		{#if authorAvatar}
+			<img src={authorAvatar} alt={authorName} class="w-8 h-8 rounded-full object-cover" />
+		{:else}
+			<div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+				<span class="text-gray-600 text-sm font-medium">{authorName.charAt(0).toUpperCase()}</span>
+			</div>
+		{/if}
+		
+		<div>
+			<p class="font-medium text-gray-900">{authorName}</p>
+			<p class="text-sm text-gray-500">{dayjs(post.created_at).fromNow()}</p>
+		</div>
+		
+		{#if post.kind !== 'post'}
+			<span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full uppercase">
+				{post.kind}
+			</span>
+		{/if}
+	</div>
+	
+	<!-- Content -->
+	{#if post.body}
+		<div class="mb-3">
+			<p class="text-gray-900 whitespace-pre-wrap">{post.body}</p>
+		</div>
+	{/if}
+	
+	<!-- Media content -->
+	{#if post.media_urls && post.media_urls.length > 0}
+		<div class="mb-3 space-y-3">
+			{#each post.media_urls as mediaUrl}
+				{#if isYouTubeEmbed(mediaUrl)}
+					<div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+						<iframe
+							src={mediaUrl}
+							title="YouTube video"
+							class="w-full h-full"
+							frameborder="0"
+							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+							allowfullscreen
+						></iframe>
+					</div>
+				{:else if isImageUrl(mediaUrl)}
+					<div class="rounded-lg overflow-hidden">
+						<img src={mediaUrl} alt="Posted image" class="w-full h-auto object-cover" />
+					</div>
+				{:else if isVideoUrl(mediaUrl)}
+					<div class="rounded-lg overflow-hidden">
+						<video controls class="w-full h-auto">
+							<source src={mediaUrl} type="video/mp4" />
+							Your browser does not support the video tag.
+						</video>
+					</div>
+				{/if}
+			{/each}
+		</div>
+	{/if}
+	
+	<!-- Poll content -->
+	{#if post.kind === 'poll' && pollData}
+		<div class="mb-3 space-y-2">
+			{#if hasVoted}
+				<!-- Show results -->
+				{#each getPollResults() as result, index}
+					<div class="space-y-1">
+						<div class="flex justify-between items-center">
+							<span class="text-sm font-medium text-gray-700">{result.option}</span>
+							<span class="text-sm text-gray-500">{result.percentage}% ({result.votes})</span>
+						</div>
+						<div class="w-full bg-gray-200 rounded-full h-2">
+							<div 
+								class="h-2 rounded-full transition-all duration-500"
+								class:bg-primary-600={index === selectedPollOption}
+								class:bg-gray-400={index !== selectedPollOption}
+								style="width: {result.percentage}%"
+							></div>
+						</div>
+					</div>
+				{/each}
+				<p class="text-xs text-gray-500 mt-2">Total votes: {pollVotes.length}</p>
+			{:else}
+				<!-- Show voting options -->
+				<div class="space-y-2">
+					{#each pollData.options as option, index}
+						<button
+							onclick={() => submitVote(index)}
+							class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+						>
+							{option}
+						</button>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	{/if}
+	
+	<!-- Actions -->
+	<div class="flex items-center gap-4 pt-3 border-t border-gray-100">
+		<button
+			onclick={toggleLike}
+			class="flex items-center gap-2 text-sm transition-colors rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+			class:text-red-600={isLiked}
+			class:text-gray-500={!isLiked}
+			class:hover:text-red-600={!isLiked}
+		>
+			<Heart class="w-4 h-4 {isLiked ? 'fill-current' : ''}" aria-hidden="true" />
+			{likeCount > 0 ? likeCount : 'Like'}
+		</button>
+		
+		{#if showComments && level < 2}
+			<button
+				onclick={() => showReplyComposer = !showReplyComposer}
+				class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+			>
+				<MessageCircle class="w-4 h-4" aria-hidden="true" />
+				Reply
+			</button>
+		{/if}
+		
+		<button
+			class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+		>
+			<Share2 class="w-4 h-4" aria-hidden="true" />
+			Share
+		</button>
+	</div>
+	
+	<!-- Reply composer -->
+	{#if showReplyComposer}
+		<div class="mt-4 p-3 bg-gray-50 rounded-lg">
+			<textarea
+				bind:value={replyContent}
+				placeholder="Write a reply..."
+				rows="3"
+				class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none text-sm"
+			></textarea>
+			<div class="flex justify-end gap-2 mt-2">
+				<button
+					onclick={() => showReplyComposer = false}
+					class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+				>
+					Cancel
+				</button>
+				<button
+					onclick={submitReply}
+					disabled={!replyContent.trim() || submittingReply}
+					class="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+				>
+					{submittingReply ? 'Posting...' : 'Reply'}
+				</button>
+			</div>
+		</div>
+	{/if}
+</div>

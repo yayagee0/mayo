@@ -95,26 +95,113 @@
 		{#if loading}
 			<Loading skeleton={true} skeletonCount={4} />
 		{:else}
-			<!-- SmartCards First - Always show these before any posts -->
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				{#each widgets as widget (widget.id)}
+			<!-- Desktop layout: 2-column grid for lg+ screens -->
+			<div class="hidden lg:block">
+				<!-- Family Wall spans full width on desktop -->
+				{#each widgets.filter(w => w.id === 'wall') as widget (widget.id)}
 					{@const Component = widget.component}
-					<button
-						type="button"
-						class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
-						onmouseenter={() => handleWidgetView(widget.id)}
-						onclick={() => handleWidgetInteraction(widget.id)}
-						aria-label="View {widget.name} widget"
-					>
-						<Component 
-							session={$session}
-							{profiles}
-							{items}
-							{interactions}
-							{widget}
-						/>
-					</button>
+					<div class="mb-8 col-span-2">
+						<button
+							type="button"
+							class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+							onmouseenter={() => handleWidgetView(widget.id)}
+							onclick={() => handleWidgetInteraction(widget.id)}
+							aria-label="View {widget.name} widget"
+						>
+							<Component 
+								session={$session}
+								{profiles}
+								{items}
+								{interactions}
+								{widget}
+							/>
+						</button>
+					</div>
 				{/each}
+				
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+					<!-- Spiritual Section -->
+					<div class="space-y-6">
+						<h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+							<div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+							Spiritual
+						</h2>
+						
+						<div class="space-y-4">
+							{#each widgets.filter(w => ['ayah', 'prompt'].includes(w.id)) as widget (widget.id)}
+								{@const Component = widget.component}
+								<button
+									type="button"
+									class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+									onmouseenter={() => handleWidgetView(widget.id)}
+									onclick={() => handleWidgetInteraction(widget.id)}
+									aria-label="View {widget.name} widget"
+								>
+									<Component 
+										session={$session}
+										{profiles}
+										{items}
+										{interactions}
+										{widget}
+									/>
+								</button>
+							{/each}
+						</div>
+					</div>
+					
+					<!-- Social Section -->
+					<div class="space-y-6">
+						<h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+							<div class="w-2 h-2 bg-green-500 rounded-full"></div>
+							Social
+						</h2>
+						
+						<div class="space-y-4">
+							{#each widgets.filter(w => ['birthday', 'feedback', 'howOld'].includes(w.id)) as widget (widget.id)}
+								{@const Component = widget.component}
+								<button
+									type="button"
+									class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+									onmouseenter={() => handleWidgetView(widget.id)}
+									onclick={() => handleWidgetInteraction(widget.id)}
+									aria-label="View {widget.name} widget"
+								>
+									<Component 
+										session={$session}
+										{profiles}
+										{items}
+										{interactions}
+										{widget}
+									/>
+								</button>
+							{/each}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Mobile and tablet layout: Original single/dual column -->
+			<div class="lg:hidden">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					{#each widgets as widget (widget.id)}
+						{@const Component = widget.component}
+						<button
+							type="button"
+							class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+							onmouseenter={() => handleWidgetView(widget.id)}
+							onclick={() => handleWidgetInteraction(widget.id)}
+							aria-label="View {widget.name} widget"
+						>
+							<Component 
+								session={$session}
+								{profiles}
+								{items}
+								{interactions}
+								{widget}
+							/>
+						</button>
+					{/each}
+				</div>
 			</div>
 
 			{#if widgets.length === 0}

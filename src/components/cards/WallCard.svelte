@@ -4,9 +4,11 @@
 	import { eventBus } from '$lib/eventBus';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
-	import { Home, Plus, X, Camera, Video, MapPin, Heart, MessageCircle, Share2 } from 'lucide-svelte';
+	import { Home, Plus, X, Heart, MessageCircle, Share2 } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
+	import PostComposer from '$lib/../components/PostComposer.svelte';
+	import PostCard from '$lib/../components/PostCard.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
 	dayjs.extend(relativeTime);
@@ -24,113 +26,12 @@
 		.slice(0, 3));
 
 	let showComposer = $state(false);
-	let postContent = $state('');
-	let uploading = $state(false);
-	let error = $state('');
-	let expandedPosts = $state(new Set<string>());
 
-	async function createPost() {
-		if (!postContent.trim() || !session?.user?.email) return;
-
-		try {
-			uploading = true;
-			const { error } = await supabase.from('items').insert({
-				kind: 'post',
-				author_email: session.user.email,
-				author_id: session.user.id,
-				body: postContent.trim(),
-				visibility: 'all'
-			});
-
-			if (error) throw error;
-
-			postContent = '';
-			showComposer = false;
-			
-			eventBus.emit('postCreated', {
-				itemId: '',
-				authorEmail: session.user.email,
-				content: postContent
-			});
-
-			// Refresh items by triggering a re-fetch (simplified for demo)
-			location.reload();
-		} catch (err) {
-			console.error('Error creating post:', err);
-			error = 'Failed to create post. Please try again.';
-		} finally {
-			uploading = false;
-		}
-	}
-
-	function getAuthorName(email: string) {
-		const profile = profiles.find(p => p.email === email);
-		return profile?.display_name || email.split('@')[0];
-	}
-
-	function getAuthorAvatar(email: string) {
-		const profile = profiles.find(p => p.email === email);
-		return profile?.avatar_url;
-	}
-
-	async function toggleLike(itemId: string) {
-		if (!session?.user?.email) return;
-
-		const existingLike = interactions.find(
-			i => i.item_id === itemId && i.user_email === session.user.email && i.type === 'like'
-		);
-
-		try {
-			if (existingLike) {
-				await supabase
-					.from('interactions')
-					.delete()
-					.eq('item_id', itemId)
-					.eq('user_email', session.user.email)
-					.eq('type', 'like');
-			} else {
-				await supabase.from('interactions').insert({
-					item_id: itemId,
-					user_email: session.user.email,
-					type: 'like'
-				});
-			}
-		} catch (error) {
-			console.error('Error toggling like:', error);
-		}
-	}
-
-	function isLiked(itemId: string): boolean {
-		return interactions.some(
-			i => i.item_id === itemId && i.user_email === session?.user?.email && i.type === 'like'
-		);
-	}
-
-	function getLikeCount(itemId: string): number {
-		return interactions.filter(i => i.item_id === itemId && i.type === 'like').length;
-	}
-
-	function shouldTruncateText(text: string | null | undefined): boolean {
-		// Guard against null/undefined text
-		if (!text) return false;
-		// Estimate if text would exceed 3 lines (rough calculation)
-		return text.length > 150 || text.split('\n').length > 3;
-	}
-
-	function truncateText(text: string | null | undefined): string {
-		// Guard against null/undefined text
-		if (!text) return '';
-		if (text.length <= 150) return text;
-		return text.substring(0, 150) + '...';
-	}
-
-	function toggleExpanded(postId: string) {
-		if (expandedPosts.has(postId)) {
-			expandedPosts.delete(postId);
-		} else {
-			expandedPosts.add(postId);
-		}
-		expandedPosts = new Set(expandedPosts);
+	function handlePostCreated() {
+		showComposer = false;
+		// Trigger data refresh
+		eventBus.emit('postCreated', { itemId: '', authorEmail: session?.user?.email || '', content: '' });
+		location.reload(); // Simple refresh for now
 	}
 </script>
 
@@ -157,58 +58,12 @@
 	</div>
 
 	{#if showComposer}
-		<div class="border border-gray-200 rounded-lg p-4 mb-4">
-			<textarea
-				bind:value={postContent}
-				oninput={() => error = ''}
+		<div class="mb-4">
+			<PostComposer 
+				onPostCreated={handlePostCreated}
+				onCancel={() => showComposer = false}
 				placeholder="Share something with your family..."
-				rows="3"
-				class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
-			></textarea>
-			
-			{#if error}
-				<div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
-					<p class="text-red-700 text-sm">{error}</p>
-				</div>
-			{/if}
-			
-			<div class="flex justify-between items-center mt-3">
-				<div class="flex gap-2">
-					<button 
-						class="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm transition-colors"
-						aria-label="Add photo"
-					>
-						<Camera class="w-4 h-4" aria-hidden="true" />
-						Photo
-					</button>
-					<button 
-						class="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm transition-colors"
-						aria-label="Add video"
-					>
-						<Video class="w-4 h-4" aria-hidden="true" />
-						Video
-					</button>
-					<button 
-						class="flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm transition-colors"
-						aria-label="Add location"
-					>
-						<MapPin class="w-4 h-4" aria-hidden="true" />
-						Location
-					</button>
-				</div>
-				<button
-					onclick={createPost}
-					disabled={!postContent.trim() || uploading}
-					class="btn btn-primary text-sm disabled:opacity-50 flex items-center gap-2"
-				>
-					{#if uploading}
-						<Loading size="sm" text="" />
-						Posting...
-					{:else}
-						Post
-					{/if}
-				</button>
-			</div>
+			/>
 		</div>
 	{/if}
 
@@ -226,86 +81,12 @@
 			</div>
 		{:else}
 			{#each recentPosts as post (post.id)}
-				<div class="border border-gray-200 rounded-lg p-4">
-					<div class="flex items-start gap-3">
-						{#if getAuthorAvatar(post.author_email)}
-							<img 
-								src={getAuthorAvatar(post.author_email)} 
-								alt={getAuthorName(post.author_email)}
-								class="w-10 h-10 rounded-full object-cover"
-							/>
-						{:else}
-							<div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-								<span class="text-primary-600 font-semibold">
-									{getAuthorName(post.author_email).charAt(0).toUpperCase()}
-								</span>
-							</div>
-						{/if}
-						
-						<div class="flex-1">
-							<div class="flex items-center gap-2 mb-1">
-								<span class="font-medium text-gray-900">
-									{getAuthorName(post.author_email)}
-								</span>
-								<span class="text-gray-500 text-sm">
-									{dayjs(post.created_at).fromNow()}
-								</span>
-							</div>
-							
-							<div class="text-gray-700 whitespace-pre-wrap">
-								{#if post.body && shouldTruncateText(post.body) && !expandedPosts.has(post.id)}
-									<p>{truncateText(post.body)}</p>
-									<button
-										onclick={() => toggleExpanded(post.id)}
-										class="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
-									>
-										Show more
-									</button>
-								{:else}
-									<p>{post.body || ''}</p>
-									{#if post.body && shouldTruncateText(post.body)}
-										<button
-											onclick={() => toggleExpanded(post.id)}
-											class="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
-										>
-											Show less
-										</button>
-									{/if}
-								{/if}
-							</div>
-							
-							<div class="flex items-center gap-4 mt-3">
-								<button
-									onclick={() => toggleLike(post.id)}
-									class="flex items-center gap-1 text-sm transition-colors min-h-8 min-w-8 rounded p-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
-									class:text-red-600={isLiked(post.id)}
-									class:text-gray-500={!isLiked(post.id)}
-									aria-label="{isLiked(post.id) ? 'Unlike' : 'Like'} this post"
-								>
-									<Heart 
-										class="w-4 h-4 {isLiked(post.id) ? 'fill-current' : ''}" 
-										aria-hidden="true"
-									/>
-									<span>{getLikeCount(post.id)}</span>
-								</button>
-								<button 
-									class="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm transition-colors min-h-8 rounded p-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
-									aria-label="Comment on post"
-								>
-									<MessageCircle class="w-4 h-4" aria-hidden="true" />
-									Comment
-								</button>
-								<button 
-									class="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm transition-colors min-h-8 rounded p-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
-									aria-label="Share post"
-								>
-									<Share2 class="w-4 h-4" aria-hidden="true" />
-									Share
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
+				<PostCard 
+					{post} 
+					{interactions}
+					onInteraction={handlePostCreated}
+					showComments={false}
+				/>
 			{/each}
 		{/if}
 
@@ -320,4 +101,5 @@
 			</div>
 		{/if}
 	</div>
+</div>
 </ComponentErrorBoundary>
