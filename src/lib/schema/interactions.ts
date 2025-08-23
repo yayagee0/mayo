@@ -16,7 +16,7 @@ export const interactionSchema = z.object({
 	type: interactionTypeSchema,
 	answer_index: z.number().int().nullish(),
 	created_at: z.string().datetime().nullish()
-})
+}).passthrough()
 
 export type InteractionData = z.infer<typeof interactionSchema>
 

@@ -74,7 +74,7 @@ class ProfileStore {
         .from('profiles')
         .select('*')
         .eq('email', email)
-        .single()
+        .maybeSingle()
 
       if (error || !data) {
         // Don't log as error - missing profile is expected
@@ -106,7 +106,7 @@ class ProfileStore {
         .from('profiles')
         .insert(profileData as Database['public']['Tables']['profiles']['Insert'])
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) {
         const errorMessage = error.message || 'Failed to create profile'
@@ -138,7 +138,7 @@ class ProfileStore {
         .update(updates as Database['public']['Tables']['profiles']['Update'])
         .eq('user_id', userId)
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) {
         const errorMessage = error.message || 'Failed to update profile'

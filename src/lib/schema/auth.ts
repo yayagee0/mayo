@@ -39,7 +39,7 @@ export const profileSchema = z.object({
 	dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format').nullish(),
 	created_at: z.string().datetime().nullish(),
 	updated_at: z.string().datetime().nullish()
-})
+}).passthrough()
 
 export type ProfileData = z.infer<typeof profileSchema>
 
