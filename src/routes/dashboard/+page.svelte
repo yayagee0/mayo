@@ -6,7 +6,7 @@
 	import type { WidgetConfig } from '$lib/types/widget';
 	import type { Database } from '$lib/supabase';
 	import { supabase } from '$lib/supabase';
-	import { HeartHandshake, Leaf, ChevronDown } from 'lucide-svelte';
+	import { HeartHandshake, Leaf, ChevronDown, User } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
@@ -90,6 +90,17 @@
 <div class="min-h-screen bg-gray-50 pb-20">
 	<header class="bg-white shadow-sm border-b">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<!-- Top bar with profile link (temporary fallback) -->
+			<div class="flex justify-end py-3 lg:hidden">
+				<a 
+					href="/profile" 
+					class="text-sm text-gray-600 hover:text-primary-600 flex items-center gap-1"
+					aria-label="Go to profile"
+				>
+					<User class="w-4 h-4" aria-hidden="true" />
+					Profile
+				</a>
+			</div>
 			<div class="py-8 sm:py-12">
 				<!-- Hero Section -->
 				<div class="text-center space-y-4">

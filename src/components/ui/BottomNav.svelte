@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { notificationStore } from '$lib/stores/notificationStore';
-	import { Home, FileText, User, Plus } from 'lucide-svelte';
+	import { Home, FileText, User, Plus, Bell } from 'lucide-svelte';
 
 	let currentPath = $derived($page.url.pathname);
 	let unreadCount = $derived(notificationStore.getUnreadCount());
@@ -13,16 +13,11 @@
 	
 	let { onComposerOpen }: Props = $props();
 
-	const iconMap = {
-		'/dashboard': Home,
-		'/posts': FileText,
-		'/profile': User,
-		'/notifications': Bell
-	};
-
 	let navItems = $derived([
 		{ href: '/dashboard', label: 'Home', icon: Home },
+		{ href: '/posts', label: 'Posts', icon: FileText },
 		{ href: '#', label: 'Add', icon: Plus, action: 'composer' },
+		{ href: '/notifications', label: 'Notifications', icon: Bell, unreadCount },
 		{ href: '/profile', label: 'Profile', icon: User }
 	]);
 
@@ -41,6 +36,7 @@
 >
 	<div class="flex justify-around items-center h-16">
 		{#each navItems as item}
+			{@const IconComponent = item.icon}
 			<a 
 				href={item.href}
 				onclick={(e) => handleItemClick(item, e)}
@@ -51,13 +47,14 @@
 				aria-label="{item.label} page"
 				aria-current={currentPath === item.href ? 'page' : undefined}
 			>
-				{#if item.href === '/dashboard'}
-					<Home class="w-6 h-6 mb-1" aria-hidden="true" />
-				{:else if item.action === 'composer'}
-					<Plus class="w-6 h-6 mb-1" aria-hidden="true" />
-				{:else if item.href === '/profile'}
-					<User class="w-6 h-6 mb-1" aria-hidden="true" />
-				{/if}
+				<div class="relative">
+					<IconComponent class="w-6 h-6 mb-1" aria-hidden="true" />
+					{#if item.unreadCount && item.unreadCount > 0}
+						<span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-5">
+							{item.unreadCount > 99 ? '99+' : item.unreadCount}
+						</span>
+					{/if}
+				</div>
 				<span class="font-medium">{item.label}</span>
 			</a>
 		{/each}
