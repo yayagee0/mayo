@@ -8,7 +8,9 @@
 	import { supabase } from '$lib/supabase';
 	import { HeartHandshake, Leaf, ChevronDown, User } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import Avatar from '$lib/../components/ui/Avatar.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
+	import { getAuthorAvatar } from '$lib/utils/avatar';
 
 	let widgets: WidgetConfig[] = $state([]);
 	let items: Database['public']['Tables']['items']['Row'][] = $state([]);
@@ -22,6 +24,24 @@
 
 	// Use profileStore instead of local profiles state
 	let profiles = $derived($profileStore);
+
+	// Get current user's profile for avatar
+	let currentUserProfile = $derived(() => {
+		if ($user?.email) {
+			return profiles.find(p => p.email === $user.email);
+		}
+		return null;
+	});
+
+	let currentUserAvatar = $derived(() => {
+		if (currentUserProfile()) {
+			return getAuthorAvatar(currentUserProfile()!);
+		}
+		if ($session?.user?.user_metadata?.avatar_url) {
+			return $session.user.user_metadata.avatar_url;
+		}
+		return null;
+	});
 
 	onMount(async () => {
 		// Redirect if not authenticated
@@ -106,9 +126,17 @@
 				<div class="text-center space-y-4">
 					<div class="flex items-center justify-center gap-3 mb-4">
 						<HeartHandshake class="w-8 h-8 text-green-500" aria-hidden="true" />
-						<h1 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-							🌿 Salam {userName}, Welcome Back
-						</h1>
+						<div class="flex items-center gap-3">
+							<Avatar 
+								src={currentUserAvatar()} 
+								alt={userName}
+								size="lg"
+								fallback={userName.charAt(0)}
+							/>
+							<h1 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+								🌿 Salam {userName}, Welcome Back
+							</h1>
+						</div>
 					</div>
 					<p class="text-lg sm:text-xl text-gray-600 font-medium max-w-2xl mx-auto">
 						Your family's space for memories & reflection

@@ -6,20 +6,34 @@
 	import type { Database } from '$lib/supabase';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import imageCompression from 'browser-image-compression';
+	import { getUserRole, type AllowedEmail } from '$lib/utils/roles';
 
-	let profile: Database['public']['Tables']['profiles']['Row'] | null = null;
-	let loading = true;
-	let saving = false;
-	let uploading = false;
+	let profile: Database['public']['Tables']['profiles']['Row'] | null = $state(null);
+	let loading = $state(true);
+	let saving = $state(false);
+	let uploading = $state(false);
 
 	// Form fields
-	let displayName = '';
-	let avatarUrl = '';
-	let role = 'member';
-	let dob = '';
+	let displayName = $state('');
+	let avatarUrl = $state('');
+	let role = $state('member');
+	let dob = $state('');
+
+	// Computed read-only role based on email
+	let computedRole = $derived(() => {
+		if ($user?.email) {
+			return getUserRole($user.email as AllowedEmail);
+		}
+		return 'member';
+	});
+
+	// Check if DOB is already set (read-only once set)
+	let isDobSet = $derived(() => {
+		return profile?.dob && profile.dob.trim() !== '';
+	});
 
 	// File upload
-	let fileInput: HTMLInputElement;
+	let fileInput: HTMLInputElement = $state();
 
 	onMount(async () => {
 		if (!$session) {
@@ -44,7 +58,7 @@
 			profile = data;
 			displayName = data.display_name || '';
 			avatarUrl = data.avatar_url || '';
-			role = data.role || 'member';
+			role = computedRole(); // Use computed role instead of stored role
 			dob = data.dob || '';
 		}
 	}
@@ -59,7 +73,7 @@
 				email: $user.email,
 				display_name: displayName || null,
 				avatar_url: avatarUrl || null,
-				role,
+				role: computedRole(), // Always use computed role
 				dob: dob || null,
 				updated_at: new Date().toISOString()
 			};
@@ -277,15 +291,10 @@
 						<label for="role" class="block text-sm font-medium text-gray-700 mb-2">
 							Role
 						</label>
-						<select
-							id="role"
-							bind:value={role}
-							class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-						>
-							<option value="member">Member</option>
-							<option value="parent">Parent</option>
-							<option value="child">Child</option>
-						</select>
+						<div class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
+							{computedRole().charAt(0).toUpperCase() + computedRole().slice(1)}
+						</div>
+						<p class="text-xs text-gray-500 mt-1">Role is determined by your email and cannot be changed</p>
 					</div>
 
 					<div>
@@ -296,8 +305,14 @@
 							type="date"
 							id="dob"
 							bind:value={dob}
+							disabled={isDobSet()}
 							class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+							class:bg-gray-50={isDobSet()}
+							class:text-gray-500={isDobSet()}
 						/>
+						{#if isDobSet()}
+							<p class="text-xs text-gray-500 mt-1">Date of birth is locked to prevent accidental changes</p>
+						{/if}
 					</div>
 
 					<div class="pt-4">
