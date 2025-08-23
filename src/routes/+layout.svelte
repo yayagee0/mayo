@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase';
 	import BottomNav from '$lib/../components/ui/BottomNav.svelte';
+	import PostComposer from '$lib/../components/PostComposer.svelte';
 
 	let { children } = $props();
 
@@ -20,6 +21,17 @@
 	let userEmail = $derived($user?.email);
 	let isAllowedUser = $derived(userEmail && ALLOWED_EMAILS.includes(userEmail));
 	let showBottomNav = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
+
+	// PostComposer modal state
+	let showComposer = $state(false);
+
+	function handleComposerOpen() {
+		showComposer = true;
+	}
+
+	function handleComposerClose() {
+		showComposer = false;
+	}
 
 	onMount(() => {
 		// Check if user is authenticated but not allowed
@@ -42,6 +54,21 @@
 	{@render children?.()}
 	
 	{#if showBottomNav}
-		<BottomNav />
+		<div class="md:hidden">
+			<BottomNav onComposerOpen={handleComposerOpen} />
+		</div>
+	{/if}
+	
+	<!-- PostComposer Modal -->
+	{#if showComposer}
+		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+			<div class="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+				<PostComposer 
+					onPostCreated={handleComposerClose}
+					onCancel={handleComposerClose}
+					placeholder="What's on your mind? Share something meaningful..."
+				/>
+			</div>
+		</div>
 	{/if}
 </div>
