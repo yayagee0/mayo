@@ -6,7 +6,7 @@
 	import type { WidgetConfig } from '$lib/types/widget';
 	import type { Database } from '$lib/supabase';
 	import { supabase } from '$lib/supabase';
-	import { HeartHandshake, Leaf } from 'lucide-svelte';
+	import { HeartHandshake, Leaf, ChevronDown } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
@@ -15,6 +15,10 @@
 	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
 	let loading = $state(true);
 	let userName = $derived($user?.user_metadata?.full_name || $user?.email?.split('@')[0] || 'Friend');
+
+	// Collapsible section state
+	let spiritualExpanded = $state(true);
+	let socialExpanded = $state(false); // Start collapsed if more than 5 posts
 
 	// Use profileStore instead of local profiles state
 	let profiles = $derived($profileStore);
@@ -31,6 +35,15 @@
 
 		// Load data for widgets
 		await loadData();
+		
+		// Determine if social section should start collapsed (if feed > 5 posts)
+		const posts = items.filter(item => item.kind === 'post');
+		if (posts.length > 5) {
+			socialExpanded = false;
+		} else {
+			socialExpanded = true;
+		}
+		
 		loading = false;
 	});
 
@@ -212,27 +225,92 @@
 				</div>
 			</div>
 
-			<!-- Mobile and tablet layout: Original single/dual column -->
-			<div class="lg:hidden">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-					{#each widgets as widget (widget.id)}
-						{@const Component = widget.component}
-						<button
-							type="button"
-							class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
-							onmouseenter={() => handleWidgetView(widget.id)}
-							onclick={() => handleWidgetInteraction(widget.id)}
-							aria-label="View {widget.name} widget"
-						>
-							<Component 
-								session={$session}
-								{profiles}
-								{items}
-								{interactions}
-								{widget}
-							/>
-						</button>
-					{/each}
+			<!-- Mobile and tablet layout: Grouped sections as specified -->
+			<div class="lg:hidden space-y-6">
+				<!-- Spiritual Section -->
+				<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+					<button
+						type="button"
+						onclick={() => spiritualExpanded = !spiritualExpanded}
+						class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500"
+						aria-expanded={spiritualExpanded}
+					>
+						<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+							🌿 Spiritual
+						</h2>
+						<ChevronDown 
+							class="w-5 h-5 text-gray-500 transition-transform duration-300 ease-in-out {spiritualExpanded ? 'rotate-180' : ''}"
+							aria-hidden="true"
+						/>
+					</button>
+					
+					{#if spiritualExpanded}
+						<div class="px-4 pb-4 space-y-4 transition-all duration-300 ease-in-out">
+							{#each widgets.filter(w => ['ayah', 'prompt'].includes(w.id)) as widget (widget.id)}
+								{@const Component = widget.component}
+								<div class="min-h-[120px]">
+									<button
+										type="button"
+										class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+										onmouseenter={() => handleWidgetView(widget.id)}
+										onclick={() => handleWidgetInteraction(widget.id)}
+										aria-label="View {widget.name} widget"
+									>
+										<Component 
+											session={$session}
+											{profiles}
+											{items}
+											{interactions}
+											{widget}
+										/>
+									</button>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+
+				<!-- Family Wall Section -->
+				<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+					<button
+						type="button"
+						onclick={() => socialExpanded = !socialExpanded}
+						class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500"
+						aria-expanded={socialExpanded}
+					>
+						<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+							👨‍👩‍👧 Family Wall
+						</h2>
+						<ChevronDown 
+							class="w-5 h-5 text-gray-500 transition-transform duration-300 ease-in-out {socialExpanded ? 'rotate-180' : ''}"
+							aria-hidden="true"
+						/>
+					</button>
+					
+					{#if socialExpanded}
+						<div class="px-4 pb-4 space-y-4 transition-all duration-300 ease-in-out">
+							{#each widgets.filter(w => ['birthday', 'wall', 'feedback'].includes(w.id)) as widget (widget.id)}
+								{@const Component = widget.component}
+								<div class="min-h-auto">
+									<button
+										type="button"
+										class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+										onmouseenter={() => handleWidgetView(widget.id)}
+										onclick={() => handleWidgetInteraction(widget.id)}
+										aria-label="View {widget.name} widget"
+									>
+										<Component 
+											session={$session}
+											{profiles}
+											{items}
+											{interactions}
+											{widget}
+										/>
+									</button>
+								</div>
+							{/each}
+						</div>
+					{/if}
 				</div>
 			</div>
 

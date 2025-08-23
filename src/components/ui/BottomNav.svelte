@@ -1,10 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { notificationStore } from '$lib/stores/notificationStore';
-	import { Home, FileText, User, Bell } from 'lucide-svelte';
+	import { Home, FileText, User, Plus } from 'lucide-svelte';
 
 	let currentPath = $derived($page.url.pathname);
 	let unreadCount = $derived(notificationStore.getUnreadCount());
+
+	// Props for handling composer action
+	interface Props {
+		onComposerOpen?: () => void;
+	}
+	
+	let { onComposerOpen }: Props = $props();
 
 	const iconMap = {
 		'/dashboard': Home,
@@ -14,11 +21,17 @@
 	};
 
 	let navItems = $derived([
-		{ href: '/dashboard', label: 'Dashboard', icon: Home },
-		{ href: '/posts', label: 'Posts', icon: FileText },
-		{ href: '/profile', label: 'Profile', icon: User },
-		{ href: '/notifications', label: 'Notifications', icon: Bell, badge: unreadCount }
+		{ href: '/dashboard', label: 'Home', icon: Home },
+		{ href: '#', label: 'Add', icon: Plus, action: 'composer' },
+		{ href: '/profile', label: 'Profile', icon: User }
 	]);
+
+	function handleItemClick(item: typeof navItems[0], event: Event) {
+		if (item.action === 'composer') {
+			event.preventDefault();
+			onComposerOpen?.();
+		}
+	}
 </script>
 
 <nav 
@@ -30,6 +43,7 @@
 		{#each navItems as item}
 			<a 
 				href={item.href}
+				onclick={(e) => handleItemClick(item, e)}
 				class="flex flex-col items-center justify-center p-2 text-xs relative min-h-11 min-w-11 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
 				class:text-primary-600={currentPath === item.href}
 				class:text-gray-500={currentPath !== item.href}
@@ -39,23 +53,12 @@
 			>
 				{#if item.href === '/dashboard'}
 					<Home class="w-6 h-6 mb-1" aria-hidden="true" />
-				{:else if item.href === '/posts'}
-					<FileText class="w-6 h-6 mb-1" aria-hidden="true" />
+				{:else if item.action === 'composer'}
+					<Plus class="w-6 h-6 mb-1" aria-hidden="true" />
 				{:else if item.href === '/profile'}
 					<User class="w-6 h-6 mb-1" aria-hidden="true" />
-				{:else if item.href === '/notifications'}
-					<Bell class="w-6 h-6 mb-1" aria-hidden="true" />
 				{/if}
 				<span class="font-medium">{item.label}</span>
-				
-				{#if item.badge && item.badge > 0}
-					<span 
-						class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-						aria-label="{item.badge} unread notifications"
-					>
-						{item.badge > 99 ? '99+' : item.badge}
-					</span>
-				{/if}
 			</a>
 		{/each}
 	</div>
