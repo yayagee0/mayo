@@ -6,7 +6,7 @@
 	import type { WidgetConfig } from '$lib/types/widget';
 	import type { Database } from '$lib/supabase';
 	import { supabase } from '$lib/supabase';
-	import { Leaf } from 'lucide-svelte';
+	import { HeartHandshake } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
@@ -77,21 +77,24 @@
 <div class="min-h-screen bg-gray-50 pb-20">
 	<header class="bg-white shadow-sm border-b">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			<div class="flex justify-between items-center h-16">
-				<div class="flex items-center gap-3">
-					<Leaf class="w-6 h-6 text-green-500" aria-hidden="true" />
-					<div>
-						<h1 class="text-xl font-semibold text-gray-900">
-							Salam {userName}, here's today's verse
+			<div class="py-8 sm:py-12">
+				<!-- Hero Section -->
+				<div class="text-center space-y-4">
+					<div class="flex items-center justify-center gap-3 mb-4">
+						<HeartHandshake class="w-8 h-8 text-green-500" aria-hidden="true" />
+						<h1 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+							🌿 Salam {userName}, Welcome Back
 						</h1>
-						<p class="text-sm text-gray-600">Your family dashboard</p>
 					</div>
+					<p class="text-lg sm:text-xl text-gray-600 font-medium max-w-2xl mx-auto">
+						Your family's space for memories & reflection
+					</p>
 				</div>
 			</div>
 		</div>
 	</header>
 
-	<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+	<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 motion-safe:animate-fade-in">
 		{#if loading}
 			<Loading skeleton={true} skeletonCount={4} />
 		{:else}

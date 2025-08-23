@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { Heart, MessageCircle, Share2, Play, Vote } from 'lucide-svelte';
+	import { Heart, MessageCircle, Share2, Play, Vote, Trash2 } from 'lucide-svelte';
 	import { supabase } from '$lib/supabase';
 	import { session } from '$lib/stores/sessionStore';
 	import { profileStore } from '$lib/stores/profileStore';
-	import { parseYouTubeUrl, getYouTubeEmbedUrl } from '$lib/utils/youtubeParser';
+	import { parseYouTubeUrl, getYouTubeEmbedUrl, extractYouTubeVideoId } from '$lib/utils/youtubeParser';
+	import LiteYouTubeEmbed from './LiteYouTubeEmbed.svelte';
 	import type { Database } from '$lib/supabase';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
@@ -32,6 +33,11 @@
 	let submittingReply = $state(false);
 	let selectedPollOption = $state<number | null>(null);
 	let hasVoted = $state(false);
+	let deleting = $state(false);
+	let showDeleteConfirm = $state(false);
+	
+	// Check if current user can delete this post
+	let canDelete = $derived($session?.user?.email === post.author_email);
 	
 	// Get author info
 	let authorProfile = $derived(profiles.find(p => p.email === post.author_email));
@@ -172,6 +178,33 @@
 			};
 		});
 	}
+
+	async function deletePost() {
+		if (!canDelete || deleting) return;
+		
+		try {
+			deleting = true;
+			
+			// Soft delete by setting is_deleted to true
+			const { error } = await supabase
+				.from('items')
+				.update({ is_deleted: true })
+				.eq('id', post.id);
+			
+			if (error) throw error;
+			
+			// Hide the confirmation dialog
+			showDeleteConfirm = false;
+			
+			// Trigger refresh
+			onInteraction?.();
+		} catch (error) {
+			console.error('Error deleting post:', error);
+			alert('Failed to delete post. Please try again.');
+		} finally {
+			deleting = false;
+		}
+	}
 </script>
 
 <div class="bg-white rounded-lg border border-gray-200 p-4" style="margin-left: {level * 1.5}rem">
@@ -209,16 +242,23 @@
 		<div class="mb-3 space-y-3">
 			{#each post.media_urls as mediaUrl}
 				{#if isYouTubeEmbed(mediaUrl)}
-					<div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-						<iframe
-							src={mediaUrl}
-							title="YouTube video"
-							class="w-full h-full"
-							frameborder="0"
-							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-							allowfullscreen
-						></iframe>
-					</div>
+					{@const videoId = extractYouTubeVideoId(mediaUrl)}
+					{#if videoId}
+						<LiteYouTubeEmbed {videoId} title="Shared YouTube video" />
+					{:else}
+						<!-- Fallback for invalid YouTube URL -->
+						<div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+							<iframe
+								src={mediaUrl}
+								title="YouTube video"
+								class="w-full h-full"
+								frameborder="0"
+								allow="autoplay; encrypted-media; picture-in-picture; web-share"
+								referrerpolicy="strict-origin-when-cross-origin"
+								allowfullscreen
+							></iframe>
+						</div>
+					{/if}
 				{:else if isImageUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
 						<img src={mediaUrl} alt="Posted image" class="w-full h-auto object-cover" />
@@ -302,7 +342,41 @@
 			<Share2 class="w-4 h-4" aria-hidden="true" />
 			Share
 		</button>
+		
+		{#if canDelete}
+			<button
+				onclick={() => showDeleteConfirm = true}
+				class="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-red-500"
+			>
+				<Trash2 class="w-4 h-4" aria-hidden="true" />
+				Delete
+			</button>
+		{/if}
 	</div>
+	
+	<!-- Delete confirmation dialog -->
+	{#if showDeleteConfirm}
+		<div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+			<p class="text-sm text-red-800 mb-3">
+				Are you sure you want to delete this post? This action cannot be undone.
+			</p>
+			<div class="flex gap-2">
+				<button
+					onclick={deletePost}
+					disabled={deleting}
+					class="btn btn-sm bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+				>
+					{deleting ? 'Deleting...' : 'Delete'}
+				</button>
+				<button
+					onclick={() => showDeleteConfirm = false}
+					class="btn btn-sm btn-secondary"
+				>
+					Cancel
+				</button>
+			</div>
+		</div>
+	{/if}
 	
 	<!-- Reply composer -->
 	{#if showReplyComposer}

@@ -4,7 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif']
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Poppins', 'Inter', 'system-ui', 'sans-serif']
       },
       colors: {
         primary: {
@@ -18,6 +19,15 @@ export default {
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e'
+        }
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.6s ease-out forwards'
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
         }
       }
     }
