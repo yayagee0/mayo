@@ -1,192 +1,79 @@
--- =========================================================
--- FAMILYNEST — PHASE 0 LOCKED SCHEMA (NO DRIFT)
--- =========================================================
+-- Existing Phase 0 Schema (profiles, items, interactions)
 
--- Extensions
-create extension if not exists "uuid-ossp";
-
--- TABLE: profiles
-create table if not exists profiles (
-  user_id uuid primary key,
-  email text not null unique,
-  display_name text,
-  avatar_url text,
-  role text,
-  dob date,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+CREATE TABLE profiles (
+  user_id UUID PRIMARY KEY,
+  email TEXT NOT NULL,
+  display_name TEXT,
+  avatar_url TEXT,
+  role TEXT,
+  dob DATE,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- TABLE: items
-create table if not exists items (
-  id uuid primary key default uuid_generate_v4(),
-  kind text not null check (kind in ('post','comment','event','ayah','poll','tip','system')),
-  author_id uuid,
-  author_email text not null,
-  visibility text default 'all' check (visibility in ('all','parents','owner')),
-  body text,
-  media_urls text[],
-  parent_id uuid,
-  start_at timestamptz,
-  end_at timestamptz,
-  data jsonb default '{}'::jsonb,
-  is_deleted boolean default false,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+CREATE TABLE items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  kind TEXT NOT NULL,
+  author_id UUID,
+  author_email TEXT NOT NULL,
+  visibility TEXT,
+  body TEXT,
+  media_urls TEXT[],
+  parent_id UUID,
+  start_at TIMESTAMPTZ,
+  end_at TIMESTAMPTZ,
+  data JSONB,
+  is_deleted BOOLEAN,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-create index if not exists items_created_at_idx on items (created_at desc);
-create index if not exists items_kind_idx on items (kind);
-create index if not exists items_author_email_idx on items (author_email);
-
--- TABLE: interactions
-create table if not exists interactions (
-  item_id uuid,
-  user_email text not null,
-  type text not null check (type in ('like','love','vote','bookmark','seen','thanks')),
-  answer_index int,
-  created_at timestamptz default now(),
-  primary key (item_id, user_email, type)
+CREATE TABLE interactions (
+  item_id UUID NOT NULL,
+  user_email TEXT NOT NULL,
+  type TEXT NOT NULL,
+  answer_index INT,
+  created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- RLS
-alter table profiles enable row level security;
-alter table items enable row level security;
-alter table interactions enable row level security;
+-- New Trivia Tables
+CREATE TABLE quiz_questions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  question_text TEXT NOT NULL,
+  options TEXT[] NOT NULL,
+  order_index INT NOT NULL
+);
 
--- Central allowlist policies (hardcoded Phase-0)
-do $$
-begin
-  if not exists (select 1 from pg_policies where polname = 'profiles_allowlist_select') then
-    create policy "profiles_allowlist_select"
-      on profiles for select
-      using ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
+CREATE TABLE quiz_answers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(user_id),
+  question_id UUID REFERENCES quiz_questions(id),
+  answer_index INT NOT NULL,
+  locked_at TIMESTAMPTZ DEFAULT now()
+);
 
-  if not exists (select 1 from pg_policies where polname = 'profiles_allowlist_insert') then
-    create policy "profiles_allowlist_insert"
-      on profiles for insert
-      with check ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
+CREATE TABLE quiz_guesses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  guesser_id UUID REFERENCES profiles(user_id),
+  target_id UUID REFERENCES profiles(user_id),
+  question_id UUID REFERENCES quiz_questions(id),
+  guessed_index INT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 
-  if not exists (select 1 from pg_policies where polname = 'profiles_allowlist_update') then
-    create policy "profiles_allowlist_update"
-      on profiles for update
-      using ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) )
-      with check ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
+-- New Scenario Tables
+CREATE TABLE scenario_questions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  question_text TEXT NOT NULL,
+  options TEXT[] NOT NULL,
+  correct_index INT NOT NULL,
+  order_index INT NOT NULL
+);
 
-  if not exists (select 1 from pg_policies where polname = 'profiles_allowlist_delete') then
-    create policy "profiles_allowlist_delete"
-      on profiles for delete
-      using ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
-
-  if not exists (select 1 from pg_policies where polname = 'items_allowlist_select') then
-    create policy "items_allowlist_select"
-      on items for select
-      using ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
-
-  if not exists (select 1 from pg_policies where polname = 'items_allowlist_insert') then
-    create policy "items_allowlist_insert"
-      on items for insert
-      with check ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
-
-  if not exists (select 1 from pg_policies where polname = 'items_allowlist_update') then
-    create policy "items_allowlist_update"
-      on items for update
-      using ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) )
-      with check ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
-
-  if not exists (select 1 from pg_policies where polname = 'items_allowlist_delete') then
-    create policy "items_allowlist_delete"
-      on items for delete
-      using ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
-
-  if not exists (select 1 from pg_policies where polname = 'interactions_allowlist_select') then
-    create policy "interactions_allowlist_select"
-      on interactions for select
-      using ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
-
-  if not exists (select 1 from pg_policies where polname = 'interactions_allowlist_insert') then
-    create policy "interactions_allowlist_insert"
-      on interactions for insert
-      with check ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
-
-  if not exists (select 1 from pg_policies where polname = 'interactions_allowlist_delete') then
-    create policy "interactions_allowlist_delete"
-      on interactions for delete
-      using ( (auth.jwt() ->> 'email') in (
-        'yazidgeemail@gmail.com',
-        'yahyageemail@gmail.com',
-        'abdessamia.mariem@gmail.com',
-        'nilezat@gmail.com'
-      ) );
-  end if;
-end $$;
+CREATE TABLE scenario_answers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(user_id),
+  question_id UUID REFERENCES scenario_questions(id),
+  chosen_index INT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
