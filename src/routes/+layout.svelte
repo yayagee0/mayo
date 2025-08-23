@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import { supabase } from '$lib/supabase';
 	import BottomNav from '$lib/../components/ui/BottomNav.svelte';
-	import TopNav from '$lib/../components/ui/TopNav.svelte';
+	import Sidebar from '$lib/../components/ui/Sidebar.svelte';
 	import PostComposer from '$lib/../components/PostComposer.svelte';
 
 	let { children } = $props();
@@ -22,7 +22,7 @@
 	let userEmail = $derived($user?.email);
 	let isAllowedUser = $derived(userEmail && ALLOWED_EMAILS.includes(userEmail));
 	let showBottomNav = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
-	let showTopNav = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
+	let showSidebar = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
 
 	// PostComposer modal state
 	let showComposer = $state(false);
@@ -53,25 +53,34 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
-	<!-- Top Navigation for Desktop -->
-	{#if showTopNav}
-		<div class="hidden lg:block">
-			<TopNav />
+	<!-- Persistent Navigation -->
+	{#if showSidebar}
+		<!-- Desktop/Tablet Sidebar -->
+		<div class="hidden md:block">
+			<Sidebar onComposerOpen={handleComposerOpen} />
 		</div>
 	{/if}
 	
-	{@render children?.()}
+	<!-- Main Content Area -->
+	<div class="transition-all duration-300 ease-in-out"
+		class:md:ml-64={showSidebar}
+		class:pb-20={showBottomNav}
+	>
+		{@render children?.()}
+	</div>
 	
-	<!-- Bottom Navigation for Mobile and Tablet -->
+	<!-- Mobile Bottom Navigation -->
 	{#if showBottomNav}
-		<div class="lg:hidden">
+		<div class="md:hidden">
 			<BottomNav onComposerOpen={handleComposerOpen} />
 		</div>
 	{/if}
 	
 	<!-- PostComposer Modal -->
 	{#if showComposer}
-		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+			class:md:ml-64={showSidebar}
+		>
 			<div class="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
 				<PostComposer 
 					onPostCreated={handleComposerClose}

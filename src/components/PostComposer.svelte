@@ -230,7 +230,7 @@
 				};
 			}
 			
-			const { error: submitError } = await supabase.from('items').insert(postData);
+			const { error: submitError } = await supabase.from('items').insert(postData as any);
 			
 			if (submitError) throw submitError;
 			
