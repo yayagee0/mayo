@@ -122,15 +122,12 @@ describe('Server Allowlist Validation', () => {
 	describe('getUserRole function', () => {
 		it('should return "parent" for parent emails', () => {
 			expect(getUserRole('nilezat@gmail.com')).toBe('parent')
-			expect(getUserRole('yazidgeemail@gmail.com')).toBe('parent')
+			expect(getUserRole('abdessamia.mariem@gmail.com')).toBe('parent')
 		})
 
-		it('should return "child" for child email', () => {
+		it('should return "child" for child emails', () => {
+			expect(getUserRole('yazidgeemail@gmail.com')).toBe('child')
 			expect(getUserRole('yahyageemail@gmail.com')).toBe('child')
-		})
-
-		it('should return "member" for other allowed emails', () => {
-			expect(getUserRole('abdessamia.mariem@gmail.com')).toBe('member')
 		})
 
 		it('should handle all allowed emails without throwing', () => {
@@ -142,6 +139,14 @@ describe('Server Allowlist Validation', () => {
 			}
 
 			expect(testRoles).not.toThrow()
+		})
+
+		it('should correctly map all 4 family emails to their expected roles', () => {
+			// Test specific email-to-role mappings as per requirements
+			expect(getUserRole('nilezat@gmail.com')).toBe('parent') // Father
+			expect(getUserRole('abdessamia.mariem@gmail.com')).toBe('parent') // Mother
+			expect(getUserRole('yazidgeemail@gmail.com')).toBe('child') // Child
+			expect(getUserRole('yahyageemail@gmail.com')).toBe('child') // Child
 		})
 	})
 

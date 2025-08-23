@@ -21,6 +21,13 @@ export const userRoleSchema = z.enum(['parent', 'child', 'member'])
 export type UserRole = z.infer<typeof userRoleSchema>
 
 /**
+ * Specific family role display names
+ */
+export const roleDisplayNameSchema = z.enum(['Father', 'Mother', 'Child', 'Member'])
+
+export type RoleDisplayName = z.infer<typeof roleDisplayNameSchema>
+
+/**
  * Profile validation schema for forms and updates
  */
 export const profileSchema = z.object({
