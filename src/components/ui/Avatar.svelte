@@ -4,9 +4,10 @@
 		alt?: string;
 		size?: 'sm' | 'md' | 'lg' | 'xl';
 		fallback?: string;
+		loading?: 'lazy' | 'eager';
 	}
 
-	let { src, alt = '', size = 'md', fallback }: Props = $props();
+	let { src, alt = '', size = 'md', fallback, loading = 'lazy' }: Props = $props();
 
 	let sizeClasses = $derived(() => {
 		switch (size) {
@@ -36,6 +37,7 @@
 	<img 
 		{src} 
 		{alt}
+		{loading}
 		class="rounded-full object-cover border-2 border-gray-200 {sizeClasses()}"
 		onerror={handleImageError}
 	/>

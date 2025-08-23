@@ -7,6 +7,7 @@
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import imageCompression from 'browser-image-compression';
 	import { getUserRole, getRoleDisplayName, type AllowedEmail } from '$lib/utils/roles';
+	import { profileStore } from '$lib/stores/profileStore';
 
 	let profile: Database['public']['Tables']['profiles']['Row'] | null = $state(null);
 	let loading = $state(true);
@@ -147,24 +148,36 @@
 			
 			const compressedFile = await imageCompression(file, options);
 			
-			// Generate unique filename
-			const fileName = `avatar-${$user?.id}-${Date.now()}.${compressedFile.name.split('.').pop()}`;
+			// Generate unique filename using the user ID and timestamp
+			const path = `${$user?.id}/${Date.now()}-avatar.${compressedFile.name.split('.').pop()}`;
 			
 			// Upload to Supabase Storage
 			const { data, error: uploadError } = await supabase.storage
 				.from('post-media')
-				.upload(fileName, compressedFile);
+				.upload(path, compressedFile);
 			
 			if (uploadError) throw uploadError;
 			
-			// Get signed URL
+			// Update the profiles table with the new avatar path
+			await supabase.from('profiles')
+				.update({ avatar_url: data.path })
+				.eq('user_id', $user.id);
+			
+			// Get a fresh signed URL for immediate display
 			const { data: signedUrlData } = await supabase.storage
 				.from('post-media')
 				.createSignedUrl(data.path, 60 * 60 * 24 * 365); // 1 year
 			
 			if (signedUrlData?.signedUrl) {
+				// Update local state immediately for UI refresh
 				avatarUrl = signedUrlData.signedUrl;
-				// Auto-save the profile with new avatar
+				
+				// Update the profile store to reflect the change across the app
+				await profileStore.updateProfile($user.id, { 
+					avatar_url: data.path 
+				});
+				
+				// Auto-save the complete profile
 				await saveProfile();
 			}
 			
@@ -242,7 +255,8 @@
 							<div class="mb-4">
 								<img 
 									src={avatarUrl} 
-									alt=""
+									alt={displayName ? `${displayName}'s profile picture` : 'Profile picture'}
+									loading="lazy"
 									class="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
 									onerror={() => avatarUrl = ''}
 								/>
@@ -264,6 +278,7 @@
 								type="button"
 								onclick={() => fileInput.click()}
 								disabled={uploading}
+								aria-label="Upload profile picture"
 								class="btn btn-secondary disabled:opacity-50 flex items-center gap-2"
 							>
 								{#if uploading}
@@ -280,10 +295,13 @@
 									Or enter image URL manually
 								</summary>
 								<div class="mt-2">
+									<label for="avatar-url" class="sr-only">Avatar image URL</label>
 									<input
+										id="avatar-url"
 										type="url"
 										bind:value={avatarUrl}
 										placeholder="https://example.com/avatar.jpg"
+										aria-label="Avatar image URL"
 										class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
 									/>
 								</div>

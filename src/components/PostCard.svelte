@@ -220,7 +220,7 @@
 <div class="bg-white rounded-lg border border-gray-200 p-4" style="margin-left: {level * 1.5}rem">
 	<!-- Author info -->
 	<div class="flex items-center gap-3 mb-3">
-		<img src={authorAvatar} alt={authorName} class="w-8 h-8 rounded-full object-cover" />
+		<img src={authorAvatar} alt="{authorName}'s profile picture" loading="lazy" class="w-8 h-8 rounded-full object-cover" />
 		
 		<div>
 			<p class="font-medium text-gray-900">{authorName}</p>
@@ -265,7 +265,7 @@
 					{/if}
 				{:else if isImageUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
-						<img src={mediaUrl} alt="" class="w-full h-auto object-cover" />
+						<img src={mediaUrl} alt="" loading="lazy" class="w-full h-auto object-cover" />
 					</div>
 				{:else if isVideoUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
