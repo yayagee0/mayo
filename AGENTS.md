@@ -42,6 +42,18 @@ This document defines the technical, architectural, and behavioral constraints f
 
 
 
+\## 🔐 CSP CONTRACT
+
+\- CSP headers are intentionally disabled in Phase 0 (private family use).
+\- If project scope expands to public access, CSP must be re-enabled with a strict allowlist.
+\- Until then, all code should assume no CSP restrictions.
+
+
+
+---
+
+
+
 \## 🧱 SCHEMA \& BACKEND RULES
 
 
