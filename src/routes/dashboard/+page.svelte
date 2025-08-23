@@ -13,6 +13,7 @@
 	import { getAuthorAvatar } from '$lib/utils/avatar';
 
 	let widgets: WidgetConfig[] = $state([]);
+	let loadedWidgets: { config: WidgetConfig, component: any }[] = $state([]);
 	let items: Database['public']['Tables']['items']['Row'][] = $state([]);
 	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
 	let loading = $state(true);
@@ -71,6 +72,9 @@
 		// Load widgets
 		widgets = widgetRegistry.getSorted();
 
+		// Load and resolve widget components
+		await loadWidgetComponents();
+
 		// Load data for widgets
 		await loadData();
 		
@@ -120,6 +124,37 @@
 			items = [];
 			interactions = [];
 		}
+	}
+
+	async function loadWidgetComponents() {
+		const loaded = await Promise.all(
+			widgets.map(async (widget) => {
+				try {
+					let component;
+					// Check if the component is a lazy loading function
+					if (typeof widget.component === 'function') {
+						try {
+							// Call the function to get the module promise
+							const modulePromise = (widget.component as any)();
+							// Await the module and get the default export
+							const module = await modulePromise;
+							component = module.default;
+						} catch (loadError) {
+							console.error(`Failed to load widget component ${widget.id}:`, loadError);
+							return null;
+						}
+					} else {
+						// Direct component
+						component = widget.component;
+					}
+					return { config: widget, component };
+				} catch (error) {
+					console.error(`Failed to process widget ${widget.id}:`, error);
+					return null;
+				}
+			})
+		);
+		loadedWidgets = loaded.filter(Boolean) as { config: WidgetConfig, component: any }[];
 	}
 
 	function handleWidgetView(widgetId: string) {
@@ -181,8 +216,7 @@
 			<!-- Desktop layout: 3-column grid for lg+ screens -->
 			<div class="hidden lg:block">
 				<!-- Family Wall spans full width on desktop -->
-				{#each widgets.filter(w => w.id === 'wall') as widget (widget.id)}
-					{@const Component = widget.component}
+				{#each loadedWidgets.filter(w => w.config.id === 'wall') as { config: widget, component: Component } (widget.id)}
 					<div class="mb-8 col-span-3">
 						<button
 							type="button"
@@ -211,8 +245,7 @@
 						</h2>
 						
 						<div class="space-y-4">
-							{#each widgets.filter(w => ['ayah', 'prompt'].includes(w.id)) as widget (widget.id)}
-								{@const Component = widget.component}
+							{#each loadedWidgets.filter(w => ['ayah', 'prompt'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 								<button
 									type="button"
 									class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -240,8 +273,7 @@
 						</h2>
 						
 						<div class="space-y-4">
-							{#each widgets.filter(w => ['birthday', 'feedback'].includes(w.id)) as widget (widget.id)}
-								{@const Component = widget.component}
+							{#each loadedWidgets.filter(w => ['birthday', 'feedback'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 								<button
 									type="button"
 									class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -269,8 +301,7 @@
 						</h2>
 						
 						<div class="space-y-4">
-							{#each widgets.filter(w => ['agePlayground'].includes(w.id)) as widget (widget.id)}
-								{@const Component = widget.component}
+							{#each loadedWidgets.filter(w => ['agePlayground'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 								<button
 									type="button"
 									class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -299,8 +330,7 @@
 					<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
 						🌿 Spiritual
 					</h2>
-					{#each widgets.filter(w => ['ayah', 'prompt'].includes(w.id)) as widget (widget.id)}
-						{@const Component = widget.component}
+					{#each loadedWidgets.filter(w => ['ayah', 'prompt'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 						<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
 							<button
 								type="button"
@@ -343,8 +373,7 @@
 					<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
 						👨‍👩‍👧 Social
 					</h2>
-					{#each widgets.filter(w => ['birthday', 'wall', 'feedback'].includes(w.id)) as widget (widget.id)}
-						{@const Component = widget.component}
+					{#each loadedWidgets.filter(w => ['birthday', 'wall', 'feedback'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 						<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
 							<button
 								type="button"
@@ -387,8 +416,7 @@
 					<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
 						🎮 Interactive
 					</h2>
-					{#each widgets.filter(w => ['agePlayground'].includes(w.id)) as widget (widget.id)}
-						{@const Component = widget.component}
+					{#each loadedWidgets.filter(w => ['agePlayground'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 						<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
 							<button
 								type="button"
@@ -427,7 +455,7 @@
 				</div>
 			</div>
 
-			{#if widgets.length === 0}
+			{#if loadedWidgets.length === 0}
 				<div class="text-center py-12">
 					<Leaf class="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />
 					<h2 class="text-xl font-semibold text-gray-900 mb-2">No SmartCards available</h2>
