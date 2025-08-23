@@ -42,9 +42,12 @@
 	let canDelete = $derived($session?.user?.email === post.author_email);
 	
 	// Get author info
-	let authorProfile = $derived(profiles.find(p => p.email === post.author_email) || { email: post.author_email });
-	let authorName = $derived(authorProfile?.display_name || post.author_email.split('@')[0]);
-	let authorAvatar = $derived(getAuthorAvatar(authorProfile));
+	let authorProfile = $derived(() => {
+		const profile = profiles.find(p => p.email === post.author_email);
+		return profile || { email: post.author_email, display_name: null } as const;
+	});
+	let authorName = $derived(authorProfile().display_name || post.author_email.split('@')[0]);
+	let authorAvatar = $derived(getAuthorAvatar(authorProfile()));
 	
 	// Interaction counts and status
 	let likeCount = $derived(interactions.filter(i => i.item_id === post.id && i.type === 'like').length);
@@ -112,7 +115,7 @@
 					item_id: post.id,
 					user_email: $session.user.email,
 					type: 'like'
-				});
+				} as Database['public']['Tables']['interactions']['Insert']);
 			}
 			
 			onInteraction?.();
@@ -130,7 +133,7 @@
 				user_email: $session.user.email,
 				type: 'vote',
 				answer_index: optionIndex
-			});
+			} as Database['public']['Tables']['interactions']['Insert']);
 			
 			selectedPollOption = optionIndex;
 			hasVoted = true;
@@ -153,7 +156,7 @@
 				body: replyContent.trim(),
 				parent_id: post.id,
 				visibility: 'all'
-			});
+			} as Database['public']['Tables']['items']['Insert']);
 			
 			if (error) throw error;
 			
@@ -191,7 +194,7 @@
 			// Soft delete by setting is_deleted to true
 			const { error } = await supabase
 				.from('items')
-				.update({ is_deleted: true })
+				.update({ is_deleted: true } as Database['public']['Tables']['items']['Update'])
 				.eq('id', post.id);
 			
 			if (error) throw error;

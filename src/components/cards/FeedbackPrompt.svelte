@@ -2,6 +2,7 @@
 	import type { WidgetProps } from '$lib/types/widget';
 	import { eventBus } from '$lib/eventBus';
 	import { supabase } from '$lib/supabase';
+	import type { Database } from '$lib/supabase';
 	import { Heart, Smile, Meh, Frown, Sparkles } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
@@ -71,7 +72,7 @@
 					role: userRole
 				},
 				visibility: 'all'
-			});
+			} as Database['public']['Tables']['items']['Insert']);
 
 			if (submitError) throw submitError;
 
@@ -177,4 +178,5 @@
 			<p class="text-green-600 text-sm mt-1">Your reflection helps strengthen our family bond.</p>
 		</div>
 	{/if}
+</div>
 </ComponentErrorBoundary>

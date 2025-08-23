@@ -1,5 +1,6 @@
 import { writable, derived } from 'svelte/store'
 import { supabase } from '../supabase'
+import type { Database } from '../supabase'
 import { session } from './sessionStore'
 
 export interface Profile {
@@ -103,7 +104,7 @@ class ProfileStore {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .insert(profileData)
+        .insert(profileData as Database['public']['Tables']['profiles']['Insert'])
         .select()
         .single()
 
@@ -134,7 +135,7 @@ class ProfileStore {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(updates as Database['public']['Tables']['profiles']['Update'])
         .eq('user_id', userId)
         .select()
         .single()

@@ -108,4 +108,5 @@
 		</div>
 	</div>
 {/if}
+</div>
 </ComponentErrorBoundary>
