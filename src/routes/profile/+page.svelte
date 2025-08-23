@@ -8,6 +8,7 @@
 	import imageCompression from 'browser-image-compression';
 	import { getUserRole, getRoleDisplayName, type AllowedEmail } from '$lib/utils/roles';
 	import { profileStore } from '$lib/stores/profileStore';
+	import { notificationStore } from '$lib/stores/notificationStore';
 
 	let profile: Database['public']['Tables']['profiles']['Row'] | null = $state(null);
 	let loading = $state(true);
@@ -126,13 +127,21 @@
 		
 		// Validate file type
 		if (!file.type.startsWith('image/')) {
-			alert('Please select an image file');
+			notificationStore.add({
+				type: 'error',
+				title: 'Invalid File',
+				message: 'Please select an image file'
+			});
 			return;
 		}
 		
 		// Validate file size (max 5MB)
 		if (file.size > 5 * 1024 * 1024) {
-			alert('Image size must be less than 5MB');
+			notificationStore.add({
+				type: 'error',
+				title: 'File Too Large',
+				message: 'Image size must be less than 5MB'
+			});
 			return;
 		}
 		
@@ -148,8 +157,8 @@
 			
 			const compressedFile = await imageCompression(file, options);
 			
-			// Generate unique filename using the user ID and timestamp
-			const path = `${$user?.id}/${Date.now()}-avatar.${compressedFile.name.split('.').pop()}`;
+			// Generate consistent filename for avatar (overwrite existing)
+			const path = `avatars/${$user?.id}-avatar.png`;
 			
 			// Upload to Supabase Storage with upsert to overwrite existing
 			const { data, error: uploadError } = await supabase.storage
@@ -185,16 +194,35 @@
 				
 				// Auto-save the complete profile
 				await saveProfile();
+				
+				// Show success notification
+				notificationStore.add({
+					type: 'success',
+					title: 'Profile Updated',
+					message: 'Profile picture updated successfully!'
+				});
 			}
 			
 		} catch (error: any) {
 			console.error('Error uploading image:', error);
 			if (error?.message?.includes('413')) {
-				alert('Upload failed. Please try a smaller image.');
+				notificationStore.add({
+					type: 'error',
+					title: 'Upload Failed',
+					message: 'Upload failed. Please try a smaller image.'
+				});
 			} else if (error?.message?.includes('storage')) {
-				alert('Upload failed. Please check your connection and try again.');
+				notificationStore.add({
+					type: 'error',
+					title: 'Upload Failed',
+					message: 'Upload failed. Please check your connection and try again.'
+				});
 			} else {
-				alert('Upload failed. Please try again.');
+				notificationStore.add({
+					type: 'error',
+					title: 'Upload Failed',
+					message: 'Upload failed. Please try again.'
+				});
 			}
 		} finally {
 			uploading = false;
@@ -211,13 +239,25 @@
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between items-center h-16">
 				<h1 class="text-xl font-semibold text-gray-900">Profile</h1>
-				<button
-					type="button"
-					onclick={signOut}
-					class="text-red-600 hover:text-red-700 font-medium"
-				>
-					Sign Out
-				</button>
+				<div class="flex items-center gap-4">
+					{#if getUserRole($user?.email) === 'parent'}
+						<button
+							type="button"
+							onclick={() => goto('/settings')}
+							class="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+							aria-label="Settings"
+						>
+							⚙️ Settings
+						</button>
+					{/if}
+					<button
+						type="button"
+						onclick={signOut}
+						class="text-red-600 hover:text-red-700 font-medium"
+					>
+						Sign Out
+					</button>
+				</div>
 			</div>
 		</div>
 	</header>
