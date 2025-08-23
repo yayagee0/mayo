@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
+	import type { AyahData } from '$lib/supabase';
 	import dayjs from 'dayjs';
 	import { BookOpen, Share2 } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
@@ -18,7 +19,7 @@
 		.find(item => dayjs(item.created_at).isSame(dayjs(), 'day')));
 
 	// Sample ayahs for demonstration if none in database
-	const sampleAyahs = [
+	const sampleAyahs: AyahData[] = [
 		{
 			arabic: "وَاللَّهُ يُحِبُّ الْمُحْسِنِينَ",
 			translation: "And Allah loves the doers of good.",
@@ -36,7 +37,15 @@
 		}
 	];
 
-	let displayAyah = $derived(todayAyah?.data || sampleAyahs[dayjs().day() % sampleAyahs.length]);
+	let displayAyah = $derived(() => {
+		// Type guard for AyahData
+		const data = todayAyah?.data;
+		if (data && typeof data === 'object' && !Array.isArray(data) && 
+		    'arabic' in data && 'translation' in data && 'reference' in data) {
+			return data as unknown as AyahData;
+		}
+		return sampleAyahs[dayjs().day() % sampleAyahs.length];
+	});
 </script>
 
 <ComponentErrorBoundary componentName="AyahCard">
@@ -48,20 +57,20 @@
 
 	{#if !items}
 		<Loading size="md" text="Loading daily ayah..." />
-	{:else if displayAyah}
+	{:else if displayAyah()}
 		<div class="space-y-4">
 			<div class="text-right">
 				<p class="text-xl text-gray-800 leading-relaxed" dir="rtl" style="font-family: 'Amiri', 'Scheherazade', serif;">
-					{displayAyah.arabic}
+					{displayAyah().arabic}
 				</p>
 			</div>
 			
 			<div class="border-t pt-4">
 				<p class="text-gray-700 italic mb-2">
-					"{displayAyah.translation}"
+					"{displayAyah().translation}"
 				</p>
 				<p class="text-sm text-gray-500 font-medium">
-					— {displayAyah.reference}
+					— {displayAyah().reference}
 				</p>
 			</div>
 
@@ -75,7 +84,7 @@
 						if (navigator.share) {
 							navigator.share({
 								title: 'Daily Ayah',
-								text: `${displayAyah.translation} — ${displayAyah.reference}`
+								text: `${displayAyah().translation} — ${displayAyah().reference}`
 							});
 						}
 					}}
