@@ -6,7 +6,7 @@
 	import type { WidgetConfig } from '$lib/types/widget';
 	import type { Database } from '$lib/supabase';
 	import { supabase } from '$lib/supabase';
-	import { HeartHandshake } from 'lucide-svelte';
+	import { HeartHandshake, Leaf } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
@@ -98,12 +98,12 @@
 		{#if loading}
 			<Loading skeleton={true} skeletonCount={4} />
 		{:else}
-			<!-- Desktop layout: 2-column grid for lg+ screens -->
+			<!-- Desktop layout: 3-column grid for lg+ screens -->
 			<div class="hidden lg:block">
 				<!-- Family Wall spans full width on desktop -->
 				{#each widgets.filter(w => w.id === 'wall') as widget (widget.id)}
 					{@const Component = widget.component}
-					<div class="mb-8 col-span-2">
+					<div class="mb-8 col-span-3">
 						<button
 							type="button"
 							class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -122,7 +122,7 @@
 					</div>
 				{/each}
 				
-				<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+				<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 					<!-- Spiritual Section -->
 					<div class="space-y-6">
 						<h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -160,7 +160,36 @@
 						</h2>
 						
 						<div class="space-y-4">
-							{#each widgets.filter(w => ['birthday', 'feedback', 'howOld'].includes(w.id)) as widget (widget.id)}
+							{#each widgets.filter(w => ['birthday', 'feedback'].includes(w.id)) as widget (widget.id)}
+								{@const Component = widget.component}
+								<button
+									type="button"
+									class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+									onmouseenter={() => handleWidgetView(widget.id)}
+									onclick={() => handleWidgetInteraction(widget.id)}
+									aria-label="View {widget.name} widget"
+								>
+									<Component 
+										session={$session}
+										{profiles}
+										{items}
+										{interactions}
+										{widget}
+									/>
+								</button>
+							{/each}
+						</div>
+					</div>
+
+					<!-- Interactive Section -->
+					<div class="space-y-6">
+						<h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+							<div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+							Interactive
+						</h2>
+						
+						<div class="space-y-4">
+							{#each widgets.filter(w => ['howOld', 'agePlayground'].includes(w.id)) as widget (widget.id)}
 								{@const Component = widget.component}
 								<button
 									type="button"
