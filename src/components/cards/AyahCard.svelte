@@ -98,7 +98,7 @@
 	{:else}
 		<div class="text-center py-8">
 			<BookOpen class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
-			<p class="text-gray-500 text-sm">No ayah available for today.</p>
+			<p class="text-gray-500 text-sm">No daily ayah yet</p>
 		</div>
 	{/if}
 </div>

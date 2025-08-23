@@ -100,7 +100,14 @@
 		</h3>
 	</div>
 
-	{#if !submitted}
+	{#if !profiles || profiles.length === 0}
+		<Loading size="md" text="Loading reflection..." />
+	{:else if !currentPrompt}
+		<div class="text-center py-8">
+			<Heart class="w-12 h-12 text-gray-300 mx-auto mb-2" aria-hidden="true" />
+			<p class="text-gray-500 text-sm">No feedback prompts available</p>
+		</div>
+	{:else if !submitted}
 		<div class="space-y-4">
 			<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
 				<p class="text-blue-800 font-medium text-sm">

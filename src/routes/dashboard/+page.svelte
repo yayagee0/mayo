@@ -90,7 +90,13 @@
 				.order('created_at', { ascending: false })
 				.limit(50);
 			
-			items = itemsData || [];
+			// Safe parsing fallback for items
+			try {
+				items = itemsData || [];
+			} catch (parseError) {
+				console.error('Parse error for items:', parseError, 'Raw data:', itemsData);
+				items = []; // fallback to empty array
+			}
 
 			// Load interactions
 			const userEmail = $user?.email;
@@ -100,10 +106,19 @@
 					.select('*')
 					.eq('user_email', userEmail);
 				
-				interactions = interactionsData || [];
+				// Safe parsing fallback for interactions
+				try {
+					interactions = interactionsData || [];
+				} catch (parseError) {
+					console.error('Parse error for interactions:', parseError, 'Raw data:', interactionsData);
+					interactions = []; // fallback to empty array
+				}
 			}
 		} catch (error) {
 			console.error('Error loading dashboard data:', error);
+			// Ensure safe fallbacks
+			items = [];
+			interactions = [];
 		}
 	}
 

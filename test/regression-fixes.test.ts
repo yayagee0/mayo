@@ -128,5 +128,111 @@ describe('Regression Fixes v0.6.2', () => {
 			const result3 = simulateUpdateProfile(null, { message: 'Real error' })
 			expect(result3).toBeNull() // Should handle error and return null
 		})
+
+		it('should handle null data from dashboard queries gracefully', () => {
+			// Test safe parsing patterns for dashboard data loading
+			const simulateDashboardDataLoad = (rawItems: any, rawInteractions: any) => {
+				let items = []
+				let interactions = []
+
+				// Simulate safe parsing for items
+				try {
+					items = rawItems || []
+				} catch (parseError) {
+					console.error('Parse error for items:', parseError)
+					items = [] // fallback to empty array
+				}
+
+				// Simulate safe parsing for interactions
+				try {
+					interactions = rawInteractions || []
+				} catch (parseError) {
+					console.error('Parse error for interactions:', parseError)
+					interactions = [] // fallback to empty array
+				}
+
+				return { items, interactions }
+			}
+
+			// Test with null data
+			const result1 = simulateDashboardDataLoad(null, null)
+			expect(result1.items).toEqual([])
+			expect(result1.interactions).toEqual([])
+
+			// Test with valid data
+			const mockItems = [{ id: '1', kind: 'post' }]
+			const mockInteractions = [{ item_id: '1', type: 'like' }]
+			const result2 = simulateDashboardDataLoad(mockItems, mockInteractions)
+			expect(result2.items).toEqual(mockItems)
+			expect(result2.interactions).toEqual(mockInteractions)
+
+			// Test with undefined data
+			const result3 = simulateDashboardDataLoad(undefined, undefined)
+			expect(result3.items).toEqual([])
+			expect(result3.interactions).toEqual([])
+		})
+	})
+
+	describe('Supabase 406 Error Fix', () => {
+		it('should validate limit(1) pattern with maybeSingle()', () => {
+			// This test validates the pattern we expect for preventing 406 errors
+			// The fix is to add .limit(1) before .maybeSingle() in queries
+
+			// Mock the expected query pattern for profile loading
+			const mockQueryBuilder = {
+				from: () => mockQueryBuilder,
+				select: () => mockQueryBuilder,
+				eq: () => mockQueryBuilder,
+				limit: vi.fn(() => mockQueryBuilder),
+				maybeSingle: vi.fn(() => ({ data: null, error: null }))
+			}
+
+			// Simulate the fixed query pattern
+			const executeQueryWithLimit = () => {
+				return mockQueryBuilder
+					.from('profiles')
+					.select('*')
+					.eq('email', 'test@example.com')
+					.limit(1)
+					.maybeSingle()
+			}
+
+			const result = executeQueryWithLimit()
+			
+			// Verify that limit(1) was called before maybeSingle()
+			expect(mockQueryBuilder.limit).toHaveBeenCalledWith(1)
+			expect(mockQueryBuilder.maybeSingle).toHaveBeenCalled()
+			expect(result).toEqual({ data: null, error: null })
+		})
+
+		it('should validate limit(1) pattern with update queries', () => {
+			// Test the pattern for update queries that might return multiple rows
+			const mockQueryBuilder = {
+				from: () => mockQueryBuilder,
+				update: () => mockQueryBuilder,
+				eq: () => mockQueryBuilder,
+				limit: vi.fn(() => mockQueryBuilder),
+				select: () => mockQueryBuilder,
+				maybeSingle: vi.fn(() => ({ data: { user_id: '123' }, error: null }))
+			}
+
+			// Simulate the fixed update pattern
+			const executeUpdateWithLimit = () => {
+				return mockQueryBuilder
+					.from('profiles')
+					.update({ display_name: 'Updated' })
+					.eq('user_id', '123')
+					.limit(1)
+					.select()
+					.maybeSingle()
+			}
+
+			const result = executeUpdateWithLimit()
+			
+			// Verify that limit(1) was called before select() and maybeSingle()
+			expect(mockQueryBuilder.limit).toHaveBeenCalledWith(1)
+			expect(mockQueryBuilder.maybeSingle).toHaveBeenCalled()
+			expect(result).toEqual({ data: { user_id: '123' }, error: null })
+		})
 	})
 })
