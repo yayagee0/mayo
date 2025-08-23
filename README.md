@@ -76,6 +76,13 @@ Test coverage includes:
 - **Comprehensive RLS**: 18 policies across all tables
 - **No migrations**: Schema changes not permitted in this phase
 
+## 🔐 Security Headers (CSP)
+
+As of Phase 0, no CSP (Content-Security-Policy) is enforced.  
+Reason: App is private (4 whitelisted users only) and CSP caused blocked videos/avatars.  
+
+If the app is ever opened beyond this household, reintroduce CSP with explicit allowlists (Supabase, YouTube, DiceBear).
+
 ## 🧱 Architecture Principles
 
 - **Schema-First**: Data drives design decisions
