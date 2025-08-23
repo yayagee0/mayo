@@ -13,7 +13,6 @@
 	import ErrorBoundary from '$lib/../components/ui/ErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 	import { getAuthorAvatar, getAuthorName, findProfileByEmail } from '$lib/utils/avatar';
-	import SafeText from '$lib/../components/ui/SafeText.svelte';
 
 	dayjs.extend(relativeTime);
 
@@ -266,61 +265,11 @@
 					</div>
 				{:else}
 					{#each posts as post (post.id)}
-						{@const authorProfile = findProfileByEmail(profiles, post.author_email) || { email: post.author_email }}
-						{@const authorAvatarUrl = getAuthorAvatar(authorProfile)}
-						{@const authorName = getAuthorName(authorProfile)}
-						
-						<div class="card">
-							<div class="flex items-start gap-4">
-								{#if authorAvatarUrl}
-									<img 
-										src={authorAvatarUrl} 
-										alt={authorName}
-										class="w-12 h-12 rounded-full object-cover"
-									/>
-								{:else}
-									<div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-										<span class="text-primary-600 font-semibold text-lg">
-											{authorName.charAt(0).toUpperCase()}
-										</span>
-									</div>
-								{/if}
-								
-								<div class="flex-1">
-									<div class="flex items-center gap-2 mb-2">
-										<span class="font-semibold text-gray-900">
-											{authorName}
-										</span>
-										<span class="text-gray-500 text-sm">
-											{dayjs(post.created_at).fromNow()}
-										</span>
-									</div>
-									
-									<div class="mb-4">
-										<SafeText text={post.body} />
-									</div>
-									
-									<div class="flex items-center gap-6">
-										<button
-											type="button"
-											onclick={() => toggleLike(post.id)}
-											class="flex items-center gap-2 text-sm transition-colors"
-											class:text-red-600={isLiked(post.id)}
-											class:text-gray-500={!isLiked(post.id)}
-										>
-											<span class="text-lg">{isLiked(post.id) ? '❤️' : '🤍'}</span>
-											<span>{getLikeCount(post.id)} {getLikeCount(post.id) === 1 ? 'like' : 'likes'}</span>
-										</button>
-										<button class="text-gray-500 hover:text-gray-700 text-sm">
-											💬 Comment
-										</button>
-										<button class="text-gray-500 hover:text-gray-700 text-sm">
-											🔗 Share
-										</button>
-									</div>
-								</div>
-							</div>
-						</div>
+						<PostCard 
+							{post}
+							{interactions}
+							onInteraction={() => loadInteractions()}
+						/>
 					{/each}
 					
 					{#if posts.length >= postsPerPage}
