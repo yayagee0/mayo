@@ -12,6 +12,8 @@
 	import PostCard from '$lib/../components/PostCard.svelte';
 	import ErrorBoundary from '$lib/../components/ui/ErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
+	import { getAuthorAvatar, getAuthorName, findProfileByEmail } from '$lib/utils/avatar';
+	import SafeText from '$lib/../components/ui/SafeText.svelte';
 
 	dayjs.extend(relativeTime);
 
@@ -158,6 +160,45 @@
 			loading = false;
 		}
 	}
+
+	// Interaction helper functions
+	function isLiked(postId: string): boolean {
+		return interactions.some(i => 
+			i.item_id === postId && 
+			i.type === 'like' && 
+			i.user_email === $session?.user?.email
+		);
+	}
+
+	function getLikeCount(postId: string): number {
+		return interactions.filter(i => i.item_id === postId && i.type === 'like').length;
+	}
+
+	async function toggleLike(postId: string) {
+		if (!$session?.user?.email) return;
+		
+		try {
+			if (isLiked(postId)) {
+				await supabase
+					.from('interactions')
+					.delete()
+					.eq('item_id', postId)
+					.eq('user_email', $session.user.email)
+					.eq('type', 'like');
+			} else {
+				await supabase.from('interactions').insert({
+					item_id: postId,
+					user_email: $session.user.email,
+					type: 'like'
+				});
+			}
+			
+			// Refresh interactions
+			await loadInteractions();
+		} catch (error) {
+			console.error('Error toggling like:', error);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -225,18 +266,22 @@
 					</div>
 				{:else}
 					{#each posts as post (post.id)}
+						{@const authorProfile = findProfileByEmail(profiles, post.author_email) || { email: post.author_email }}
+						{@const authorAvatarUrl = getAuthorAvatar(authorProfile)}
+						{@const authorName = getAuthorName(authorProfile)}
+						
 						<div class="card">
 							<div class="flex items-start gap-4">
-								{#if getAuthorAvatar(post.author_email)}
+								{#if authorAvatarUrl}
 									<img 
-										src={getAuthorAvatar(post.author_email)} 
-										alt={getAuthorName(post.author_email)}
+										src={authorAvatarUrl} 
+										alt={authorName}
 										class="w-12 h-12 rounded-full object-cover"
 									/>
 								{:else}
 									<div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
 										<span class="text-primary-600 font-semibold text-lg">
-											{getAuthorName(post.author_email).charAt(0).toUpperCase()}
+											{authorName.charAt(0).toUpperCase()}
 										</span>
 									</div>
 								{/if}
@@ -244,16 +289,16 @@
 								<div class="flex-1">
 									<div class="flex items-center gap-2 mb-2">
 										<span class="font-semibold text-gray-900">
-											{getAuthorName(post.author_email)}
+											{authorName}
 										</span>
 										<span class="text-gray-500 text-sm">
 											{dayjs(post.created_at).fromNow()}
 										</span>
 									</div>
 									
-									<p class="text-gray-700 whitespace-pre-wrap mb-4">
-										{post.body}
-									</p>
+									<div class="mb-4">
+										<SafeText text={post.body} />
+									</div>
 									
 									<div class="flex items-center gap-6">
 										<button

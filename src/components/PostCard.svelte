@@ -5,6 +5,8 @@
 	import { profileStore } from '$lib/stores/profileStore';
 	import { parseYouTubeUrl, getYouTubeEmbedUrl, extractYouTubeVideoId } from '$lib/utils/youtubeParser';
 	import LiteYouTubeEmbed from './LiteYouTubeEmbed.svelte';
+	import { getAuthorAvatar } from '$lib/utils/avatar';
+	import SafeText from './ui/SafeText.svelte';
 	import type { Database } from '$lib/supabase';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
@@ -40,9 +42,9 @@
 	let canDelete = $derived($session?.user?.email === post.author_email);
 	
 	// Get author info
-	let authorProfile = $derived(profiles.find(p => p.email === post.author_email));
+	let authorProfile = $derived(profiles.find(p => p.email === post.author_email) || { email: post.author_email });
 	let authorName = $derived(authorProfile?.display_name || post.author_email.split('@')[0]);
-	let authorAvatar = $derived(authorProfile?.avatar_url);
+	let authorAvatar = $derived(getAuthorAvatar(authorProfile));
 	
 	// Interaction counts and status
 	let likeCount = $derived(interactions.filter(i => i.item_id === post.id && i.type === 'like').length);
@@ -210,13 +212,7 @@
 <div class="bg-white rounded-lg border border-gray-200 p-4" style="margin-left: {level * 1.5}rem">
 	<!-- Author info -->
 	<div class="flex items-center gap-3 mb-3">
-		{#if authorAvatar}
-			<img src={authorAvatar} alt={authorName} class="w-8 h-8 rounded-full object-cover" />
-		{:else}
-			<div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-				<span class="text-gray-600 text-sm font-medium">{authorName.charAt(0).toUpperCase()}</span>
-			</div>
-		{/if}
+		<img src={authorAvatar} alt={authorName} class="w-8 h-8 rounded-full object-cover" />
 		
 		<div>
 			<p class="font-medium text-gray-900">{authorName}</p>
@@ -233,7 +229,7 @@
 	<!-- Content -->
 	{#if post.body}
 		<div class="mb-3">
-			<p class="text-gray-900 whitespace-pre-wrap">{post.body}</p>
+			<SafeText text={post.body} />
 		</div>
 	{/if}
 	
