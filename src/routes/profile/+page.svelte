@@ -29,11 +29,11 @@
 
 	// Check if DOB is already set (read-only once set)
 	let isDobSet = $derived(() => {
-		return profile?.dob && profile.dob.trim() !== '';
+		return Boolean(profile?.dob && profile.dob.trim() !== '');
 	});
 
 	// File upload
-	let fileInput: HTMLInputElement;
+	let fileInput = $state() as HTMLInputElement;
 
 	onMount(async () => {
 		if (!$session) {
@@ -55,11 +55,11 @@
 			.single();
 
 		if (data) {
-			profile = data;
-			displayName = data.display_name || '';
-			avatarUrl = data.avatar_url || '';
+			profile = data as Database['public']['Tables']['profiles']['Row'];
+			displayName = (data as any).display_name || '';
+			avatarUrl = (data as any).avatar_url || '';
 			role = computedRole(); // Use computed role instead of stored role
-			dob = data.dob || '';
+			dob = (data as any).dob || '';
 		}
 	}
 
@@ -81,7 +81,7 @@
 			if (profile) {
 				const { error } = await supabase
 					.from('profiles')
-					.update(profileData)
+					.update(profileData as Database['public']['Tables']['profiles']['Update'])
 					.eq('user_id', $user.id);
 				
 				if (error) throw error;
@@ -91,7 +91,7 @@
 					.insert({
 						...profileData,
 						created_at: new Date().toISOString()
-					});
+					} as Database['public']['Tables']['profiles']['Insert']);
 				
 				if (error) throw error;
 			}

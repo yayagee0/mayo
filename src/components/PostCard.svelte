@@ -42,9 +42,12 @@
 	let canDelete = $derived($session?.user?.email === post.author_email);
 	
 	// Get author info
-	let authorProfile = $derived(profiles.find(p => p.email === post.author_email) || { email: post.author_email });
-	let authorName = $derived(authorProfile?.display_name || post.author_email.split('@')[0]);
-	let authorAvatar = $derived(getAuthorAvatar(authorProfile));
+	let authorProfile = $derived(() => {
+		const profile = profiles.find(p => p.email === post.author_email);
+		return profile || { email: post.author_email, display_name: null } as const;
+	});
+	let authorName = $derived(authorProfile().display_name || post.author_email.split('@')[0]);
+	let authorAvatar = $derived(getAuthorAvatar(authorProfile()));
 	
 	// Interaction counts and status
 	let likeCount = $derived(interactions.filter(i => i.item_id === post.id && i.type === 'like').length);
@@ -71,14 +74,15 @@
 	});
 	
 	let userVote = $derived(() => {
-		return pollVotes.find(v => v.user_email === $session?.user?.email);
+		if (!pollData) return null;
+		return pollVotes().find(v => v.user_email === $session?.user?.email) || null;
 	});
 	
 	// Check if user has already voted
 	$effect(() => {
-		hasVoted = !!userVote;
-		if (userVote) {
-			selectedPollOption = userVote.answer_index;
+		hasVoted = !!userVote();
+		if (userVote()) {
+			selectedPollOption = userVote()?.answer_index || null;
 		}
 	});
 	
@@ -111,7 +115,7 @@
 					item_id: post.id,
 					user_email: $session.user.email,
 					type: 'like'
-				});
+				} as Database['public']['Tables']['interactions']['Insert']);
 			}
 			
 			onInteraction?.();
@@ -121,7 +125,7 @@
 	}
 	
 	async function submitVote(optionIndex: number) {
-		if (!$session?.user?.email || hasVoted || !pollData) return;
+		if (!$session?.user?.email || hasVoted || !pollData()) return;
 		
 		try {
 			await supabase.from('interactions').insert({
@@ -129,7 +133,7 @@
 				user_email: $session.user.email,
 				type: 'vote',
 				answer_index: optionIndex
-			});
+			} as Database['public']['Tables']['interactions']['Insert']);
 			
 			selectedPollOption = optionIndex;
 			hasVoted = true;
@@ -152,7 +156,7 @@
 				body: replyContent.trim(),
 				parent_id: post.id,
 				visibility: 'all'
-			});
+			} as Database['public']['Tables']['items']['Insert']);
 			
 			if (error) throw error;
 			
@@ -167,11 +171,11 @@
 	}
 	
 	function getPollResults() {
-		if (!pollData) return [];
+		if (!pollData()) return [];
 		
-		const totalVotes = pollVotes.length;
-		return pollData.options.map((option, index) => {
-			const votes = pollVotes.filter(v => v.answer_index === index).length;
+		const totalVotes = pollVotes().length;
+		return pollData()!.options.map((option, index) => {
+			const votes = pollVotes().filter(v => v.answer_index === index).length;
 			const percentage = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
 			return {
 				option,
@@ -190,7 +194,7 @@
 			// Soft delete by setting is_deleted to true
 			const { error } = await supabase
 				.from('items')
-				.update({ is_deleted: true })
+				.update({ is_deleted: true } as Database['public']['Tables']['items']['Update'])
 				.eq('id', post.id);
 			
 			if (error) throw error;
@@ -293,11 +297,11 @@
 						</div>
 					</div>
 				{/each}
-				<p class="text-xs text-gray-500 mt-2">Total votes: {pollVotes.length}</p>
+				<p class="text-xs text-gray-500 mt-2">Total votes: {pollVotes().length}</p>
 			{:else}
 				<!-- Show voting options -->
 				<div class="space-y-2">
-					{#each pollData.options as option, index}
+					{#each pollData()?.options || [] as option, index}
 						<button
 							onclick={() => submitVote(index)}
 							class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"

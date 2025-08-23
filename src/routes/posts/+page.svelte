@@ -189,7 +189,7 @@
 					item_id: postId,
 					user_email: $session.user.email,
 					type: 'like'
-				});
+				} as Database['public']['Tables']['interactions']['Insert']);
 			}
 			
 			// Refresh interactions
