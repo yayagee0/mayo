@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { session, user } from '$lib/stores/sessionStore';
+	import { session } from '$lib/stores/sessionStore';
 	import { goto } from '$app/navigation';
 	import { supabase } from '$lib/supabase';
-	import { eventBus } from '$lib/eventBus';
 	import type { Database } from '$lib/supabase';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
@@ -13,12 +12,11 @@
 	import ErrorBoundary from '$lib/../components/ui/ErrorBoundary.svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
-	import { getAuthorAvatar, getAuthorName, findProfileByEmail } from '$lib/utils/avatar';
 
 	dayjs.extend(relativeTime);
 
 	let posts: Database['public']['Tables']['items']['Row'][] = $state([]);
-	let allItems: Database['public']['Tables']['items']['Row'][] = $state([]); // Include posts and comments
+	let allItems: Database['public']['Tables']['items']['Row'][] = $state([]);
 	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
 	let loading = $state(true);
 	let loadingMore = $state(false);
@@ -26,16 +24,13 @@
 	let page = $state(0);
 	const postsPerPage = 10;
 
-	// Use profileStore instead of local profiles state
+	// Use profileStore
 	let profiles = $derived($profileStore);
 
-	// Post composer state
 	let showComposer = $state(false);
 	
-	// Get comments for each post
 	let commentsMap = $derived(() => {
 		const map = new Map<string, Database['public']['Tables']['items']['Row'][]>();
-		
 		allItems
 			.filter(item => item.kind === 'comment' && item.parent_id)
 			.forEach(comment => {
@@ -45,12 +40,9 @@
 				}
 				map.get(parentId)!.push(comment);
 			});
-			
-		// Sort comments by creation date
 		map.forEach((comments, postId) => {
 			comments.sort((a, b) => dayjs(a.created_at).unix() - dayjs(b.created_at).unix());
 		});
-		
 		return map;
 	});
 
@@ -59,7 +51,6 @@
 			goto('/');
 			return;
 		}
-
 		await loadData();
 		loading = false;
 	});
@@ -83,7 +74,7 @@
 			const { data, error: fetchError } = await supabase
 				.from('items')
 				.select('*')
-				.eq('kind', 'post')
+				.in('kind', ['post', 'poll'])   // ✅ include polls
 				.eq('is_deleted', false)
 				.order('created_at', { ascending: false })
 				.range(page * postsPerPage, (page + 1) * postsPerPage - 1);
@@ -135,7 +126,6 @@
 
 	async function loadMorePosts() {
 		if (loadingMore) return;
-		
 		loadingMore = true;
 		page++;
 		await loadPosts(true);
@@ -144,7 +134,6 @@
 
 	function handlePostCreated() {
 		showComposer = false;
-		// Refresh all data
 		loadData();
 	}
 
@@ -158,45 +147,6 @@
 			error = 'Failed to load posts. Please check your connection and try again.';
 		} finally {
 			loading = false;
-		}
-	}
-
-	// Interaction helper functions
-	function isLiked(postId: string): boolean {
-		return interactions.some(i => 
-			i.item_id === postId && 
-			i.type === 'like' && 
-			i.user_email === $session?.user?.email
-		);
-	}
-
-	function getLikeCount(postId: string): number {
-		return interactions.filter(i => i.item_id === postId && i.type === 'like').length;
-	}
-
-	async function toggleLike(postId: string) {
-		if (!$session?.user?.email) return;
-		
-		try {
-			if (isLiked(postId)) {
-				await supabase
-					.from('interactions')
-					.delete()
-					.eq('item_id', postId)
-					.eq('user_email', $session.user.email)
-					.eq('type', 'like');
-			} else {
-				await supabase.from('interactions').insert({
-					item_id: postId,
-					user_email: $session.user.email,
-					type: 'like'
-				} as Database['public']['Tables']['interactions']['Insert']);
-			}
-			
-			// Refresh interactions
-			await loadInteractions();
-		} catch (error) {
-			console.error('Error toggling like:', error);
 		}
 	}
 </script>
