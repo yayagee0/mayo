@@ -1,50 +1,46 @@
 <script lang="ts">
-	interface Props {
-		src?: string;
-		alt?: string;
-		size?: 'sm' | 'md' | 'lg' | 'xl';
-		fallback?: string;
-		loading?: 'lazy' | 'eager';
-	}
+  import Avatar from './Avatar.svelte';
+  import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
+  import { session } from '$lib/stores/sessionStore';
 
-	let { src, alt = '', size = 'md', fallback, loading = 'lazy' }: Props = $props();
+  let uploading = false;
+  let error: string | null = null;
 
-	let sizeClasses = $derived(() => {
-		switch (size) {
-			case 'sm': return 'w-8 h-8 text-sm';
-			case 'md': return 'w-10 h-10 text-base';
-			case 'lg': return 'w-12 h-12 text-lg';
-			case 'xl': return 'w-16 h-16 text-xl';
-			default: return 'w-10 h-10 text-base';
-		}
-	});
+  async function handleFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !$session?.user?.id) return;
 
-	let showFallback = $state(false);
+    const file = input.files[0];
+    uploading = true;
+    error = null;
 
-	function handleImageError() {
-		showFallback = true;
-	}
-
-	// Generate fallback text from alt or provided fallback
-	let fallbackText = $derived(() => {
-		if (fallback) return fallback;
-		if (alt) return alt.charAt(0).toUpperCase();
-		return 'U';
-	});
+    try {
+      const url = await profileStore.uploadAvatar($session.user.id, file);
+      if (!url) {
+        error = 'Failed to upload avatar';
+      }
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      error = 'Upload failed. Please try again.';
+    } finally {
+      uploading = false;
+    }
+  }
 </script>
 
-{#if src && !showFallback}
-	<img 
-		{src} 
-		{alt}
-		{loading}
-		class="rounded-full object-cover border-2 border-gray-200 {sizeClasses()}"
-		onerror={handleImageError}
-	/>
-{:else}
-	<div class="bg-primary-100 rounded-full flex items-center justify-center border-2 border-gray-200 {sizeClasses()}">
-		<span class="text-primary-600 font-semibold">
-			{fallbackText()}
-		</span>
-	</div>
-{/if}
+<div class="flex flex-col items-center space-y-3">
+  <Avatar
+    src={$currentUserProfile?.avatar_url || undefined}
+    alt={$currentUserProfile?.display_name || $session?.user?.email || 'User'}
+    size="xl"
+  />
+
+  <label class="cursor-pointer bg-primary-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-primary-700">
+    {uploading ? 'Uploading...' : 'Change Photo'}
+    <input type="file" accept="image/*" class="hidden" on:change={handleFileChange} />
+  </label>
+
+  {#if error}
+    <p class="text-sm text-red-600">{error}</p>
+  {/if}
+</div>
