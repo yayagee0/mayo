@@ -2,7 +2,7 @@ import { writable, derived } from 'svelte/store'
 import { supabase } from '../supabase'
 import type { Database } from '../supabase'
 import { session } from './sessionStore'
-import heic2any from 'heic2any' // ✅ HEIC converter
+// ✅ HEIC converter - dynamically imported to avoid SSR issues
 
 export interface Profile {
   user_id: string
@@ -134,6 +134,8 @@ class ProfileStore {
       let processedFile: File = file
 
       if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+        // Dynamic import to avoid SSR issues
+        const { default: heic2any } = await import('heic2any')
         const blob = await heic2any({ blob: file, toType: 'image/jpeg' })
         processedFile = new File([blob as BlobPart], file.name.replace(/\.heic$/i, '.jpg'), {
           type: 'image/jpeg'
