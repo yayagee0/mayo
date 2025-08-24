@@ -106,17 +106,31 @@ export async function compressVideo(
 }
 
 /**
- * Determines if a file is an image
+ * Determines if a file is an image based on type and extension
  */
 export function isImageFile(file: File): boolean {
-	return file.type.startsWith('image/');
+	// Check MIME type first
+	if (file.type.startsWith('image/')) {
+		return true;
+	}
+	
+	// Fallback to file extension for mobile compatibility
+	const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|tiff)$/i;
+	return imageExtensions.test(file.name);
 }
 
 /**
- * Determines if a file is a video
+ * Determines if a file is a video based on type and extension
  */
 export function isVideoFile(file: File): boolean {
-	return file.type.startsWith('video/');
+	// Check MIME type first
+	if (file.type.startsWith('video/')) {
+		return true;
+	}
+	
+	// Fallback to file extension for mobile compatibility
+	const videoExtensions = /\.(mp4|webm|mov|avi|m4v|3gp|mkv)$/i;
+	return videoExtensions.test(file.name);
 }
 
 /**
@@ -124,23 +138,34 @@ export function isVideoFile(file: File): boolean {
  */
 export function validateMediaFile(file: File): { valid: boolean; error?: string } {
 	const maxSize = 100 * 1024 * 1024; // 100MB max
-	const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-	const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/avi'];
+	const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+	const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/avi', 'video/quicktime'];
 	
 	if (file.size > maxSize) {
 		return { valid: false, error: 'File size too large (max 100MB)' };
 	}
 	
-	if (isImageFile(file) && !allowedImageTypes.includes(file.type)) {
-		return { valid: false, error: 'Unsupported image format' };
-	}
-	
-	if (isVideoFile(file) && !allowedVideoTypes.includes(file.type)) {
-		return { valid: false, error: 'Unsupported video format' };
-	}
-	
+	// Check if it's an image or video
 	if (!isImageFile(file) && !isVideoFile(file)) {
 		return { valid: false, error: 'File must be an image or video' };
+	}
+	
+	// For images, validate MIME type if available
+	if (isImageFile(file) && file.type && !allowedImageTypes.includes(file.type)) {
+		// If MIME type is not in our list but file extension suggests it's an image, allow it
+		const imageExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
+		if (!imageExtensions.test(file.name)) {
+			return { valid: false, error: 'Unsupported image format' };
+		}
+	}
+	
+	// For videos, validate MIME type if available  
+	if (isVideoFile(file) && file.type && !allowedVideoTypes.includes(file.type)) {
+		// If MIME type is not in our list but file extension suggests it's a video, allow it
+		const videoExtensions = /\.(mp4|webm|mov|avi)$/i;
+		if (!videoExtensions.test(file.name)) {
+			return { valid: false, error: 'Unsupported video format' };
+		}
 	}
 	
 	return { valid: true };
