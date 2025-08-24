@@ -6,7 +6,7 @@ export interface Notification {
   title: string
   message: string
   read: boolean
-  createdAt: number
+  createdAt: string   // ✅ always ISO string
   data?: any
 }
 
@@ -24,7 +24,7 @@ class NotificationStore {
     const newNotification: Notification = {
       ...notification,
       id: Math.random().toString(36).substr(2, 9),
-      createdAt: Date.now(),
+      createdAt: new Date().toISOString(),   // ✅ save ISO string
       read: false
     }
 
