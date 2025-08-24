@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
-	import { Briefcase, GraduationCap, Wrench, Rocket, Computer, Plane, Truck } from 'lucide-svelte';
+	import { Briefcase, Computer, Plane, Truck } from 'lucide-svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
@@ -11,24 +11,24 @@
 	// Subscribe to profileStore
 	let profiles = $derived($profileStore);
 
-	// Playful profession descriptions based on profiles
+	// Profession descriptions keyed by email (normalized lowercase)
 	const professionDescriptions: Record<string, { title: string; description: string; icon: any }> = {
-		'ghassan': {
+		'nilezat@gmail.com': {
 			title: 'Business',
 			description: 'Helps people grow at work, Snack Boss at home.',
 			icon: Briefcase
 		},
-		'mariem': {
+		'abdessamia.mariem@gmail.com': {
 			title: 'Hacker + Computer',
 			description: 'Computer wizard in disguise, bedtime story maker.',
 			icon: Computer
 		},
-		'yazid': {
+		'yazidgeemail@gmail.com': {
 			title: 'Engineer + Tank/Airplane',
 			description: 'Wants to build tanks, airships, rockets.',
 			icon: Truck
 		},
-		'yahya': {
+		'yahyageemail@gmail.com': {
 			title: 'Engineer + Airplane',
 			description: 'Wants to design rockets, airplanes, flying machines.',
 			icon: Plane
@@ -38,8 +38,8 @@
 	// Get profession info for family members
 	let familyProfessions = $derived(() => {
 		return profiles.map(profile => {
-			const name = profile.display_name?.toLowerCase() || profile.email?.split('@')[0]?.toLowerCase() || '';
-			const profession = professionDescriptions[name] || {
+			const email = profile.email?.toLowerCase() || '';
+			const profession = professionDescriptions[email] || {
 				title: 'Family Member',
 				description: 'An amazing part of our family!',
 				icon: Briefcase
