@@ -32,21 +32,21 @@ export interface Database {
           answer_index: number | null
           created_at: string | null
           item_id: string
-          type: 'like' | 'love' | 'vote' | 'bookmark' | 'seen' | 'thanks'
+          type: 'like' | 'love' | 'vote' | 'bookmark' | 'seen' | 'thanks' | 'poll_vote'
           user_email: string
         }
         Insert: {
           answer_index?: number | null
           created_at?: string | null
           item_id: string
-          type: 'like' | 'love' | 'vote' | 'bookmark' | 'seen' | 'thanks'
+          type: 'like' | 'love' | 'vote' | 'bookmark' | 'seen' | 'thanks' | 'poll_vote'
           user_email: string
         }
         Update: {
           answer_index?: number | null
           created_at?: string | null
           item_id?: string
-          type?: 'like' | 'love' | 'vote' | 'bookmark' | 'seen' | 'thanks'
+          type?: 'like' | 'love' | 'vote' | 'bookmark' | 'seen' | 'thanks' | 'poll_vote'
           user_email?: string
         }
         Relationships: []
@@ -341,6 +341,42 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      }
+      islamic_questions: {
+        Row: {
+          id: string
+          question_text: string
+          options: string[]
+          correct_index: number
+          explanation_correct: string | null
+          explanation_incorrect: string | null
+          order_index: number
+          category: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          question_text: string
+          options: string[]
+          correct_index: number
+          explanation_correct?: string | null
+          explanation_incorrect?: string | null
+          order_index: number
+          category?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          question_text?: string
+          options?: string[]
+          correct_index?: number
+          explanation_correct?: string | null
+          explanation_incorrect?: string | null
+          order_index?: number
+          category?: string | null
+          created_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

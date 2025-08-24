@@ -73,7 +73,7 @@
 	
 	let pollVotes = $derived(() => {
 		if (!pollData) return [];
-		return interactions.filter(i => i.item_id === post.id && i.type === 'vote');
+		return interactions.filter(i => i.item_id === post.id && i.type === 'poll_vote');
 	});
 	
 	let userVote = $derived(() => {
@@ -141,7 +141,7 @@
 			const { error } = await supabase.from('interactions').insert({
 				item_id: post.id,
 				user_email: $session.user.email,
-				type: 'vote',
+				type: 'poll_vote',
 				answer_index: optionIndex
 			} as Database['public']['Tables']['interactions']['Insert']);
 			

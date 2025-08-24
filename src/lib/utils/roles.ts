@@ -57,3 +57,25 @@ export function isEmailAllowed(email: string | null | undefined): email is Allow
 	if (!email) return false;
 	return ALLOWED_EMAILS.includes(email as AllowedEmail);
 }
+
+/**
+ * Get seeded display name for family members
+ * These are the default display names that should be seeded for each email
+ */
+export function getSeededDisplayName(email: string | null | undefined): string | null {
+	if (!email) return null;
+	
+	// Seeded display names per requirements
+	switch (email) {
+		case 'nilezat@gmail.com':
+			return 'G';
+		case 'abdessamia.mariem@gmail.com':
+			return 'Mayouta';
+		case 'yazidgeemail@gmail.com':
+			return 'Yazid';
+		case 'yahyageemail@gmail.com':
+			return 'Yahya';
+		default:
+			return null;
+	}
+}

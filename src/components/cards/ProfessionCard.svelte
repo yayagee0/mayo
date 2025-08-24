@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
-	import { Briefcase, GraduationCap, Wrench, Rocket, Computer, Plane } from 'lucide-svelte';
+	import { Briefcase, GraduationCap, Wrench, Rocket, Computer, Plane, Truck } from 'lucide-svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
@@ -14,22 +14,22 @@
 	// Playful profession descriptions based on profiles
 	const professionDescriptions: Record<string, { title: string; description: string; icon: any }> = {
 		'ghassan': {
-			title: 'Master of Business, HRBP',
+			title: 'Business',
 			description: 'Helps people grow at work, Snack Boss at home.',
 			icon: Briefcase
 		},
 		'mariem': {
-			title: 'Computer Science Master, Super Mom',
-			description: 'Hacker in disguise, bedtime maker.',
+			title: 'Hacker + Computer',
+			description: 'Computer wizard in disguise, bedtime story maker.',
 			icon: Computer
 		},
 		'yazid': {
-			title: 'Future Engineer',
-			description: 'Wants to build tanks, airship, rockets.',
-			icon: Wrench
+			title: 'Engineer + Tank/Airplane',
+			description: 'Wants to build tanks, airships, rockets.',
+			icon: Truck
 		},
 		'yahya': {
-			title: 'Future Engineer',
+			title: 'Engineer + Airplane',
 			description: 'Wants to design rockets, airplanes, flying machines.',
 			icon: Plane
 		}
