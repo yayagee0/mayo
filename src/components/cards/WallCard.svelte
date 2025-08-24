@@ -4,8 +4,7 @@
 	import { eventBus } from '$lib/eventBus';
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
-	import { Home, Plus, X, Heart, MessageCircle, Share2 } from 'lucide-svelte';
-	import Loading from '$lib/../components/ui/Loading.svelte';
+	import { Home, Plus, X } from 'lucide-svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import PostComposer from '$lib/../components/PostComposer.svelte';
 	import PostCard from '$lib/../components/PostCard.svelte';
@@ -20,8 +19,9 @@
 	// Subscribe to profileStore instead of using props
 	let profiles = $derived($profileStore);
 
+	// Include posts + polls
 	let recentPosts = $derived(items
-		.filter(item => item.kind === 'post' && !item.is_deleted)
+		.filter(item => (item.kind === 'post' || item.kind === 'poll') && !item.is_deleted)
 		.sort((a, b) => dayjs(b.created_at).unix() - dayjs(a.created_at).unix())
 		.slice(0, 3));
 
