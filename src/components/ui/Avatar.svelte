@@ -1,45 +1,63 @@
-// ✅ New: Avatar upload with universal file handling
-async uploadAvatar(userId: string, file: File): Promise<string | null> {
-  try {
-    let processedFile: File = file;
+<script lang="ts">
+  import { currentUserProfile, profileStore } from '$lib/stores/profileStore'
+  import { session } from '$lib/stores/sessionStore'
+  import { onMount } from 'svelte'
 
-    // 1. Convert HEIC → JPEG if needed
-    if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
-      const blob = await heic2any({ blob: file, toType: 'image/jpeg' });
-      processedFile = new File([blob as BlobPart], `${userId}.jpg`, { type: 'image/jpeg' });
+  let uploading = false
+  let error: string | null = null
+  let fileInput: HTMLInputElement | null = null
+
+  async function handleFileChange(event: Event) {
+    const input = event.target as HTMLInputElement
+    if (!input.files || input.files.length === 0) return
+
+    const file = input.files[0]
+    if (!$session?.user?.id) return
+
+    try {
+      uploading = true
+      error = null
+      const url = await profileStore.uploadAvatar($session.user.id, file)
+      if (!url) throw new Error('Upload failed')
+    } catch (err) {
+      console.error(err)
+      error = err instanceof Error ? err.message : 'Failed to upload avatar'
+    } finally {
+      uploading = false
+      if (fileInput) fileInput.value = ''
     }
-
-    // 2. Always compress + resize (max 512x512)
-    const imageCompression = (await import('browser-image-compression')).default;
-    const compressedBlob = await imageCompression(processedFile, {
-      maxSizeMB: 0.3,        // ~300KB
-      maxWidthOrHeight: 512, // resize
-      useWebWorker: true
-    });
-    processedFile = new File([compressedBlob], `${userId}.jpg`, { type: 'image/jpeg' });
-
-    // 3. Always overwrite the same path (auto replace old avatar)
-    const filePath = `avatars/${userId}.jpg`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, processedFile, { upsert: true });
-
-    if (uploadError) throw uploadError;
-
-    // 4. Get long-lived signed URL
-    const { data: signed } = await supabase.storage
-      .from('avatars')
-      .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year
-
-    if (signed?.signedUrl) {
-      await this.updateProfile(userId, { avatar_url: signed.signedUrl });
-      return signed.signedUrl;
-    }
-
-    return null;
-  } catch (err) {
-    console.error('Error uploading avatar:', err);
-    return null;
   }
-}
+</script>
+
+<div class="flex flex-col items-center gap-2">
+  {#if $currentUserProfile?.avatar_url}
+    <img
+      src="{$currentUserProfile.avatar_url}?t={Date.now()}"
+      alt="Profile Avatar"
+      class="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+    />
+  {:else}
+    <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+      {$currentUserProfile?.display_name?.charAt(0) || 'U'}
+    </div>
+  {/if}
+
+  <input
+    type="file"
+    accept="image/*"
+    bind:this={fileInput}
+    onchange={handleFileChange}
+    class="hidden"
+  />
+  <button
+    class="btn btn-secondary text-sm"
+    on:click={() => fileInput?.click()}
+    disabled={uploading}
+  >
+    {uploading ? 'Uploading...' : 'Upload Photo'}
+  </button>
+
+  {#if error}
+    <p class="text-red-500 text-sm">{error}</p>
+  {/if}
+</div>
