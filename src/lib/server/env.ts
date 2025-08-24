@@ -28,7 +28,7 @@ export function validateOnStartup() {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const details = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      const details = error.issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join(', ');
       throw new Error(`❌ Invalid environment variables: ${details}`);
     }
     throw error;
