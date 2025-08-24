@@ -105,8 +105,11 @@
 	async function toggleLike() {
 		if (!$session?.user?.email) return;
 		
+		// Optimistic update
+		const wasLiked = isLiked;
+		
 		try {
-			if (isLiked) {
+			if (wasLiked) {
 				await supabase
 					.from('interactions')
 					.delete()
@@ -124,6 +127,8 @@
 			onInteraction?.();
 		} catch (error) {
 			console.error('Error toggling like:', error);
+			// Show error to user
+			alert(`Failed to ${wasLiked ? 'unlike' : 'like'} post. Please try again.`);
 		}
 	}
 	
@@ -195,10 +200,10 @@
 		try {
 			deleting = true;
 			
-			// Soft delete by setting is_deleted to true
+			// Hard delete the post
 			const { error } = await supabase
 				.from('items')
-				.update({ is_deleted: true } as Database['public']['Tables']['items']['Update'])
+				.delete()
 				.eq('id', post.id);
 			
 			if (error) throw error;

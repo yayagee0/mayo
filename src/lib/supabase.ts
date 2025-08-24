@@ -244,6 +244,41 @@ export interface Database {
           }
         ]
       }
+      reflections: {
+        Row: {
+          id: string
+          user_id: string | null
+          mood_emoji: string
+          reflection_text: string | null
+          week_start: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          mood_emoji: string
+          reflection_text?: string | null
+          week_start: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          mood_emoji?: string
+          reflection_text?: string | null
+          week_start?: string
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          }
+        ]
+      }
       scenario_questions: {
         Row: {
           id: string

@@ -6,6 +6,8 @@ const loadAyahCard = () => import('../components/cards/AyahCard.svelte');
 const loadPromptCard = () => import('../components/cards/PromptCard.svelte');
 const loadFeedbackPrompt = () => import('../components/cards/FeedbackPrompt.svelte');
 const loadWallCard = () => import('../components/cards/WallCard.svelte');
+const loadWeeklyReflectionCard = () => import('../components/cards/WeeklyReflectionCard.svelte');
+const loadWeeklyReflectionDigestCard = () => import('../components/cards/WeeklyReflectionDigestCard.svelte');
 const loadAgePlaygroundCard = () => import('../components/cards/AgePlaygroundCard.svelte');
 const loadProfileQuizCard = () => import('../components/cards/ProfileQuizCard.svelte');
 const loadGuessFamilyCard = () => import('../components/cards/GuessFamilyCard.svelte');
@@ -69,12 +71,26 @@ export const systemRegistry: WidgetRegistry = {
     priority: 80,
     enabled: true
   },
+  weeklyReflection: {
+    id: 'weeklyReflection',
+    name: 'Weekly Reflection',
+    component: loadWeeklyReflectionCard,
+    priority: 78,
+    enabled: true
+  },
+  weeklyReflectionDigest: {
+    id: 'weeklyReflectionDigest',
+    name: 'Family Reflections Digest',
+    component: loadWeeklyReflectionDigestCard,
+    priority: 77,
+    enabled: true
+  },
   feedback: {
     id: 'feedback',
-    name: 'Feedback Prompt',
+    name: 'Feedback Prompt (Legacy)',
     component: loadFeedbackPrompt,
-    priority: 75,
-    enabled: true
+    priority: 60,
+    enabled: false // Disabled in favor of weekly reflections
   },
   scenarioDigest: {
     id: 'scenarioDigest',
