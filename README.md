@@ -49,8 +49,10 @@ Coverage includes:
 - Zod schemas (auth, items, interactions, quiz, reflections, scenario, islamic_questions)  
 - Auth allowlist validation  
 - Widget rendering and quiet/anchor rules  
-- Islamic Q&A reassurance flow  
+- Islamic Q&A reassurance flow and 1-2 question limits
+- Widget visibility rules (children-only, parents-only)  
 - Accessibility (ARIA, reduced motion)  
+- Schema integrity and RLS enforcement  
 
 ---
 
@@ -98,13 +100,25 @@ RLS is **enabled for all tables**.
 - ✅ Closing Ritual  
 
 ### Quiet Mode (collapsed by default, explore panel)
-- 📸 Wall Card (Feed, auto-seeded)  
-- 💙 Scenario Reflection Digest  
+- 📸 Feed  
+- 💙 **Family Reflections Digest (Ghassan + Mariem only)**  
+- 💙 **Scenario Reflection Digest (Ghassan + Mariem only)**  
 - 👤 Fun Profile  
-- 🕹️ Age Playground  
-- 👩‍👩‍👦 Profession Card  
-- 🕌 Islamic Q&A (faith-based questions, gentle reassurance)  
+- 🕹️ Age Playground (up to 70 years for Ghassan)  
+- 👩‍👩‍👦 Profession Card (updated roles/icons)  
+- 🕌 Islamic Q&A (1–2 reassuring questions per session)  
 - Archives  
+
+### Visibility Rules
+- **"What Would You Do?"**: Visible only to Yazid and Yahya (children)
+- **Digest Widgets**: Visible only to Ghassan and Mariem (parents)
+- **Age Playground**: Extended to 70 years max for Ghassan, 18 years for others  
+
+### Family Roles & Dreams (Updated Phase 2)
+- **Ghassan** → Master of Business, HRBP - "Helps people grow at work, Snack Boss at home." (Business icon)
+- **Mariem** → Computer Science Master, Super Mom - "Hacker in disguise, bedtime maker." (Computer icon)  
+- **Yazid** → Future Engineer - "Wants to build tanks, airship, rockets." (Engineer icon)
+- **Yahya** → Future Engineer - "Wants to design rockets, airplanes, flying machines." (Plane icon)
 
 ### Deleted
 - ❌ RoleAwarePromptCard  
