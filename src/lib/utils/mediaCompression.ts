@@ -3,7 +3,7 @@
  * Client-side compression for photos and videos before upload
  */
 
-import imageCompression from 'browser-image-compression';
+// ✅ browser-image-compression dynamically imported to avoid SSR issues
 
 export interface CompressionProgress {
 	phase: 'compressing' | 'uploading' | 'done' | 'error';
@@ -22,6 +22,9 @@ export async function compressImage(
 ): Promise<File> {
 	try {
 		onProgress?.({ phase: 'compressing', progress: 0, message: 'Starting image compression...' });
+		
+		// Dynamic import to avoid SSR issues
+		const { default: imageCompression } = await import('browser-image-compression');
 		
 		const options = {
 			maxSizeMB: 1, // Maximum file size in MB
