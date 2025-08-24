@@ -273,7 +273,7 @@
 						</h2>
 						
 						<div class="space-y-4">
-							{#each loadedWidgets.filter(w => ['birthday', 'feedback'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
+							{#each loadedWidgets.filter(w => ['birthday', 'feedback', 'scenarioDigest'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 								<button
 									type="button"
 									class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -301,7 +301,7 @@
 						</h2>
 						
 						<div class="space-y-4">
-							{#each loadedWidgets.filter(w => ['agePlayground'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
+							{#each loadedWidgets.filter(w => ['agePlayground', 'profileQuiz', 'guessFamily', 'scenario'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 								<button
 									type="button"
 									class="transition-transform hover:scale-105 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
@@ -373,7 +373,7 @@
 					<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
 						👨‍👩‍👧 Social
 					</h2>
-					{#each loadedWidgets.filter(w => ['birthday', 'wall', 'feedback'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
+					{#each loadedWidgets.filter(w => ['birthday', 'wall', 'feedback', 'scenarioDigest'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 						<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
 							<button
 								type="button"
@@ -416,7 +416,7 @@
 					<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
 						🎮 Interactive
 					</h2>
-					{#each loadedWidgets.filter(w => ['agePlayground'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
+					{#each loadedWidgets.filter(w => ['agePlayground', 'profileQuiz', 'guessFamily', 'scenario'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 						<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
 							<button
 								type="button"
