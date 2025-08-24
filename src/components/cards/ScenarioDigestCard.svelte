@@ -6,10 +6,15 @@
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
+	import { getUserRole } from '$lib/utils/roles';
 
 	interface Props extends WidgetProps {}
 
 	let { session }: Props = $props();
+
+	// Check if user is a parent - only parents can see digest
+	let userRole = $derived(getUserRole(session?.user?.email));
+	let isParent = $derived(userRole === 'parent');
 
 	let loading = $state(true);
 	let error = $state('');
@@ -20,13 +25,6 @@
 
 	// Subscribe to profileStore
 	let profiles = $derived($profileStore);
-
-	// Get user's role from profile
-	let userProfile = $derived(profiles.find(p => p?.email === session?.user?.email));
-	let userRole = $derived(userProfile?.role || 'member');
-
-	// Check if user is parent (owner or mother)
-	let isParent = $derived(userRole === 'owner' || userRole === 'mother');
 
 	// Get children profiles
 	let children = $derived(() => profiles.filter(p => p.role === 'child'));

@@ -7,10 +7,15 @@
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 	import dayjs from 'dayjs';
+	import { getUserRole } from '$lib/utils/roles';
 
 	interface Props extends WidgetProps {}
 
 	let { session }: Props = $props();
+
+	// Check if user is a parent - only parents can see digest
+	let userRole = $derived(getUserRole(session?.user?.email));
+	let isParent = $derived(userRole === 'parent');
 
 	// Subscribe to profileStore
 	let profiles = $derived($profileStore);
@@ -65,8 +70,8 @@
 		}
 	});
 
-	// Show component only if there are reflections to display
-	let shouldShow = $derived(weeklyReflections.length > 0);
+	// Show component only if user is parent and there are reflections to display
+	let shouldShow = $derived(isParent && weeklyReflections.length > 0);
 </script>
 
 <ComponentErrorBoundary componentName="WeeklyReflectionDigestCard">

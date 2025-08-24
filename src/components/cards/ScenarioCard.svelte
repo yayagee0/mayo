@@ -5,10 +5,15 @@
 	import { BookOpen, CheckCircle, AlertCircle, ThumbsUp, MessageCircle } from 'lucide-svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import { getUserRole } from '$lib/utils/roles';
 
 	interface Props extends WidgetProps {}
 
 	let { session }: Props = $props();
+
+	// Check if user is a child - only children can see scenarios
+	let userRole = $derived(getUserRole(session?.user?.email));
+	let isChild = $derived(userRole === 'child');
 
 	let loading = $state(true);
 	let submitting = $state(false);
@@ -130,6 +135,9 @@
 </script>
 
 <ComponentErrorBoundary componentName="ScenarioCard">
+{#if !isChild}
+	<!-- Don't render anything for non-children -->
+{:else}
 <div class="card">
 	<div class="flex items-center gap-2 mb-4">
 		<BookOpen class="w-6 h-6 text-green-500" aria-hidden="true" />
@@ -235,4 +243,5 @@
 		</div>
 	{/if}
 </div>
+{/if}
 </ComponentErrorBoundary>
