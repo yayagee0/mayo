@@ -63,6 +63,7 @@
 				onPostCreated={handlePostCreated}
 				onCancel={() => showComposer = false}
 				placeholder="Share something with your family..."
+				embedded={true}
 			/>
 		</div>
 	{/if}

@@ -10,9 +10,10 @@
 		onPostCreated?: () => void;
 		onCancel?: () => void;
 		placeholder?: string;
+		embedded?: boolean; // New prop to control styling when embedded in another card
 	}
 	
-	let { onPostCreated, onCancel, placeholder = "What's on your mind? Share something meaningful..." }: PostComposerProps = $props();
+	let { onPostCreated, onCancel, placeholder = "What's on your mind? Share something meaningful...", embedded = false }: PostComposerProps = $props();
 	
 	type ComposerMode = 'text' | 'media' | 'poll' | 'youtube';
 	
@@ -258,17 +259,19 @@
 	});
 </script>
 
-<div class="card space-y-4">
-	<div class="flex items-center justify-between">
-		<h3 class="text-lg font-semibold text-gray-900">Share with your family</h3>
-		<button
-			onclick={handleCancel}
-			class="text-gray-400 hover:text-gray-600 transition-colors"
-			aria-label="Cancel"
-		>
-			<X class="w-5 h-5" />
-		</button>
-	</div>
+<div class="space-y-4" class:card={!embedded}>
+	{#if !embedded}
+		<div class="flex items-center justify-between">
+			<h3 class="text-lg font-semibold text-gray-900">Share with your family</h3>
+			<button
+				onclick={handleCancel}
+				class="text-gray-400 hover:text-gray-600 transition-colors"
+				aria-label="Cancel"
+			>
+				<X class="w-5 h-5" />
+			</button>
+		</div>
+	{/if}
 	
 	<!-- Mode selector -->
 	<div class="flex gap-2 border-b border-gray-200 pb-3">

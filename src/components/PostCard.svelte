@@ -90,8 +90,10 @@
 	});
 	
 	// Media rendering helpers
-	function isYouTubeEmbed(url: string): boolean {
-		return url.includes('youtube.com/embed/');
+	function isYouTubeUrl(url: string): boolean {
+		return url.includes('youtube.com/embed/') || 
+		       url.includes('youtube.com/watch?') || 
+		       url.includes('youtu.be/');
 	}
 	
 	function isImageUrl(url: string): boolean {
@@ -136,18 +138,22 @@
 		if (!$session?.user?.email || hasVoted || !pollData()) return;
 		
 		try {
-			await supabase.from('interactions').insert({
+			const { error } = await supabase.from('interactions').insert({
 				item_id: post.id,
 				user_email: $session.user.email,
 				type: 'vote',
 				answer_index: optionIndex
 			} as Database['public']['Tables']['interactions']['Insert']);
 			
+			if (error) throw error;
+			
 			selectedPollOption = optionIndex;
 			hasVoted = true;
 			onInteraction?.();
 		} catch (error) {
 			console.error('Error submitting vote:', error);
+			// Show user-friendly error message
+			alert('Failed to submit vote. Please try again.');
 		}
 	}
 	
@@ -250,7 +256,7 @@
 	{#if post.media_urls && post.media_urls.length > 0}
 		<div class="mb-3 space-y-3">
 			{#each post.media_urls as mediaUrl}
-				{#if isYouTubeEmbed(mediaUrl)}
+				{#if isYouTubeUrl(mediaUrl)}
 					{@const videoId = extractYouTubeVideoId(mediaUrl)}
 					{#if videoId}
 						<LiteYouTubeEmbed {videoId} title="Shared YouTube video" />
@@ -258,7 +264,7 @@
 						<!-- Fallback for invalid YouTube URL -->
 						<div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
 							<iframe
-								src={mediaUrl}
+								src={getYouTubeEmbedUrl(mediaUrl) || mediaUrl}
 								title="YouTube video"
 								class="w-full h-full"
 								frameborder="0"
@@ -280,13 +286,25 @@
 							Your browser does not support the video tag.
 						</video>
 					</div>
+				{:else}
+					<!-- Display raw URL as clickable link for other media types -->
+					<div class="p-3 bg-gray-50 rounded-lg border">
+						<a 
+							href={mediaUrl} 
+							target="_blank" 
+							rel="noopener noreferrer"
+							class="text-primary-600 hover:text-primary-700 text-sm font-medium break-all"
+						>
+							{mediaUrl}
+						</a>
+					</div>
 				{/if}
 			{/each}
 		</div>
 	{/if}
 	
 	<!-- Poll content -->
-	{#if post.kind === 'poll' && pollData}
+	{#if post.kind === 'poll' && pollData()}
 		<div class="mb-3 space-y-2">
 			{#if hasVoted}
 				<!-- Show results -->
@@ -314,8 +332,9 @@
 						<button
 							onclick={() => submitVote(index)}
 							class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+							disabled={hasVoted}
 						>
-							{option}
+							<span class="text-sm font-medium text-gray-900">{option}</span>
 						</button>
 					{/each}
 				</div>
