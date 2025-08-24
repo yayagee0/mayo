@@ -1,118 +1,110 @@
-# 🏠 Mayo — Family Engagement Platform
+# AGENTS.md — FamilyNest Engineering Contract (Updated for Phase 2)
 
-Mayo is a private **SvelteKit-based family engagement app** with Supabase backend, featuring **role-aware smart cards**, **Google OAuth authentication**, and a **widget-based dashboard system**. It is designed for one household only — bonding before scrolling.
-
----
-
-## 🔧 Stack
-
-- **Framework:** SvelteKit 2 + TypeScript  
-- **Styling:** Tailwind CSS + @tailwindcss/forms  
-- **Icons:** lucide-svelte  
-- **State:** Svelte stores  
-- **Validation:** Zod v4  
-- **Dates:** Day.js  
-- **Auth:** Supabase (Google OAuth only)  
-- **Package Manager:** pnpm  
+This document defines the technical, architectural, and behavioral constraints for all code contributors and AI agents. **No deviations allowed without Product Owner (Ghassan) approval.**
 
 ---
 
-## 🚀 Getting Started
+## 🔧 STACK CONTRACT (LOCKED-IN)
 
-### Prerequisites
-- Node.js 18+  
-- pnpm (auto-managed via `package.json`)  
-
-### Installation
-```bash
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm run dev
-
-# Build for production
-pnpm run build
-```
-
-### Development Commands
-```bash
-# Type checking
-pnpm run check
-
-# Watch mode type checking
-pnpm run check:watch
-
-# Run tests
-pnpm test
-
-# Run tests with UI
-pnpm test:ui
-
-# Run tests once
-pnpm test:run
-```
+| Layer           | Tech / Rule                                        |
+|-----------------|----------------------------------------------------|
+| Framework       | SvelteKit 2 (SSR + TS)                             |
+| Styling         | Tailwind CSS + @tailwindcss/forms                  |
+| Icons           | lucide-svelte                                      |
+| State           | Svelte stores only (no Redux, Zustand, etc.)       |
+| Validation      | Zod                                                |
+| Dates           | Day.js                                             |
+| Auth            | Supabase (Google OAuth only)                       |
+| Storage         | Supabase `post-media` bucket (private, signed URLs)|
+| Package Manager | pnpm (lock file committed)                         |
 
 ---
 
-## 🧪 Testing
+## 🧱 SCHEMA & BACKEND RULES
 
-This project uses **Vitest** with a **jsdom** environment for DOM testing.  
-Coverage includes:  
-- Zod v4 validation schemas (auth, items, interactions, quiz, reflections, scenario)  
-- Auth allowlist validation  
-- Widget configuration validation  
-- Notification handling  
+- ❄️ The schema is **frozen** in `PHASE0_SCHEMA_LOCKED.sql` (now updated to Phase 2).  
+- These tables are canonical and immutable without approval:  
 
----
+  **Core (Phase 0)**  
+  - `app_settings`  
+  - `profiles`  
+  - `items`  
+  - `interactions`  
 
-## 🔒 Security & Access
+  **Extended (Phase 1)**  
+  - `quiz_questions`  
+  - `quiz_answers`  
+  - `quiz_guesses`  
+  - `reflections`  
+  - `scenario_questions`  
+  - `scenario_answers`  
 
-- **4-person allowlist**: only specific family emails can log in  
-- **Server-side validation**: allowlist enforced at server level  
-- **RLS policies**: Row-Level Security active for every table  
-- **Google OAuth only**: no other authentication supported  
+  **Extended (Phase 2)**  
+  - `islamic_questions`  
 
----
-
-## 📦 Schema & Database
-
-Schema is **locked and immutable** (`PHASE0_SCHEMA_LOCKED.sql`).  
-
-### Core Tables (Phase 0)
-- `app_settings`  
-- `profiles`  
-- `items`  
-- `interactions`  
-
-### Extended Tables (Phase 1)
-- `quiz_questions`  
-- `quiz_answers`  
-- `quiz_guesses`  
-- `reflections`  
-- `scenario_questions`  
-- `scenario_answers`  
-
-RLS is **enabled for all tables**.  
-Policies are designed around **self-ownership** (users can only manage their own rows).  
+- All backend logic must **match exactly** what is in the schema file.  
+- Supabase is used **only** for persistence — not for dynamic roles, logic, or migrations.  
+- ✅ RLS must remain enabled for all tables.  
+- ❌ No Supabase Edge Functions or additional services allowed.  
 
 ---
 
-## 🔐 Security Headers (CSP)
+## 🔐 AUTH & ROLE ENFORCEMENT
 
-As of Phase 0/1, no CSP (Content-Security-Policy) is enforced.  
-Reason: App is private (4 whitelisted users only) and CSP caused blocked videos/avatars.  
+- Google login is enforced via Supabase.  
+- Only these **four hardcoded emails** are allowed (see `src/lib/server/allowlist.ts`).  
+- Role detection and permissions are **handled in frontend only**.  
+- Backend never controls visibility or access logic.  
 
-If the app is ever opened beyond this household, **reintroduce CSP** with explicit allowlists (Supabase, YouTube, DiceBear).  
+---
+
+## 🎨 FRONTEND UX PRINCIPLES
+
+- Mobile-first, accessible, low-cognitive-load design.  
+- Smart Cards render before feed; `BirthdayCard` mandatory if data exists.  
+- Smart Card-first feed: Feed must show meaningful cards before content if empty.  
+- Gentle UX: no gamification, no intrusive notifications.  
+- Must support keyboard navigation, reduced motion preferences, and proper contrast.  
 
 ---
 
-## 🧱 Architecture Principles
+## 🧠 DESIGN PHILOSOPHY
 
-- **Schema-First**: Data drives design decisions; schema locked in version control  
-- **Mobile-First**: Responsive design prioritizes mobile experience  
-- **Widget-Based**: Modular dashboard with smart cards  
-- **Single-Family**: All data scoped to one household context  
-- **No Dead Ends**: Every screen offers CTAs or Smart Cards  
+- Schema-First: Data drives design. Schema never changes without PO approval.  
+- Contractual AI: Copilot, codegen, or any LLM must obey this file and `PHASE0_SCHEMA_LOCKED.sql`.  
+- No Dead Ends: All screens should offer CTAs or Smart Cards, never show blanks.  
+- Single-Family Privacy: All storage, media, and feeds are locked to one household context.  
 
 ---
+
+## 🚫 PROHIBITED
+
+- ❌ Do not install UI mega-libraries (e.g., Material UI, Bootstrap).  
+- ❌ Do not add new database tables, columns, triggers, or roles without PO approval.  
+- ❌ Do not rely on runtime dynamic role assignment or permissions logic.  
+- ❌ Do not use Supabase functions, webhooks, or realtime features.  
+
+---
+
+## 🚧 CURRENT SPRINT CONSTRAINTS
+
+- ❌ Do not change login flow (/ → Google OAuth → /dashboard).  
+- ❌ Do not modify Supabase auth, allowlist, or baseline RLS policies.  
+- ✅ Focus on quality & stability improvements only.  
+- ✅ Fix TypeScript errors and add error boundaries.  
+- ✅ Implement shared stores for better state management.  
+
+---
+
+## 📁 CONTRACT FILES
+
+| File                          | Description                              |
+|-------------------------------|------------------------------------------|
+| PHASE0_SCHEMA_LOCKED.sql      | Canonical schema (Phase 0–2 tables)      |
+| COPILOT_PROMPT_PHASE2_FULL.txt| AI codegen scaffold guide                |
+| README.md                     | Project overview and usage instructions |
+| AGENTS.md                     | Enforcement document for humans + AI    |
+
+---
+
+✅ This contract is binding for any contributor or AI. Any deviation must be approved explicitly by Ghassan (Product Owner).  

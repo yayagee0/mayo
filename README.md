@@ -1,6 +1,7 @@
-# 🏠 Mayo — Family Engagement Platform
+# 🏠 Mayo — Family Engagement Platform (Phase 2)
 
-Mayo is a private **SvelteKit-based family engagement app** with Supabase backend, featuring **role-aware smart cards**, **Google OAuth authentication**, and a **widget-based dashboard system**. It is designed for one household only — bonding before scrolling.
+Mayo is a private **SvelteKit-based family engagement app** with a Supabase backend, featuring **smart cards, Islamic Q&A, and family-driven bonding widgets**.  
+It is designed for one household only — **bonding before scrolling**.  
 
 ---
 
@@ -25,31 +26,17 @@ Mayo is a private **SvelteKit-based family engagement app** with Supabase backen
 
 ### Installation
 ```bash
-# Install dependencies
 pnpm install
-
-# Start development server
 pnpm run dev
-
-# Build for production
 pnpm run build
 ```
 
 ### Development Commands
 ```bash
-# Type checking
 pnpm run check
-
-# Watch mode type checking
 pnpm run check:watch
-
-# Run tests
 pnpm test
-
-# Run tests with UI
 pnpm test:ui
-
-# Run tests once
 pnpm test:run
 ```
 
@@ -57,21 +44,22 @@ pnpm test:run
 
 ## 🧪 Testing
 
-This project uses **Vitest** with a **jsdom** environment for DOM testing.  
+This project uses **Vitest** with a **jsdom** environment.  
 Coverage includes:  
-- Zod v4 validation schemas (auth, items, interactions, quiz, reflections, scenario)  
+- Zod schemas (auth, items, interactions, quiz, reflections, scenario, islamic_questions)  
 - Auth allowlist validation  
-- Widget configuration validation  
-- Notification handling  
+- Widget rendering and quiet/anchor rules  
+- Islamic Q&A reassurance flow  
+- Accessibility (ARIA, reduced motion)  
 
 ---
 
 ## 🔒 Security & Access
 
-- **4-person allowlist**: only specific family emails can log in  
-- **Server-side validation**: allowlist enforced at server level  
-- **RLS policies**: Row-Level Security active for every table  
-- **Google OAuth only**: no other authentication supported  
+- **4-person allowlist** → only specific family emails may log in  
+- **Server-side allowlist** enforced  
+- **RLS policies** on every table  
+- **Google OAuth only**  
 
 ---
 
@@ -93,26 +81,49 @@ Schema is **locked and immutable** (`PHASE0_SCHEMA_LOCKED.sql`).
 - `scenario_questions`  
 - `scenario_answers`  
 
+### Extended Tables (Phase 2)
+- `islamic_questions` (Q&A for kids with reassuring explanations)  
+
 RLS is **enabled for all tables**.  
-Policies are designed around **self-ownership** (users can only manage their own rows).  
+
+---
+
+## 📊 Widgets
+
+### Anchor Widgets (always shown, 3–4 max on load)
+- 🌞 Reflection/Mood Today  
+- 📖 Daily Ayah  
+- 🎂 Birthday/Milestone  
+- ❓ Interactive (Quiz OR Scenario, rotating)  
+- ✅ Closing Ritual  
+
+### Quiet Mode (collapsed by default, explore panel)
+- 📸 Wall Card (Feed, auto-seeded)  
+- 💙 Scenario Reflection Digest  
+- 👤 Fun Profile  
+- 🕹️ Age Playground  
+- 👩‍👩‍👦 Profession Card  
+- 🕌 Islamic Q&A (faith-based questions, gentle reassurance)  
+- Archives  
+
+### Deleted
+- ❌ RoleAwarePromptCard  
 
 ---
 
 ## 🔐 Security Headers (CSP)
 
-As of Phase 0/1, no CSP (Content-Security-Policy) is enforced.  
-Reason: App is private (4 whitelisted users only) and CSP caused blocked videos/avatars.  
-
-If the app is ever opened beyond this household, **reintroduce CSP** with explicit allowlists (Supabase, YouTube, DiceBear).  
+Still not enforced (household-only).  
+If expanded beyond family, reintroduce CSP with explicit allowlists.  
 
 ---
 
 ## 🧱 Architecture Principles
 
-- **Schema-First**: Data drives design decisions; schema locked in version control  
-- **Mobile-First**: Responsive design prioritizes mobile experience  
-- **Widget-Based**: Modular dashboard with smart cards  
-- **Single-Family**: All data scoped to one household context  
-- **No Dead Ends**: Every screen offers CTAs or Smart Cards  
+- **Schema-First** → Schema defines capabilities, locked in VCS.  
+- **Psychology-Driven UX** → Anchor vs Quiet separation, closure rituals, empathy-first design.  
+- **Mobile-First** → Always optimized for mobile.  
+- **Single-Family Privacy** → Data scoped to one household only.  
+- **No Dead Ends** → Always a CTA or quiet widget available.  
 
 ---
