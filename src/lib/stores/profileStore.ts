@@ -2,6 +2,7 @@ import { writable, derived } from 'svelte/store'
 import { supabase } from '../supabase'
 import type { Database } from '../supabase'
 import { session } from './sessionStore'
+import heic2any from 'heic2any' // ✅ add HEIC converter
 
 export interface Profile {
   user_id: string
@@ -77,11 +78,9 @@ class ProfileStore {
         .maybeSingle()
 
       if (error || !data) {
-        // Don't log as error - missing profile is expected
         return null
       }
 
-      // Update the local store if profile was found
       const existingIndex = this.profiles.findIndex(p => p.email === email)
       if (existingIndex >= 0) {
         this.profiles[existingIndex] = data
@@ -92,7 +91,6 @@ class ProfileStore {
 
       return data
     } catch (err) {
-      // Never throw - return null on any error
       console.error('Error loading profile for email:', email, err)
       return null
     }
@@ -163,6 +161,41 @@ class ProfileStore {
     }
   }
 
+  // ✅ New: Avatar upload with HEIC → JPEG support
+  async uploadAvatar(userId: string, file: File): Promise<string | null> {
+    try {
+      let processedFile: File = file
+
+      // Convert HEIC to JPEG
+      if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+        const blob = await heic2any({ blob: file, toType: 'image/jpeg' })
+        processedFile = new File([blob as BlobPart], file.name.replace(/\.heic$/i, '.jpg'), {
+          type: 'image/jpeg'
+        })
+      }
+
+      const fileName = `${userId}-${Date.now()}.jpg`
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, processedFile, { upsert: true })
+
+      if (error) throw error
+
+      const { data: signed } = await supabase.storage
+        .from('avatars')
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365)
+
+      if (signed?.signedUrl) {
+        await this.updateProfile(userId, { avatar_url: signed.signedUrl })
+        return signed.signedUrl
+      }
+      return null
+    } catch (err) {
+      console.error('Error uploading avatar:', err)
+      return null
+    }
+  }
+
   findByEmail(email: string): Profile | undefined {
     return this.profiles.find(profile => profile.email === email)
   }
@@ -190,7 +223,6 @@ class ProfileStore {
 
 export const profileStore = new ProfileStore()
 
-// Derived stores for common use cases
 export const currentUserProfile = derived(
   [profileStore, session],
   ([$profiles, $session]) => {
