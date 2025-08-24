@@ -6,7 +6,7 @@
 	import type { Database } from '$lib/supabase';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import imageCompression from 'browser-image-compression';
-	import { getUserRole, getRoleDisplayName, type AllowedEmail } from '$lib/utils/roles';
+	import { getUserRole, getRoleDisplayName, getSeededDisplayName, type AllowedEmail } from '$lib/utils/roles';
 	import { profileStore } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
 
@@ -66,10 +66,13 @@
 
 		if (data) {
 			profile = data as Database['public']['Tables']['profiles']['Row'];
-			displayName = (data as any).display_name || '';
+			displayName = (data as any).display_name || getSeededDisplayName($user.email) || '';
 			avatarUrl = (data as any).avatar_url || '';
 			role = computedRole(); // Use computed role instead of stored role
 			dob = (data as any).dob || '';
+		} else {
+			// No profile exists, use seeded display name
+			displayName = getSeededDisplayName($user.email) || '';
 		}
 	}
 
@@ -81,7 +84,7 @@
 			const profileData = {
 				user_id: $user.id,
 				email: $user.email,
-				display_name: displayName || null,
+				display_name: displayName || getSeededDisplayName($user.email) || null,
 				avatar_url: avatarUrl || null,
 				role: computedRole(), // Always use computed role
 				dob: dob || null,

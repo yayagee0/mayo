@@ -250,7 +250,7 @@
 					{#if widgetCollapseStates['quietMode']}
 						<div class="px-6 pb-6 border-t border-gray-100 bg-gray-50">
 							<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-								{#each loadedWidgets.filter(w => ['wall', 'scenarioDigest', 'profileQuiz', 'agePlayground', 'professionCard', 'weeklyReflectionDigest'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
+								{#each loadedWidgets.filter(w => ['wall', 'scenarioDigest', 'profileQuiz', 'agePlayground', 'professionCard', 'islamicQA', 'islamicReflectionDigest', 'weeklyReflectionDigest'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 									<div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
 										<div class="flex items-center gap-2 mb-4">
 											<h4 class="text-sm font-semibold text-gray-900">{widget.name}</h4>
