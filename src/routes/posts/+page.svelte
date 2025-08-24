@@ -29,6 +29,7 @@
 
 	let showComposer = $state(false);
 	
+	// Map comments by parent_id
 	let commentsMap = $derived(() => {
 		const map = new Map<string, Database['public']['Tables']['items']['Row'][]>();
 		allItems
@@ -55,6 +56,7 @@
 		loading = false;
 	});
 
+	// Master loader
 	async function loadData() {
 		try {
 			error = null;
@@ -69,24 +71,24 @@
 		}
 	}
 
+	// Load paginated posts (post + poll)
 	async function loadPosts(append = false) {
 		try {
 			const { data, error: fetchError } = await supabase
 				.from('items')
 				.select('*')
-				.in('kind', ['post', 'poll'])   // ✅ include polls
-				.eq('is_deleted', false)
+				.or('kind.eq.post,kind.eq.poll')
+				.or('is_deleted.eq.false,is_deleted.is.null')
 				.order('created_at', { ascending: false })
 				.range(page * postsPerPage, (page + 1) * postsPerPage - 1);
 
-			if (fetchError) throw fetchError;
+			if (fetchError) {
+				console.error("Supabase error (loadPosts):", fetchError.message);
+				throw fetchError;
+			}
 
 			if (data) {
-				if (append) {
-					posts = [...posts, ...data];
-				} else {
-					posts = data;
-				}
+				posts = append ? [...posts, ...data] : data;
 			}
 		} catch (error) {
 			console.error('Error loading posts:', error);
@@ -94,15 +96,20 @@
 		}
 	}
 
+	// Load all items (used for comments)
 	async function loadAllItems() {
 		try {
 			const { data, error: fetchError } = await supabase
 				.from('items')
-				.select('*')
-				.eq('is_deleted', false)
+				.select('id, kind, parent_id, body, author_email, created_at')
+				.or('is_deleted.eq.false,is_deleted.is.null')
 				.order('created_at', { ascending: false });
 
-			if (fetchError) throw fetchError;
+			if (fetchError) {
+				console.error("Supabase error (loadAllItems):", fetchError.message);
+				throw fetchError;
+			}
+
 			allItems = data || [];
 		} catch (error) {
 			console.error('Error loading all items:', error);
@@ -110,13 +117,18 @@
 		}
 	}
 
+	// Load interactions (likes, votes, etc.)
 	async function loadInteractions() {
 		try {
 			const { data, error: fetchError } = await supabase
 				.from('interactions')
-				.select('*');
-			
-			if (fetchError) throw fetchError;
+				.select('id, item_id, type, user_email, answer_index, created_at');
+
+			if (fetchError) {
+				console.error("Supabase error (loadInteractions):", fetchError.message);
+				throw fetchError;
+			}
+
 			interactions = data || [];
 		} catch (error) {
 			console.error('Error loading interactions:', error);
