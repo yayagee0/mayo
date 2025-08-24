@@ -1,46 +1,45 @@
-<script lang="ts">
-  import Avatar from './Avatar.svelte';
-  import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
-  import { session } from '$lib/stores/sessionStore';
+// ✅ New: Avatar upload with universal file handling
+async uploadAvatar(userId: string, file: File): Promise<string | null> {
+  try {
+    let processedFile: File = file;
 
-  let uploading = false;
-  let error: string | null = null;
-
-  async function handleFileChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length || !$session?.user?.id) return;
-
-    const file = input.files[0];
-    uploading = true;
-    error = null;
-
-    try {
-      const url = await profileStore.uploadAvatar($session.user.id, file);
-      if (!url) {
-        error = 'Failed to upload avatar';
-      }
-    } catch (err) {
-      console.error('Avatar upload error:', err);
-      error = 'Upload failed. Please try again.';
-    } finally {
-      uploading = false;
+    // 1. Convert HEIC → JPEG if needed
+    if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+      const blob = await heic2any({ blob: file, toType: 'image/jpeg' });
+      processedFile = new File([blob as BlobPart], `${userId}.jpg`, { type: 'image/jpeg' });
     }
+
+    // 2. Always compress + resize (max 512x512)
+    const imageCompression = (await import('browser-image-compression')).default;
+    const compressedBlob = await imageCompression(processedFile, {
+      maxSizeMB: 0.3,        // ~300KB
+      maxWidthOrHeight: 512, // resize
+      useWebWorker: true
+    });
+    processedFile = new File([compressedBlob], `${userId}.jpg`, { type: 'image/jpeg' });
+
+    // 3. Always overwrite the same path (auto replace old avatar)
+    const filePath = `avatars/${userId}.jpg`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, processedFile, { upsert: true });
+
+    if (uploadError) throw uploadError;
+
+    // 4. Get long-lived signed URL
+    const { data: signed } = await supabase.storage
+      .from('avatars')
+      .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year
+
+    if (signed?.signedUrl) {
+      await this.updateProfile(userId, { avatar_url: signed.signedUrl });
+      return signed.signedUrl;
+    }
+
+    return null;
+  } catch (err) {
+    console.error('Error uploading avatar:', err);
+    return null;
   }
-</script>
-
-<div class="flex flex-col items-center space-y-3">
-  <Avatar
-    src={$currentUserProfile?.avatar_url || undefined}
-    alt={$currentUserProfile?.display_name || $session?.user?.email || 'User'}
-    size="xl"
-  />
-
-  <label class="cursor-pointer bg-primary-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-primary-700">
-    {uploading ? 'Uploading...' : 'Change Photo'}
-    <input type="file" accept="image/*" class="hidden" on:change={handleFileChange} />
-  </label>
-
-  {#if error}
-    <p class="text-sm text-red-600">{error}</p>
-  {/if}
-</div>
+}
