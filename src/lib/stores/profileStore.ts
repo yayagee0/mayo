@@ -2,7 +2,7 @@ import { writable, derived } from 'svelte/store'
 import { supabase } from '../supabase'
 import type { Database } from '../supabase'
 import { session } from './sessionStore'
-import heic2any from 'heic2any' // ✅ add HEIC converter
+import heic2any from 'heic2any' // ✅ HEIC converter
 
 export interface Profile {
   user_id: string
@@ -22,7 +22,6 @@ class ProfileStore {
   private errorStore = writable<string | null>(null)
 
   constructor() {
-    // Auto-load profiles when session becomes available
     session.subscribe(($session) => {
       if ($session) {
         this.loadProfiles()
@@ -45,24 +44,17 @@ class ProfileStore {
   async loadProfiles() {
     this.loadingStore.set(true)
     this.errorStore.set(null)
-
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Error loading profiles:', error)
-        this.errorStore.set(error.message)
-        return
-      }
-
+      if (error) throw error
       this.profiles = data || []
       this.store.set(this.profiles)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load profiles'
-      this.errorStore.set(errorMessage)
+      this.errorStore.set(err instanceof Error ? err.message : 'Failed to load profiles')
       console.error('Error loading profiles:', err)
     } finally {
       this.loadingStore.set(false)
@@ -77,9 +69,7 @@ class ProfileStore {
         .eq('email', email)
         .maybeSingle()
 
-      if (error || !data) {
-        return null
-      }
+      if (error || !data) return null
 
       const existingIndex = this.profiles.findIndex(p => p.email === email)
       if (existingIndex >= 0) {
@@ -88,7 +78,6 @@ class ProfileStore {
         this.profiles.push(data)
       }
       this.store.set(this.profiles)
-
       return data
     } catch (err) {
       console.error('Error loading profile for email:', email, err)
@@ -97,8 +86,6 @@ class ProfileStore {
   }
 
   async createProfile(profileData: Omit<Profile, 'created_at' | 'updated_at'>) {
-    this.errorStore.set(null)
-
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -106,30 +93,20 @@ class ProfileStore {
         .select()
         .maybeSingle()
 
-      if (error) {
-        const errorMessage = error.message || 'Failed to create profile'
-        this.errorStore.set(errorMessage)
-        console.error('Error creating profile:', error)
-        return null
-      }
-
+      if (error) throw error
       if (data) {
         this.profiles = [data, ...this.profiles]
         this.store.set(this.profiles)
       }
-
       return data
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create profile'
-      this.errorStore.set(errorMessage)
       console.error('Error creating profile:', err)
+      this.errorStore.set(err instanceof Error ? err.message : 'Failed to create profile')
       return null
     }
   }
 
   async updateProfile(userId: string, updates: Partial<Profile>) {
-    this.errorStore.set(null)
-
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -138,35 +115,24 @@ class ProfileStore {
         .select()
         .maybeSingle()
 
-      if (error) {
-        const errorMessage = error.message || 'Failed to update profile'
-        this.errorStore.set(errorMessage)
-        console.error('Error updating profile:', error)
-        return null
-      }
-
+      if (error) throw error
       if (data) {
-        this.profiles = this.profiles.map(profile =>
-          profile.user_id === userId ? data : profile
-        )
+        this.profiles = this.profiles.map(p => p.user_id === userId ? data : p)
         this.store.set(this.profiles)
       }
-
       return data
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update profile'
-      this.errorStore.set(errorMessage)
       console.error('Error updating profile:', err)
+      this.errorStore.set(err instanceof Error ? err.message : 'Failed to update profile')
       return null
     }
   }
 
-  // ✅ New: Avatar upload with HEIC → JPEG support
+  // ✅ Avatar upload with HEIC → JPEG support, auto replace, auto compression (browser handles)
   async uploadAvatar(userId: string, file: File): Promise<string | null> {
     try {
       let processedFile: File = file
 
-      // Convert HEIC to JPEG
       if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
         const blob = await heic2any({ blob: file, toType: 'image/jpeg' })
         processedFile = new File([blob as BlobPart], file.name.replace(/\.heic$/i, '.jpg'), {
@@ -174,12 +140,14 @@ class ProfileStore {
         })
       }
 
-      const fileName = `${userId}-${Date.now()}.jpg`
-      const { data, error } = await supabase.storage
+      const ext = processedFile.name.split('.').pop() || 'jpg'
+      const fileName = `${userId}-avatar.${ext}`
+
+      const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, processedFile, { upsert: true })
 
-      if (error) throw error
+      if (uploadError) throw uploadError
 
       const { data: signed } = await supabase.storage
         .from('avatars')
@@ -196,23 +164,10 @@ class ProfileStore {
     }
   }
 
-  findByEmail(email: string): Profile | undefined {
-    return this.profiles.find(profile => profile.email === email)
-  }
-
-  findById(userId: string): Profile | undefined {
-    return this.profiles.find(profile => profile.user_id === userId)
-  }
-
-  getDisplayName(email: string): string {
-    const profile = this.findByEmail(email)
-    return profile?.display_name || email.split('@')[0]
-  }
-
-  getAvatarUrl(email: string): string | null {
-    const profile = this.findByEmail(email)
-    return profile?.avatar_url || null
-  }
+  findByEmail(email: string) { return this.profiles.find(p => p.email === email) }
+  findById(userId: string) { return this.profiles.find(p => p.user_id === userId) }
+  getDisplayName(email: string) { return this.findByEmail(email)?.display_name || email.split('@')[0] }
+  getAvatarUrl(email: string) { return this.findByEmail(email)?.avatar_url || null }
 
   clear() {
     this.profiles = []
@@ -231,12 +186,5 @@ export const currentUserProfile = derived(
   }
 )
 
-export const parentProfiles = derived(
-  profileStore,
-  ($profiles) => $profiles.filter(profile => profile.role === 'parent')
-)
-
-export const childProfiles = derived(
-  profileStore,
-  ($profiles) => $profiles.filter(profile => profile.role === 'child')
-)
+export const parentProfiles = derived(profileStore, ($profiles) => $profiles.filter(p => p.role === 'parent'))
+export const childProfiles = derived(profileStore, ($profiles) => $profiles.filter(p => p.role === 'child'))
