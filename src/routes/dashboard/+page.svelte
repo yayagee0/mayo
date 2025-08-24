@@ -183,7 +183,7 @@
 					<p class="text-gray-600">Your daily anchors for staying close</p>
 				</div>
 				
-				{#each loadedWidgets.filter(w => ['reflectionMood', 'ayah', 'birthday', 'scenario'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
+				{#each loadedWidgets.filter(w => ['reflectionMood', 'ayah', 'birthday', 'quiz', 'scenario'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 					<div class="w-full max-w-2xl mx-auto">
 						<button
 							type="button"

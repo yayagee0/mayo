@@ -16,6 +16,7 @@ const loadScenarioDigestCard = () => import('../components/cards/ScenarioDigestC
 const loadReflectionMoodCard = () => import('../components/cards/ReflectionMoodCard.svelte');
 const loadClosingRitualCard = () => import('../components/cards/ClosingRitualCard.svelte');
 const loadProfessionCard = () => import('../components/cards/ProfessionCard.svelte');
+const loadQuizCard = () => import('../components/cards/QuizCard.svelte');
 
 export const systemRegistry: WidgetRegistry = {
   // ANCHOR WIDGETS (High Priority) - Maximum 3-4 visible at first load
@@ -38,6 +39,13 @@ export const systemRegistry: WidgetRegistry = {
     name: 'Birthday & Milestones',
     component: loadBirthdayCard,
     priority: 90,
+    enabled: true
+  },
+  quiz: {
+    id: 'quiz',
+    name: 'Family Quiz',
+    component: loadQuizCard,
+    priority: 87,
     enabled: true
   },
   scenario: {
@@ -75,7 +83,7 @@ export const systemRegistry: WidgetRegistry = {
     name: 'Set Your Fun Profile',
     component: loadProfileQuizCard,
     priority: 65,
-    enabled: true
+    enabled: false // Replaced by unified QuizCard
   },
   agePlayground: {
     id: 'agePlayground',
@@ -98,7 +106,7 @@ export const systemRegistry: WidgetRegistry = {
     name: 'Guess Family Answers',
     component: loadGuessFamilyCard,
     priority: 50,
-    enabled: false // Will be merged into Quiz functionality
+    enabled: false // Merged into unified QuizCard
   },
   weeklyReflection: {
     id: 'weeklyReflection',

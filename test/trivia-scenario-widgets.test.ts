@@ -3,13 +3,23 @@ import { widgetRegistry } from '../src/lib/widgetRegistry';
 
 describe('Trivia & Scenario Widgets', () => {
   describe('Widget Registration', () => {
-    it('should register ProfileQuizCard widget', () => {
+    it('should register unified QuizCard widget (replaces ProfileQuiz)', () => {
+      const widgets = widgetRegistry.getAll();
+      const quiz = widgets.find(w => w.id === 'quiz');
+      
+      expect(quiz).toBeDefined();
+      expect(quiz?.name).toBe('Family Quiz');
+      expect(quiz?.enabled).toBe(true);
+      expect(typeof quiz?.component).toBe('function');
+    });
+
+    it('should register ProfileQuizCard widget as disabled (replaced by QuizCard)', () => {
       const widgets = widgetRegistry.getAll();
       const profileQuiz = widgets.find(w => w.id === 'profileQuiz');
       
       expect(profileQuiz).toBeDefined();
       expect(profileQuiz?.name).toBe('Set Your Fun Profile');
-      expect(profileQuiz?.enabled).toBe(true);
+      expect(profileQuiz?.enabled).toBe(false); // Disabled because replaced by unified QuizCard
       expect(typeof profileQuiz?.component).toBe('function');
     });
 
@@ -47,7 +57,7 @@ describe('Trivia & Scenario Widgets', () => {
   describe('Widget Priority Order', () => {
     it('should have correct priority order for enabled widgets', () => {
       const widgets = widgetRegistry.getSorted();
-      const enabledWidgetIds = ['profileQuiz', 'scenario', 'scenarioDigest'];
+      const enabledWidgetIds = ['quiz', 'scenario', 'scenarioDigest'];
       
       // Find positions of the enabled widgets
       const positions = enabledWidgetIds.map(id => 
@@ -59,10 +69,18 @@ describe('Trivia & Scenario Widgets', () => {
         expect(pos).toBeGreaterThanOrEqual(0);
       });
 
-      // Scenario should come before ScenarioDigest (higher priority)
+      // Quiz should come before Scenario (higher priority)
+      const quizPos = widgets.findIndex(w => w.id === 'quiz');
       const scenarioPos = widgets.findIndex(w => w.id === 'scenario');
+      expect(quizPos).toBeLessThan(scenarioPos);
+
+      // Scenario should come before ScenarioDigest (higher priority)
       const scenarioDigestPos = widgets.findIndex(w => w.id === 'scenarioDigest');
       expect(scenarioPos).toBeLessThan(scenarioDigestPos);
+
+      // ProfileQuiz should not appear in sorted list since it's disabled
+      const profileQuizPos = widgets.findIndex(w => w.id === 'profileQuiz');
+      expect(profileQuizPos).toBe(-1);
 
       // GuessFamily should not appear in sorted list since it's disabled
       const guessFamilyPos = widgets.findIndex(w => w.id === 'guessFamily');
