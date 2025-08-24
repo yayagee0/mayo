@@ -7,6 +7,10 @@ const loadPromptCard = () => import('../components/cards/PromptCard.svelte');
 const loadFeedbackPrompt = () => import('../components/cards/FeedbackPrompt.svelte');
 const loadWallCard = () => import('../components/cards/WallCard.svelte');
 const loadAgePlaygroundCard = () => import('../components/cards/AgePlaygroundCard.svelte');
+const loadProfileQuizCard = () => import('../components/cards/ProfileQuizCard.svelte');
+const loadGuessFamilyCard = () => import('../components/cards/GuessFamilyCard.svelte');
+const loadScenarioCard = () => import('../components/cards/ScenarioCard.svelte');
+const loadScenarioDigestCard = () => import('../components/cards/ScenarioDigestCard.svelte');
 
 export const systemRegistry: WidgetRegistry = {
   birthday: {
@@ -30,11 +34,32 @@ export const systemRegistry: WidgetRegistry = {
     priority: 88,
     enabled: true // Feature flag - can be set to false to disable
   },
+  profileQuiz: {
+    id: 'profileQuiz',
+    name: 'Set Your Fun Profile',
+    component: loadProfileQuizCard,
+    priority: 87,
+    enabled: true
+  },
+  guessFamily: {
+    id: 'guessFamily',
+    name: 'Guess Family Answers',
+    component: loadGuessFamilyCard,
+    priority: 86,
+    enabled: true
+  },
+  scenario: {
+    id: 'scenario',
+    name: 'What Would You Do?',
+    component: loadScenarioCard,
+    priority: 85,
+    enabled: true
+  },
   ayah: {
     id: 'ayah',
     name: 'Daily Ayah',
     component: loadAyahCard,
-    priority: 85,
+    priority: 84,
     enabled: true
   },
   prompt: {
@@ -49,6 +74,13 @@ export const systemRegistry: WidgetRegistry = {
     name: 'Feedback Prompt',
     component: loadFeedbackPrompt,
     priority: 75,
+    enabled: true
+  },
+  scenarioDigest: {
+    id: 'scenarioDigest',
+    name: 'Scenario Reflection Digest',
+    component: loadScenarioDigestCard,
+    priority: 70,
     enabled: true
   }
 }

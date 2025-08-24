@@ -135,6 +135,178 @@ export interface Database {
         }
         Relationships: []
       }
+      quiz_questions: {
+        Row: {
+          id: string
+          question_text: string
+          options: string[]
+          order_index: number
+        }
+        Insert: {
+          id?: string
+          question_text: string
+          options: string[]
+          order_index: number
+        }
+        Update: {
+          id?: string
+          question_text?: string
+          options?: string[]
+          order_index?: number
+        }
+        Relationships: []
+      }
+      quiz_answers: {
+        Row: {
+          id: string
+          user_id: string | null
+          question_id: string | null
+          answer_index: number
+          locked_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          question_id?: string | null
+          answer_index: number
+          locked_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          question_id?: string | null
+          answer_index?: number
+          locked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      quiz_guesses: {
+        Row: {
+          id: string
+          guesser_id: string | null
+          target_id: string | null
+          question_id: string | null
+          guessed_index: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          guesser_id?: string | null
+          target_id?: string | null
+          question_id?: string | null
+          guessed_index: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          guesser_id?: string | null
+          target_id?: string | null
+          question_id?: string | null
+          guessed_index?: number
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_guesses_guesser_id_fkey"
+            columns: ["guesser_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "quiz_guesses_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "quiz_guesses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      scenario_questions: {
+        Row: {
+          id: string
+          question_text: string
+          options: string[]
+          correct_index: number
+          order_index: number
+        }
+        Insert: {
+          id?: string
+          question_text: string
+          options: string[]
+          correct_index: number
+          order_index: number
+        }
+        Update: {
+          id?: string
+          question_text?: string
+          options?: string[]
+          correct_index?: number
+          order_index?: number
+        }
+        Relationships: []
+      }
+      scenario_answers: {
+        Row: {
+          id: string
+          user_id: string | null
+          question_id: string | null
+          chosen_index: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          question_id?: string | null
+          chosen_index: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          question_id?: string | null
+          chosen_index?: number
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenario_answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "scenario_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "scenario_questions"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
