@@ -5,7 +5,7 @@
 	import { supabase } from '$lib/supabase';
 	import type { Database } from '$lib/supabase';
 	import Loading from '$lib/../components/ui/Loading.svelte';
-	import imageCompression from 'browser-image-compression';
+	// ✅ browser-image-compression dynamically imported to avoid SSR issues
 	import { getUserRole, getRoleDisplayName, getSeededDisplayName, type AllowedEmail } from '$lib/utils/roles';
 	import { profileStore } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
@@ -151,13 +151,14 @@
 		try {
 			uploading = true;
 			
-			// Compress image
+			// Compress image (dynamic import to avoid SSR issues)
 			const options = {
 				maxSizeMB: 1,
 				maxWidthOrHeight: 800,
 				useWebWorker: true,
 			};
 			
+			const { default: imageCompression } = await import('browser-image-compression');
 			const compressedFile = await imageCompression(file, options);
 			
 			// Generate consistent filename for avatar (overwrite existing)

@@ -5,7 +5,7 @@
 	import { supabase } from '$lib/supabase';
 	import { session } from '$lib/stores/sessionStore';
 	import type { Database } from '$lib/supabase';
-	import heic2any from "heic2any"; // ✅ new import for HEIC conversion
+	// ✅ heic2any dynamically imported to avoid SSR issues
 	
 	interface PostComposerProps {
 		onPostCreated?: () => void;
@@ -63,9 +63,10 @@
 		for (const file of files) {
 			let processedFile: File = file;
 
-			// ✅ Convert HEIC → JPEG
+			// ✅ Convert HEIC → JPEG (dynamic import to avoid SSR issues)
 			if (file.type === "image/heic" || file.name.toLowerCase().endsWith(".heic")) {
 				try {
+					const { default: heic2any } = await import('heic2any');
 					const blob = await heic2any({ blob: file, toType: "image/jpeg" });
 					processedFile = new File([blob as BlobPart], file.name.replace(/\.heic$/i, ".jpg"), {
 						type: "image/jpeg"
