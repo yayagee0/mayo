@@ -167,3 +167,32 @@ CREATE POLICY "scenario_answers_self" ON public.scenario_answers
 -- GRANTS
 -- ======================================================
 -- 👉 Paste here the full block of GRANT statements you already exported.
+
+
+-- ======================================================
+-- islamic_questions (NEW TABLE)
+-- ======================================================
+CREATE TABLE IF NOT EXISTS public.islamic_questions (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    question_text text NOT NULL,
+    options text[] NOT NULL,              -- e.g. {Yes,No}, {Good,Bad,Neutral}
+    correct_index integer,                -- can be null if opinion-based
+    explanation_correct text,             -- shown if correct
+    explanation_incorrect text,           -- shown if incorrect
+    order_index integer NOT NULL,         -- rotation order
+    category text,                        -- Life, Faith, Creation, Respect, Behavior
+    created_at timestamptz DEFAULT now()
+);
+
+-- ======================================================
+-- RLS ENABLE
+-- ======================================================
+ALTER TABLE public.islamic_questions ENABLE ROW LEVEL SECURITY;
+
+-- ======================================================
+-- POLICIES
+-- ======================================================
+CREATE POLICY "islamic_questions_read" ON public.islamic_questions
+    FOR SELECT TO authenticated
+    USING (true);
+
