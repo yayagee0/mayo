@@ -1,0 +1,107 @@
+import { describe, it, expect } from 'vitest';
+import { widgetRegistry } from '../src/lib/widgetRegistry';
+
+describe('Trivia & Scenario Widgets', () => {
+  describe('Widget Registration', () => {
+    it('should register ProfileQuizCard widget', () => {
+      const widgets = widgetRegistry.getAll();
+      const profileQuiz = widgets.find(w => w.id === 'profileQuiz');
+      
+      expect(profileQuiz).toBeDefined();
+      expect(profileQuiz?.name).toBe('Set Your Fun Profile');
+      expect(profileQuiz?.enabled).toBe(true);
+      expect(typeof profileQuiz?.component).toBe('function');
+    });
+
+    it('should register GuessFamilyCard widget', () => {
+      const widgets = widgetRegistry.getAll();
+      const guessFamily = widgets.find(w => w.id === 'guessFamily');
+      
+      expect(guessFamily).toBeDefined();
+      expect(guessFamily?.name).toBe('Guess Family Answers');
+      expect(guessFamily?.enabled).toBe(true);
+      expect(typeof guessFamily?.component).toBe('function');
+    });
+
+    it('should register ScenarioCard widget', () => {
+      const widgets = widgetRegistry.getAll();
+      const scenario = widgets.find(w => w.id === 'scenario');
+      
+      expect(scenario).toBeDefined();
+      expect(scenario?.name).toBe('What Would You Do?');
+      expect(scenario?.enabled).toBe(true);
+      expect(typeof scenario?.component).toBe('function');
+    });
+
+    it('should register ScenarioDigestCard widget', () => {
+      const widgets = widgetRegistry.getAll();
+      const scenarioDigest = widgets.find(w => w.id === 'scenarioDigest');
+      
+      expect(scenarioDigest).toBeDefined();
+      expect(scenarioDigest?.name).toBe('Scenario Reflection Digest');
+      expect(scenarioDigest?.enabled).toBe(true);
+      expect(typeof scenarioDigest?.component).toBe('function');
+    });
+  });
+
+  describe('Widget Priority Order', () => {
+    it('should have correct priority order for new widgets', () => {
+      const widgets = widgetRegistry.getSorted();
+      const newWidgetIds = ['profileQuiz', 'guessFamily', 'scenario', 'scenarioDigest'];
+      
+      // Find positions of the new widgets
+      const positions = newWidgetIds.map(id => 
+        widgets.findIndex(w => w.id === id)
+      );
+
+      // All widgets should be found
+      positions.forEach(pos => {
+        expect(pos).toBeGreaterThanOrEqual(0);
+      });
+
+      // ProfileQuiz should come before GuessFamily (higher priority)
+      const profileQuizPos = widgets.findIndex(w => w.id === 'profileQuiz');
+      const guessFamilyPos = widgets.findIndex(w => w.id === 'guessFamily');
+      expect(profileQuizPos).toBeLessThan(guessFamilyPos);
+
+      // Scenario should come before ScenarioDigest (higher priority)
+      const scenarioPos = widgets.findIndex(w => w.id === 'scenario');
+      const scenarioDigestPos = widgets.findIndex(w => w.id === 'scenarioDigest');
+      expect(scenarioPos).toBeLessThan(scenarioDigestPos);
+    });
+  });
+
+  describe('Widget Categories', () => {
+    it('should categorize interactive widgets correctly', () => {
+      const interactiveWidgetIds = ['agePlayground', 'profileQuiz', 'guessFamily', 'scenario'];
+      
+      // These should be the widgets that would be filtered in the dashboard
+      // for the Interactive category
+      const widgets = widgetRegistry.getAll();
+      const interactiveWidgets = widgets.filter(w => 
+        interactiveWidgetIds.includes(w.id)
+      );
+
+      expect(interactiveWidgets).toHaveLength(4);
+      expect(interactiveWidgets.map(w => w.id)).toEqual(
+        expect.arrayContaining(interactiveWidgetIds)
+      );
+    });
+
+    it('should categorize social widgets correctly', () => {
+      const socialWidgetIds = ['birthday', 'wall', 'feedback', 'scenarioDigest'];
+      
+      // These should be the widgets that would be filtered in the dashboard
+      // for the Social category
+      const widgets = widgetRegistry.getAll();
+      const socialWidgets = widgets.filter(w => 
+        socialWidgetIds.includes(w.id)
+      );
+
+      expect(socialWidgets).toHaveLength(4);
+      expect(socialWidgets.map(w => w.id)).toEqual(
+        expect.arrayContaining(socialWidgetIds)
+      );
+    });
+  });
+});
