@@ -13,41 +13,39 @@ const loadProfileQuizCard = () => import('../components/cards/ProfileQuizCard.sv
 const loadGuessFamilyCard = () => import('../components/cards/GuessFamilyCard.svelte');
 const loadScenarioCard = () => import('../components/cards/ScenarioCard.svelte');
 const loadScenarioDigestCard = () => import('../components/cards/ScenarioDigestCard.svelte');
+const loadReflectionMoodCard = () => import('../components/cards/ReflectionMoodCard.svelte');
+const loadClosingRitualCard = () => import('../components/cards/ClosingRitualCard.svelte');
+const loadProfessionCard = () => import('../components/cards/ProfessionCard.svelte');
+const loadQuizCard = () => import('../components/cards/QuizCard.svelte');
 
 export const systemRegistry: WidgetRegistry = {
-  birthday: {
-    id: 'birthday',
-    name: 'Birthday Card',
-    component: loadBirthdayCard,
+  // ANCHOR WIDGETS (High Priority) - Maximum 3-4 visible at first load
+  reflectionMood: {
+    id: 'reflectionMood',
+    name: 'Reflection & Mood Today',
+    component: loadReflectionMoodCard,
     priority: 100,
     enabled: true
   },
-  wall: {
-    id: 'wall',
-    name: 'Wall Card',
-    component: loadWallCard,
+  ayah: {
+    id: 'ayah',
+    name: 'Daily Ayah',
+    component: loadAyahCard,
     priority: 95,
     enabled: true
   },
-  agePlayground: {
-    id: 'agePlayground',
-    name: 'Age Playground',
-    component: loadAgePlaygroundCard,
-    priority: 88,
-    enabled: true // Feature flag - can be set to false to disable
-  },
-  profileQuiz: {
-    id: 'profileQuiz',
-    name: 'Set Your Fun Profile',
-    component: loadProfileQuizCard,
-    priority: 87,
+  birthday: {
+    id: 'birthday',
+    name: 'Birthday & Milestones',
+    component: loadBirthdayCard,
+    priority: 90,
     enabled: true
   },
-  guessFamily: {
-    id: 'guessFamily',
-    name: 'Guess Family Answers',
-    component: loadGuessFamilyCard,
-    priority: 86,
+  quiz: {
+    id: 'quiz',
+    name: 'Family Quiz',
+    component: loadQuizCard,
+    priority: 87,
     enabled: true
   },
   scenario: {
@@ -57,40 +55,21 @@ export const systemRegistry: WidgetRegistry = {
     priority: 85,
     enabled: true
   },
-  ayah: {
-    id: 'ayah',
-    name: 'Daily Ayah',
-    component: loadAyahCard,
-    priority: 84,
-    enabled: true
-  },
-  prompt: {
-    id: 'prompt',
-    name: 'Role-aware Prompts',
-    component: loadPromptCard,
+  closingRitual: {
+    id: 'closingRitual',
+    name: 'Daily Closure',
+    component: loadClosingRitualCard,
     priority: 80,
     enabled: true
   },
-  weeklyReflection: {
-    id: 'weeklyReflection',
-    name: 'Weekly Reflection',
-    component: loadWeeklyReflectionCard,
-    priority: 78,
+  
+  // QUIET MODE WIDGETS (Lower Priority) - Collapsed by default, shown in "Explore More"
+  wall: {
+    id: 'wall',
+    name: 'Family Wall',
+    component: loadWallCard,
+    priority: 75,
     enabled: true
-  },
-  weeklyReflectionDigest: {
-    id: 'weeklyReflectionDigest',
-    name: 'Family Reflections Digest',
-    component: loadWeeklyReflectionDigestCard,
-    priority: 77,
-    enabled: true
-  },
-  feedback: {
-    id: 'feedback',
-    name: 'Feedback Prompt (Legacy)',
-    component: loadFeedbackPrompt,
-    priority: 60,
-    enabled: false // Disabled in favor of weekly reflections
   },
   scenarioDigest: {
     id: 'scenarioDigest',
@@ -98,5 +77,63 @@ export const systemRegistry: WidgetRegistry = {
     component: loadScenarioDigestCard,
     priority: 70,
     enabled: true
+  },
+  profileQuiz: {
+    id: 'profileQuiz',
+    name: 'Set Your Fun Profile',
+    component: loadProfileQuizCard,
+    priority: 65,
+    enabled: false // Replaced by unified QuizCard
+  },
+  agePlayground: {
+    id: 'agePlayground',
+    name: 'Age Playground',
+    component: loadAgePlaygroundCard,
+    priority: 60,
+    enabled: true
+  },
+  professionCard: {
+    id: 'professionCard',
+    name: 'Family Professions',
+    component: loadProfessionCard,
+    priority: 55,
+    enabled: true
+  },
+
+  // LEGACY/MERGED WIDGETS - Keep for backward compatibility but lower priority
+  guessFamily: {
+    id: 'guessFamily',
+    name: 'Guess Family Answers',
+    component: loadGuessFamilyCard,
+    priority: 50,
+    enabled: false // Merged into unified QuizCard
+  },
+  weeklyReflection: {
+    id: 'weeklyReflection',
+    name: 'Weekly Reflection',
+    component: loadWeeklyReflectionCard,
+    priority: 45,
+    enabled: false // Functionality merged into ReflectionMoodCard
+  },
+  weeklyReflectionDigest: {
+    id: 'weeklyReflectionDigest',
+    name: 'Family Reflections Digest',
+    component: loadWeeklyReflectionDigestCard,
+    priority: 40,
+    enabled: true
+  },
+  prompt: {
+    id: 'prompt',
+    name: 'Role-aware Prompts',
+    component: loadPromptCard,
+    priority: 35,
+    enabled: false // Disabled per PHASE1 requirements - repetitive, shallow, low bonding
+  },
+  feedback: {
+    id: 'feedback',
+    name: 'Feedback Prompt (Legacy)',
+    component: loadFeedbackPrompt,
+    priority: 30,
+    enabled: false // Disabled in favor of reflectionMood
   }
 }

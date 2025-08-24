@@ -3,23 +3,33 @@ import { widgetRegistry } from '../src/lib/widgetRegistry';
 
 describe('Trivia & Scenario Widgets', () => {
   describe('Widget Registration', () => {
-    it('should register ProfileQuizCard widget', () => {
+    it('should register unified QuizCard widget (replaces ProfileQuiz)', () => {
+      const widgets = widgetRegistry.getAll();
+      const quiz = widgets.find(w => w.id === 'quiz');
+      
+      expect(quiz).toBeDefined();
+      expect(quiz?.name).toBe('Family Quiz');
+      expect(quiz?.enabled).toBe(true);
+      expect(typeof quiz?.component).toBe('function');
+    });
+
+    it('should register ProfileQuizCard widget as disabled (replaced by QuizCard)', () => {
       const widgets = widgetRegistry.getAll();
       const profileQuiz = widgets.find(w => w.id === 'profileQuiz');
       
       expect(profileQuiz).toBeDefined();
       expect(profileQuiz?.name).toBe('Set Your Fun Profile');
-      expect(profileQuiz?.enabled).toBe(true);
+      expect(profileQuiz?.enabled).toBe(false); // Disabled because replaced by unified QuizCard
       expect(typeof profileQuiz?.component).toBe('function');
     });
 
-    it('should register GuessFamilyCard widget', () => {
+    it('should register GuessFamilyCard widget as disabled (functionality merged)', () => {
       const widgets = widgetRegistry.getAll();
       const guessFamily = widgets.find(w => w.id === 'guessFamily');
       
       expect(guessFamily).toBeDefined();
       expect(guessFamily?.name).toBe('Guess Family Answers');
-      expect(guessFamily?.enabled).toBe(true);
+      expect(guessFamily?.enabled).toBe(false); // Disabled because functionality will be merged into Quiz
       expect(typeof guessFamily?.component).toBe('function');
     });
 
@@ -45,29 +55,36 @@ describe('Trivia & Scenario Widgets', () => {
   });
 
   describe('Widget Priority Order', () => {
-    it('should have correct priority order for new widgets', () => {
+    it('should have correct priority order for enabled widgets', () => {
       const widgets = widgetRegistry.getSorted();
-      const newWidgetIds = ['profileQuiz', 'guessFamily', 'scenario', 'scenarioDigest'];
+      const enabledWidgetIds = ['quiz', 'scenario', 'scenarioDigest'];
       
-      // Find positions of the new widgets
-      const positions = newWidgetIds.map(id => 
+      // Find positions of the enabled widgets
+      const positions = enabledWidgetIds.map(id => 
         widgets.findIndex(w => w.id === id)
       );
 
-      // All widgets should be found
+      // All enabled widgets should be found
       positions.forEach(pos => {
         expect(pos).toBeGreaterThanOrEqual(0);
       });
 
-      // ProfileQuiz should come before GuessFamily (higher priority)
-      const profileQuizPos = widgets.findIndex(w => w.id === 'profileQuiz');
-      const guessFamilyPos = widgets.findIndex(w => w.id === 'guessFamily');
-      expect(profileQuizPos).toBeLessThan(guessFamilyPos);
+      // Quiz should come before Scenario (higher priority)
+      const quizPos = widgets.findIndex(w => w.id === 'quiz');
+      const scenarioPos = widgets.findIndex(w => w.id === 'scenario');
+      expect(quizPos).toBeLessThan(scenarioPos);
 
       // Scenario should come before ScenarioDigest (higher priority)
-      const scenarioPos = widgets.findIndex(w => w.id === 'scenario');
       const scenarioDigestPos = widgets.findIndex(w => w.id === 'scenarioDigest');
       expect(scenarioPos).toBeLessThan(scenarioDigestPos);
+
+      // ProfileQuiz should not appear in sorted list since it's disabled
+      const profileQuizPos = widgets.findIndex(w => w.id === 'profileQuiz');
+      expect(profileQuizPos).toBe(-1);
+
+      // GuessFamily should not appear in sorted list since it's disabled
+      const guessFamilyPos = widgets.findIndex(w => w.id === 'guessFamily');
+      expect(guessFamilyPos).toBe(-1);
     });
   });
 

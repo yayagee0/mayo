@@ -62,18 +62,24 @@ describe('Sprint: Reflection Schema & Interaction Fixes', () => {
   })
 
   describe('Widget Registry Updates', () => {
-    it('should include weekly reflection widgets in registry', async () => {
+    it('should include new reflection mood widget in registry', async () => {
       const { systemRegistry } = await import('../src/lib/systemRegistry')
       
+      // New reflectionMood widget should be enabled and high priority
+      expect(systemRegistry.reflectionMood).toBeDefined()
+      expect(systemRegistry.reflectionMood.name).toBe('Reflection & Mood Today')
+      expect(systemRegistry.reflectionMood.enabled).toBe(true)
+      expect(systemRegistry.reflectionMood.priority).toBe(100)
+
+      // Weekly reflection should now be disabled (functionality merged)
       expect(systemRegistry.weeklyReflection).toBeDefined()
       expect(systemRegistry.weeklyReflection.name).toBe('Weekly Reflection')
-      expect(systemRegistry.weeklyReflection.enabled).toBe(true)
-      expect(systemRegistry.weeklyReflection.priority).toBe(78)
+      expect(systemRegistry.weeklyReflection.enabled).toBe(false)
 
+      // Digest should still be enabled
       expect(systemRegistry.weeklyReflectionDigest).toBeDefined()
       expect(systemRegistry.weeklyReflectionDigest.name).toBe('Family Reflections Digest')
       expect(systemRegistry.weeklyReflectionDigest.enabled).toBe(true)
-      expect(systemRegistry.weeklyReflectionDigest.priority).toBe(77)
     })
 
     it('should disable legacy feedback widget', async () => {
@@ -148,14 +154,14 @@ describe('Sprint: Reflection Schema & Interaction Fixes', () => {
       const widgets = Object.values(systemRegistry)
       const enabledWidgets = widgets.filter(w => w.enabled)
       
-      // Check that weekly reflection widgets are among enabled widgets
-      const reflectionWidget = enabledWidgets.find(w => w.id === 'weeklyReflection')
+      // Check that reflection mood widget is among enabled widgets with high priority
+      const reflectionMoodWidget = enabledWidgets.find(w => w.id === 'reflectionMood')
       const digestWidget = enabledWidgets.find(w => w.id === 'weeklyReflectionDigest')
       
-      expect(reflectionWidget).toBeDefined()
+      expect(reflectionMoodWidget).toBeDefined()
       expect(digestWidget).toBeDefined()
-      expect(reflectionWidget!.priority).toBe(78)
-      expect(digestWidget!.priority).toBe(77)
+      expect(reflectionMoodWidget!.priority).toBe(100)
+      expect(digestWidget!.priority).toBe(40)
     })
   })
 
