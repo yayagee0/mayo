@@ -8,9 +8,7 @@
 	import { supabase } from '$lib/supabase';
 	import { HeartHandshake, Leaf, ChevronDown, User } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
-	import Avatar from '$lib/../components/ui/Avatar.svelte';
-	import { profileStore } from '$lib/stores/profileStore';
-	import { getAuthorAvatar } from '$lib/utils/avatar';
+	import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
 
 	let widgets: WidgetConfig[] = $state([]);
 	let loadedWidgets: { config: WidgetConfig, component: any }[] = $state([]);
@@ -45,13 +43,13 @@
 	// Use profileStore instead of local profiles state
 	let profiles = $derived($profileStore);
 
-	// Get current user's profile for avatar
-	let currentUserProfile = $derived(() => {
-		if ($user?.email) {
-			return profiles.find(p => p.email === $user.email);
-		}
-		return null;
-	});
+	// Get current user's profile for avatar - use imported currentUserProfile store instead
+	// let currentUserProfile = $derived(() => {
+	// 	if ($user?.email) {
+	// 		return profiles.find(p => p.email === $user.email);
+	// 	}
+	// 	return null;
+	// });
 
 	function handleWidgetView(widgetId: string) {
 		widgetRegistry.recordView(widgetId);
@@ -153,14 +151,18 @@
 						<p class="text-xs text-gray-500">Welcome back</p>
 					</div>
 					
-					{#if currentUserProfile()}
-						{@const profile = currentUserProfile()}
-						{#if profile}
-							<Avatar 
-								src={getAuthorAvatar(profile)} 
+					{#if $currentUserProfile}
+						{@const profile = $currentUserProfile}
+						{#if profile && profile.avatar_url}
+							<img
+								src="{profile.avatar_url}?t={Date.now()}"
 								alt={profile.display_name || 'User avatar'}
-								size="md"
+								class="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
 							/>
+						{:else}
+							<div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600">
+								{profile?.display_name?.charAt(0) || 'U'}
+							</div>
 						{/if}
 					{:else}
 						<div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
