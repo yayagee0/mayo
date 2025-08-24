@@ -40,7 +40,7 @@ This document defines the technical, architectural, and behavioral constraints f
   - `scenario_answers`  
 
   **Extended (Phase 2)**  
-  - `islamic_questions`  
+  - `islamic_questions` (Q&A with reassurance fields: `explanation_correct`, `explanation_incorrect`, categories, order_index)  
 
 - All backend logic must **match exactly** what is in the schema file.  
 - Supabase is used **only** for persistence — not for dynamic roles, logic, or migrations.  
@@ -65,6 +65,13 @@ This document defines the technical, architectural, and behavioral constraints f
 - Smart Card-first feed: Feed must show meaningful cards before content if empty.  
 - Gentle UX: no gamification, no intrusive notifications.  
 - Must support keyboard navigation, reduced motion preferences, and proper contrast.  
+
+### Phase 2 Widget Visibility Rules
+- **"What Would You Do?" (ScenarioCard)** → children only (Yazid, Yahya).  
+- **Reflections Digest & Scenario Digest** → parents only (Ghassan, Mariem).  
+- **Profession Card** updated roles & icons as defined in Phase 2 requirements.  
+- **Age Playground** max age = 70 for Ghassan, 18 for others.  
+- **Islamic Q&A** → 1-2 questions per session, gentle reassurance explanations.  
 
 ---
 
@@ -93,6 +100,8 @@ This document defines the technical, architectural, and behavioral constraints f
 - ✅ Focus on quality & stability improvements only.  
 - ✅ Fix TypeScript errors and add error boundaries.  
 - ✅ Implement shared stores for better state management.  
+- ✅ Enforce visibility rules on all widgets per Phase 2 specifications.  
+- ✅ Test Islamic Q&A reassurance flow and accessibility compliance.  
 
 ---
 

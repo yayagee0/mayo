@@ -40,6 +40,19 @@
 		}
 	});
 
+	// Calculate max age based on user
+	let maxAge = $derived(() => {
+		// Ghassan can reach age 70, others limited to 18
+		if (session?.user?.email === 'nilezat@gmail.com') {
+			return 70;
+		}
+		return 18;
+	});
+
+	let maxAgeLabel = $derived(() => {
+		return maxAge() === 70 ? '70 years' : '18 years';
+	});
+
 	// Auto-select first child if none selected
 	$effect(() => {
 		if (childrenProfiles.length > 0 && !selectedBaseChild) {
@@ -106,14 +119,14 @@
 					id="target-age"
 					type="range"
 					min="1"
-					max="18"
+					max="{maxAge()}"
 					step="1"
 					bind:value={targetAge}
 					class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
 				/>
 				<div class="flex justify-between text-xs text-gray-500 mt-1">
 					<span>1 year</span>
-					<span>18 years</span>
+					<span>{maxAgeLabel()}</span>
 				</div>
 			</div>
 

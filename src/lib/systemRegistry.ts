@@ -17,6 +17,7 @@ const loadReflectionMoodCard = () => import('../components/cards/ReflectionMoodC
 const loadClosingRitualCard = () => import('../components/cards/ClosingRitualCard.svelte');
 const loadProfessionCard = () => import('../components/cards/ProfessionCard.svelte');
 const loadQuizCard = () => import('../components/cards/QuizCard.svelte');
+const loadIslamicQACard = () => import('../components/cards/IslamicQACard.svelte');
 
 export const systemRegistry: WidgetRegistry = {
   // ANCHOR WIDGETS (High Priority) - Maximum 3-4 visible at first load
@@ -97,6 +98,13 @@ export const systemRegistry: WidgetRegistry = {
     name: 'Family Professions',
     component: loadProfessionCard,
     priority: 55,
+    enabled: true
+  },
+  islamicQA: {
+    id: 'islamicQA',
+    name: 'Islamic Q&A',
+    component: loadIslamicQACard,
+    priority: 53,
     enabled: true
   },
 

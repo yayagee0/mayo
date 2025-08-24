@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
-	import { Briefcase, GraduationCap, Wrench, Rocket } from 'lucide-svelte';
+	import { Briefcase, GraduationCap, Wrench, Rocket, Computer, Plane } from 'lucide-svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 
@@ -20,18 +20,18 @@
 		},
 		'mariem': {
 			title: 'Computer Science Master, Super Mom',
-			description: 'Hacker in disguise, bedtime story maker.',
-			icon: GraduationCap
+			description: 'Hacker in disguise, bedtime maker.',
+			icon: Computer
 		},
 		'yazid': {
 			title: 'Future Engineer',
-			description: 'Wants to build tanks, airplanes, rockets.',
+			description: 'Wants to build tanks, airship, rockets.',
 			icon: Wrench
 		},
 		'yahya': {
 			title: 'Future Engineer',
-			description: 'Wants to design rockets and flying machines.',
-			icon: Rocket
+			description: 'Wants to design rockets, airplanes, flying machines.',
+			icon: Plane
 		}
 	};
 
