@@ -5,6 +5,7 @@
 	import { supabase } from '$lib/supabase';
 	import { session } from '$lib/stores/sessionStore';
 	import type { Database } from '$lib/supabase';
+	import heic2any from "heic2any"; // ✅ new import for HEIC conversion
 	
 	interface PostComposerProps {
 		onPostCreated?: () => void;
@@ -53,22 +54,40 @@
 		error = '';
 	}
 	
-	function handleFileSelect(event: Event) {
+	async function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
 		if (!input.files) return;
 		const files = Array.from(input.files);
 		const validFiles: File[] = [];
+
 		for (const file of files) {
-			const validation = validateMediaFile(file);
+			let processedFile: File = file;
+
+			// ✅ Convert HEIC → JPEG
+			if (file.type === "image/heic" || file.name.toLowerCase().endsWith(".heic")) {
+				try {
+					const blob = await heic2any({ blob: file, toType: "image/jpeg" });
+					processedFile = new File([blob as BlobPart], file.name.replace(/\.heic$/i, ".jpg"), {
+						type: "image/jpeg"
+					});
+				} catch (err) {
+					console.error("HEIC conversion failed", err);
+					error = "Failed to convert HEIC image. Please try a different photo.";
+					return;
+				}
+			}
+
+			const validation = validateMediaFile(processedFile);
 			if (validation.valid) {
-				validFiles.push(file);
+				validFiles.push(processedFile);
 			} else {
-				error = validation.error || 'Invalid file';
+				error = validation.error || "Invalid file";
 				return;
 			}
 		}
+
 		selectedFiles = validFiles;
-		error = '';
+		error = "";
 	}
 	
 	function removeFile(index: number) {
