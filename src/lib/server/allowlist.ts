@@ -15,11 +15,11 @@ export const ALLOWED_EMAILS = [
 export type AllowedEmail = typeof ALLOWED_EMAILS[number];
 
 /**
- * Check if an email is in the allowlist
+ * Check if an email is in the allowlist (case-insensitive)
  */
 export function isEmailAllowed(email: string | null | undefined): email is AllowedEmail {
 	if (!email) return false;
-	return ALLOWED_EMAILS.includes(email as AllowedEmail);
+	return ALLOWED_EMAILS.includes(email.toLowerCase() as AllowedEmail);
 }
 
 /**
@@ -30,17 +30,17 @@ export function validateUserAccess(userEmail: string | null | undefined): Allowe
 	if (!userEmail) {
 		throw new Error('No user email provided');
 	}
-	
-	if (!isEmailAllowed(userEmail)) {
+
+	const normalized = userEmail.toLowerCase();
+	if (!isEmailAllowed(normalized)) {
 		throw new Error(`Access denied for email: ${userEmail}`);
 	}
-	
-	return userEmail as AllowedEmail;
+
+	return normalized as AllowedEmail;
 }
 
 /**
  * Get user role based on email (basic implementation)
- * In a real app, this might come from a database
  */
 export function getUserRole(email: AllowedEmail): UserRole {
 	// Correct family role mapping per requirements
