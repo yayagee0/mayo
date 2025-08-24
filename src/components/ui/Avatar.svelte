@@ -1,11 +1,10 @@
 <script lang="ts">
   import { currentUserProfile, profileStore } from '$lib/stores/profileStore'
   import { session } from '$lib/stores/sessionStore'
-  import { onMount } from 'svelte'
 
   let uploading = false
   let error: string | null = null
-  let fileInput: HTMLInputElement | null = null
+  let fileInput: HTMLInputElement
 
   async function handleFileChange(event: Event) {
     const input = event.target as HTMLInputElement
@@ -27,6 +26,10 @@
       if (fileInput) fileInput.value = ''
     }
   }
+
+  function triggerFileInput() {
+    fileInput?.click()
+  }
 </script>
 
 <div class="flex flex-col items-center gap-2">
@@ -46,12 +49,13 @@
     type="file"
     accept="image/*"
     bind:this={fileInput}
-    onchange={handleFileChange}
+    on:change={handleFileChange}
     class="hidden"
   />
+
   <button
     class="btn btn-secondary text-sm"
-    on:click={() => fileInput?.click()}
+    on:click={triggerFileInput}
     disabled={uploading}
   >
     {uploading ? 'Uploading...' : 'Upload Photo'}
