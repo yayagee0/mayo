@@ -13,13 +13,13 @@ describe('Trivia & Scenario Widgets', () => {
       expect(typeof profileQuiz?.component).toBe('function');
     });
 
-    it('should register GuessFamilyCard widget', () => {
+    it('should register GuessFamilyCard widget as disabled (functionality merged)', () => {
       const widgets = widgetRegistry.getAll();
       const guessFamily = widgets.find(w => w.id === 'guessFamily');
       
       expect(guessFamily).toBeDefined();
       expect(guessFamily?.name).toBe('Guess Family Answers');
-      expect(guessFamily?.enabled).toBe(true);
+      expect(guessFamily?.enabled).toBe(false); // Disabled because functionality will be merged into Quiz
       expect(typeof guessFamily?.component).toBe('function');
     });
 
@@ -45,29 +45,28 @@ describe('Trivia & Scenario Widgets', () => {
   });
 
   describe('Widget Priority Order', () => {
-    it('should have correct priority order for new widgets', () => {
+    it('should have correct priority order for enabled widgets', () => {
       const widgets = widgetRegistry.getSorted();
-      const newWidgetIds = ['profileQuiz', 'guessFamily', 'scenario', 'scenarioDigest'];
+      const enabledWidgetIds = ['profileQuiz', 'scenario', 'scenarioDigest'];
       
-      // Find positions of the new widgets
-      const positions = newWidgetIds.map(id => 
+      // Find positions of the enabled widgets
+      const positions = enabledWidgetIds.map(id => 
         widgets.findIndex(w => w.id === id)
       );
 
-      // All widgets should be found
+      // All enabled widgets should be found
       positions.forEach(pos => {
         expect(pos).toBeGreaterThanOrEqual(0);
       });
-
-      // ProfileQuiz should come before GuessFamily (higher priority)
-      const profileQuizPos = widgets.findIndex(w => w.id === 'profileQuiz');
-      const guessFamilyPos = widgets.findIndex(w => w.id === 'guessFamily');
-      expect(profileQuizPos).toBeLessThan(guessFamilyPos);
 
       // Scenario should come before ScenarioDigest (higher priority)
       const scenarioPos = widgets.findIndex(w => w.id === 'scenario');
       const scenarioDigestPos = widgets.findIndex(w => w.id === 'scenarioDigest');
       expect(scenarioPos).toBeLessThan(scenarioDigestPos);
+
+      // GuessFamily should not appear in sorted list since it's disabled
+      const guessFamilyPos = widgets.findIndex(w => w.id === 'guessFamily');
+      expect(guessFamilyPos).toBe(-1);
     });
   });
 
