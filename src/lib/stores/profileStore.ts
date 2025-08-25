@@ -1,14 +1,14 @@
+// src/lib/stores/profileStore.ts
 import { writable, derived } from 'svelte/store'
 import { supabase } from '../supabase'
 import type { Database } from '../supabase'
 import { session } from './sessionStore'
-// ✅ HEIC converter - dynamically imported to avoid SSR issues
 
 export interface Profile {
   user_id: string
   email: string
   display_name: string | null
-  avatar_url: string | null
+  avatar_url: string | null // now stores only the path, e.g. "avatars/{id}-avatar.jpg"
   role: string | null
   dob: string | null
   created_at: string | null
@@ -128,13 +128,12 @@ class ProfileStore {
     }
   }
 
-  // ✅ Avatar upload with HEIC → JPEG support, auto replace, auto compression (browser handles)
+  // ✅ Avatar upload: save only the path
   async uploadAvatar(userId: string, file: File): Promise<string | null> {
     try {
       let processedFile: File = file
 
       if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
-        // Dynamic import to avoid SSR issues
         const { default: heic2any } = await import('heic2any')
         const blob = await heic2any({ blob: file, toType: 'image/jpeg' })
         processedFile = new File([blob as BlobPart], file.name.replace(/\.heic$/i, '.jpg'), {
@@ -151,15 +150,9 @@ class ProfileStore {
 
       if (uploadError) throw uploadError
 
-      const { data: signed } = await supabase.storage
-        .from('avatars')
-        .createSignedUrl(fileName, 60 * 60 * 24 * 365)
-
-      if (signed?.signedUrl) {
-        await this.updateProfile(userId, { avatar_url: signed.signedUrl })
-        return signed.signedUrl
-      }
-      return null
+      // 👉 Save only path in DB
+      await this.updateProfile(userId, { avatar_url: fileName })
+      return fileName
     } catch (err) {
       console.error('Error uploading avatar:', err)
       return null
@@ -169,7 +162,7 @@ class ProfileStore {
   findByEmail(email: string) { return this.profiles.find(p => p.email === email) }
   findById(userId: string) { return this.profiles.find(p => p.user_id === userId) }
   getDisplayName(email: string) { return this.findByEmail(email)?.display_name || email.split('@')[0] }
-  getAvatarUrl(email: string) { return this.findByEmail(email)?.avatar_url || null }
+  getAvatarPath(email: string) { return this.findByEmail(email)?.avatar_url || null }
 
   clear() {
     this.profiles = []
@@ -187,6 +180,19 @@ export const currentUserProfile = derived(
     return $profiles.find(profile => profile.email === $session.user.email) || null
   }
 )
+
+// ✅ New helper: resolve signed URL
+export async function resolveAvatar(profile: Profile | null): Promise<string | null> {
+  if (!profile?.avatar_url) return null
+  const { data, error } = await supabase.storage
+    .from('avatars')
+    .createSignedUrl(profile.avatar_url, 3600) // 1h
+  if (error) {
+    console.error('Avatar signed URL error', error)
+    return null
+  }
+  return data.signedUrl
+}
 
 export const parentProfiles = derived(profileStore, ($profiles) => $profiles.filter(p => p.role === 'parent'))
 export const childProfiles = derived(profileStore, ($profiles) => $profiles.filter(p => p.role === 'child'))
