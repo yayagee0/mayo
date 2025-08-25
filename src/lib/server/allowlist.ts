@@ -18,7 +18,7 @@ export type AllowedEmail = typeof ALLOWED_EMAILS[number];
  * Check if an email is in the allowlist (case-insensitive)
  */
 export function isEmailAllowed(email: string | null | undefined): email is AllowedEmail {
-	if (!email) return false;
+	if (!email || typeof email !== 'string') return false;
 	return ALLOWED_EMAILS.includes(email.toLowerCase() as AllowedEmail);
 }
 

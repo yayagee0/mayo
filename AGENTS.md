@@ -22,7 +22,7 @@ This document defines the technical, architectural, and behavioral constraints f
 
 ## 🧱 SCHEMA & BACKEND RULES
 
-- ❄️ The schema is **frozen** in `PHASE0_SCHEMA_LOCKED.sql` (now updated to Phase 2).  
+- ❄️ The schema is **frozen** in `PHASE0_SCHEMA_NO_RLS.sql` (updated to disable RLS).  
 - These tables are canonical and immutable without approval:  
 
   **Core (Phase 0)**  
@@ -44,7 +44,11 @@ This document defines the technical, architectural, and behavioral constraints f
 
 - All backend logic must **match exactly** what is in the schema file.  
 - Supabase is used **only** for persistence — not for dynamic roles, logic, or migrations.  
-- ✅ RLS must remain enabled for all tables.  
+- ❌ **RLS is not used in this project.**  
+- ✅ All `public` tables have RLS disabled.  
+- ✅ Access is controlled exclusively via Supabase Auth allowlist (4 hardcoded emails).  
+- ✅ `authenticated` role = full privileges across all tables.  
+- ❌ `anon` role has no privileges.  
 - ❌ No Supabase Edge Functions or additional services allowed.  
 
 ---
@@ -55,6 +59,7 @@ This document defines the technical, architectural, and behavioral constraints f
 - Only these **four hardcoded emails** are allowed (see `src/lib/server/allowlist.ts`).  
 - Role detection and permissions are **handled in frontend only**.  
 - Backend never controls visibility or access logic.  
+- **Database does not use RLS** - access controlled via allowlist only.  
 
 ---
 
@@ -96,12 +101,13 @@ This document defines the technical, architectural, and behavioral constraints f
 ## 🚧 CURRENT SPRINT CONSTRAINTS
 
 - ❌ Do not change login flow (/ → Google OAuth → /dashboard).  
-- ❌ Do not modify Supabase auth, allowlist, or baseline RLS policies.  
+- ❌ Do not modify Supabase auth, allowlist, or baseline security model.  
 - ✅ Focus on quality & stability improvements only.  
 - ✅ Fix TypeScript errors and add error boundaries.  
 - ✅ Implement shared stores for better state management.  
 - ✅ Enforce visibility rules on all widgets per Phase 2 specifications.  
 - ✅ Test Islamic Q&A reassurance flow and accessibility compliance.  
+- ✅ Use mock Supabase client in tests to prevent egress usage.  
 
 ---
 
