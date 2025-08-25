@@ -6,12 +6,14 @@
 	let currentPath = $derived($page.url.pathname);
 	let unreadCount = $derived(notificationStore.getUnreadCount());
 
-	// Props for handling composer action
+	// Props for handling composer action and avatar
 	interface Props {
 		onComposerOpen?: () => void;
+		avatarUrl?: string | null;
+		profile?: { display_name?: string | null } | null;
 	}
 	
-	let { onComposerOpen }: Props = $props();
+	let { onComposerOpen, avatarUrl, profile }: Props = $props();
 
 	let navItems = $derived([
 		{ href: '/dashboard', label: 'Home', icon: Home },
@@ -48,7 +50,24 @@
 				aria-current={currentPath === item.href ? 'page' : undefined}
 			>
 				<div class="relative">
-					<IconComponent class="w-6 h-6 mb-1" aria-hidden="true" />
+					{#if item.href === '/profile'}
+						<!-- Show avatar for profile item -->
+						{#if avatarUrl}
+							<img 
+								src={avatarUrl} 
+								alt="Profile avatar"
+								class="w-6 h-6 rounded-full object-cover border border-gray-200 mb-1"
+								onerror={() => avatarUrl = null}
+							/>
+						{:else}
+							<div class="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold mb-1">
+								{profile?.display_name?.[0]?.toUpperCase() ?? "U"}
+							</div>
+						{/if}
+					{:else}
+						<!-- Show icon for other items -->
+						<IconComponent class="w-6 h-6 mb-1" aria-hidden="true" />
+					{/if}
 					{#if item.unreadCount && item.unreadCount > 0}
 						<span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-5">
 							{item.unreadCount > 99 ? '99+' : item.unreadCount}
