@@ -8,6 +8,7 @@
 	import { getUserRole, getRoleDisplayName, getSeededDisplayName, type AllowedEmail } from '$lib/utils/roles';
 	import { profileStore, resolveAvatar } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
+	import AvatarSelector from '$lib/../components/AvatarSelector.svelte';
 
 	let profile: Database['public']['Tables']['profiles']['Row'] | null = $state(null);
 	let loading = $state(true);
@@ -17,7 +18,7 @@
 	// Form fields
 	let displayName = $state('');
 	let avatarPath = $state(''); // store only path
-	let avatarSignedUrl = $state(''); // resolved signed url for preview
+	let avatarSignedUrl = $state<string | null>(null); // resolved signed url for preview
 	let role = $state('member');
 	let dob = $state('');
 
@@ -53,7 +54,10 @@
 			role = computedRole();
 			dob = (data as any).dob || '';
 			// Resolve signed URL for preview
-			if (avatarPath) avatarSignedUrl = await resolveAvatar(profile);
+			if (avatarPath) {
+				const tempProfile = { ...profile, avatar_url: avatarPath };
+				avatarSignedUrl = await resolveAvatar(tempProfile as any);
+			}
 		} else {
 			displayName = getSeededDisplayName($user.email) || '';
 		}
@@ -124,7 +128,8 @@
 			// Update DB with path only
 			await profileStore.updateProfile($user!.id, { avatar_url: path });
 			avatarPath = path;
-			avatarSignedUrl = await resolveAvatar({ ...profile, avatar_url: path } as any);
+			const tempProfile = { ...profile, avatar_url: path };
+			avatarSignedUrl = await resolveAvatar(tempProfile as any);
 
 			await saveProfile();
 
@@ -134,6 +139,30 @@
 			notificationStore.add({ type: 'error', title: 'Upload Failed', message: 'Upload failed. Please try again.' });
 		} finally {
 			uploading = false;
+		}
+	}
+
+	async function handleAvatarSelection(avatarPath: string) {
+		try {
+			avatarPath = avatarPath;
+			const tempProfile = { ...profile, avatar_url: avatarPath };
+			avatarSignedUrl = await resolveAvatar(tempProfile as any);
+			
+			// Save the profile with the new avatar
+			await saveProfile();
+			
+			notificationStore.add({ 
+				type: 'success', 
+				title: 'Avatar Updated', 
+				message: 'Your avatar has been updated successfully!' 
+			});
+		} catch (error) {
+			console.error('Error selecting avatar:', error);
+			notificationStore.add({ 
+				type: 'error', 
+				title: 'Update Failed', 
+				message: 'Failed to update avatar. Please try again.' 
+			});
 		}
 	}
 
@@ -188,10 +217,10 @@
 						<label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
 						{#if avatarSignedUrl}
 							<div class="mb-4">
-								<img src={avatarSignedUrl} alt="profile picture" class="w-20 h-20 rounded-full object-cover border-2 border-gray-200" onerror={() => avatarSignedUrl = ''} />
+								<img src={avatarSignedUrl} alt="profile picture" class="w-20 h-20 rounded-full object-cover border-2 border-gray-200" onerror={() => avatarSignedUrl = null} />
 							</div>
 						{/if}
-						<div class="space-y-3">
+						<div class="space-y-4">
 							<input type="file" bind:this={fileInput} onchange={handleFileSelect} accept="image/*" class="hidden" id="avatar-upload" />
 							<button type="button" onclick={() => fileInput.click()} disabled={uploading} class="btn btn-secondary flex items-center gap-2">
 								{#if uploading}
@@ -199,6 +228,14 @@
 									Uploading...
 								{:else} 📷 Upload Photo {/if}
 							</button>
+							
+							<!-- Avatar Bank Selector -->
+							<div class="border-t pt-4">
+								<AvatarSelector 
+									onSelection={handleAvatarSelection}
+									selectedAvatar={avatarPath} 
+								/>
+							</div>
 						</div>
 						<p class="text-xs text-gray-500 mt-2">Supported formats: JPG, PNG, GIF. Max size: 5MB.</p>
 					</div>

@@ -11,6 +11,7 @@
 	import { handleServiceWorker } from '$lib/pwa';
 	import { env } from '$env/dynamic/public';
 	import { currentUserProfile, resolveAvatar } from '$lib/stores/profileStore';
+	import { getDefaultAvatarForUser } from '$lib/avatarBank';
 
 	let { children } = $props();
 
@@ -31,15 +32,28 @@
 	// PostComposer modal state
 	let showComposer = $state(false);
 
-	// Avatar state
+	// Avatar state with fallback logic
 	let avatarUrl: string | null = $state(null);
+
+	// Get fallback avatar with priority system
+	function getFallbackAvatar(): string | null {
+		if (!$currentUserProfile) return null;
+		
+		// Priority 1: User uploaded photo (handled by resolveAvatar)
+		// Priority 2: Avatar selected from local bank
+		// Priority 3: Default avatar based on user identifier
+		const identifier = $currentUserProfile.email || $currentUserProfile.display_name || 'user';
+		return getDefaultAvatarForUser(identifier);
+	}
 
 	// Update avatar URL when profile changes
 	$effect(() => {
 		if ($currentUserProfile?.avatar_url) {
-			resolveAvatar($currentUserProfile).then(url => avatarUrl = url);
+			resolveAvatar($currentUserProfile).then(url => {
+				avatarUrl = url || getFallbackAvatar();
+			});
 		} else {
-			avatarUrl = null;
+			avatarUrl = getFallbackAvatar();
 		}
 	});
 
@@ -63,7 +77,9 @@
 		// Auto-refresh avatar URL every 55 minutes to prevent expiration
 		const refreshInterval = setInterval(() => {
 			if ($currentUserProfile?.avatar_url) {
-				resolveAvatar($currentUserProfile).then(url => avatarUrl = url);
+				resolveAvatar($currentUserProfile).then(url => {
+					avatarUrl = url || getFallbackAvatar();
+				});
 			}
 		}, 55 * 60 * 1000);
 
@@ -86,6 +102,33 @@
 		<!-- Desktop/Tablet Sidebar -->
 		<div class="hidden md:block">
 			<Sidebar onComposerOpen={handleComposerOpen} avatarUrl={avatarUrl} profile={$currentUserProfile} />
+		</div>
+	{/if}
+	
+	<!-- Mobile Topbar -->
+	{#if isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied')}
+		<div class="md:hidden bg-white border-b border-gray-200 px-4 py-3">
+			<div class="flex items-center justify-between">
+				<div>
+					<h1 class="text-lg font-semibold text-gray-900">
+						Welcome back, {$currentUserProfile?.display_name?.[0]?.toUpperCase() || $currentUserProfile?.email?.[0]?.toUpperCase() || 'User'} 🙏
+					</h1>
+					<p class="text-sm text-gray-500">Our family hub</p>
+				</div>
+				<div class="flex-shrink-0">
+					{#if avatarUrl}
+						<img 
+							src={avatarUrl} 
+							alt="Profile avatar"
+							class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-500 ring-offset-2 shadow-sm"
+						/>
+					{:else}
+						<div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold ring-2 ring-primary-500 ring-offset-2 shadow-sm">
+							{$currentUserProfile?.display_name?.[0]?.toUpperCase() || $currentUserProfile?.email?.[0]?.toUpperCase() || "U"}
+						</div>
+					{/if}
+				</div>
+			</div>
 		</div>
 	{/if}
 	

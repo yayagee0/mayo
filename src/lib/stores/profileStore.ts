@@ -183,15 +183,22 @@ export const currentUserProfile = derived(
 
 // ✅ New helper: resolve signed URL
 export async function resolveAvatar(profile: Profile | null): Promise<string | null> {
-  if (!profile?.avatar_url) return null
+  if (!profile?.avatar_url) return null;
+  
+  // If avatar_url starts with "/avatars/", it's from our local avatar bank
+  if (profile.avatar_url.startsWith('/avatars/')) {
+    return profile.avatar_url;
+  }
+  
+  // Otherwise, it's a Supabase storage path - create signed URL
   const { data, error } = await supabase.storage
     .from('avatars')
-    .createSignedUrl(profile.avatar_url, 3600) // 1h
+    .createSignedUrl(profile.avatar_url, 3600); // 1h
   if (error) {
-    console.error('Avatar signed URL error', error)
-    return null
+    console.error('Avatar signed URL error', error);
+    return null;
   }
-  return data.signedUrl
+  return data.signedUrl;
 }
 
 export const parentProfiles = derived(profileStore, ($profiles) => $profiles.filter(p => p.role === 'parent'))

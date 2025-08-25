@@ -6,7 +6,7 @@ import { env } from '$env/dynamic/public';
 const envSchema = z.object({
   PUBLIC_SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
   PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
-  PUBLIC_ENABLE_PWA: z.string().transform(val => val === 'true').default('false')
+  PUBLIC_ENABLE_PWA: z.string().optional().transform(val => val === 'true').default(false)
 });
 
 /**

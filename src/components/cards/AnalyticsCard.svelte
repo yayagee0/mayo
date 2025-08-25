@@ -71,7 +71,7 @@
     }, {} as Record<string, number>)
 
     const topWidget = Object.entries(widgetCounts)
-      .sort(([, a], [, b]) => b - a)[0]?.[0] || 'None'
+      .sort(([, a], [, b]) => (b as number) - (a as number))[0]?.[0] || 'None'
 
     return {
       totalPosts: items.length,

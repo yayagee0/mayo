@@ -104,7 +104,7 @@
 					quiz_questions (*)
 				`)
 				.eq('user_id', selectedTarget)
-				.order('created_at');
+				.order('locked_at', { ascending: true });
 
 			if (fetchError) throw fetchError;
 			targetAnswers = data || [];

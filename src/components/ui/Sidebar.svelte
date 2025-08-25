@@ -37,7 +37,22 @@
 >
 	<!-- Header -->
 	<div class="p-6 border-b border-gray-200">
-		<div class="flex items-center">
+		<div class="text-center mb-4">
+			<h1 class="text-xl font-bold text-gray-900 mb-2">Our Home 🏡</h1>
+			
+			<!-- Family initials crest -->
+			<div class="flex justify-center gap-2 mb-3">
+				<div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">G</div>
+				<div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center text-white text-xs font-bold">M</div>
+				<div class="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center text-white text-xs font-bold">Y</div>
+				<div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-purple-600 flex items-center justify-center text-white text-xs font-bold">Y</div>
+			</div>
+			
+			<p class="text-xs text-gray-500">Ghassan • Mariem • Yazid • Yahya</p>
+		</div>
+		
+		<!-- Current user info -->
+		<div class="flex items-center justify-center">
 			{#if avatarUrl}
 				<img 
 					src={avatarUrl} 
@@ -51,8 +66,7 @@
 				</div>
 			{/if}
 			<div>
-				<h1 class="text-xl font-bold text-gray-900">Family</h1>
-				<p class="text-sm text-gray-500">Family Connection Hub</p>
+				<p class="text-sm font-medium text-gray-700">{profile?.display_name || 'Family Member'}</p>
 			</div>
 		</div>
 	</div>
@@ -66,20 +80,22 @@
 					<a 
 						href={item.href}
 						onclick={(e) => handleItemClick(item, e)}
-						class="flex items-center p-3 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 group"
-						class:bg-primary-50={currentPath === item.href}
-						class:text-primary-700={currentPath === item.href}
-						class:border-l-4={currentPath === item.href}
-						class:border-primary-500={currentPath === item.href}
-						class:text-gray-600={currentPath !== item.href}
-						class:hover:bg-gray-50={currentPath !== item.href}
-						class:hover:text-gray-900={currentPath !== item.href}
+						class="flex items-center p-3 text-sm rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 group"
+						class:bg-gradient-to-r={currentPath === item.href}
+						class:from-indigo-500={currentPath === item.href}
+						class:to-purple-500={currentPath === item.href}
+						class:text-white={currentPath === item.href}
+						class:shadow-lg={currentPath === item.href}
+						class:text-gray-700={currentPath !== item.href}
+						class:hover:bg-indigo-50={currentPath !== item.href}
+						class:hover:text-indigo-700={currentPath !== item.href}
+						class:hover:scale-105={currentPath !== item.href}
 						aria-label="{item.label} - {item.description}"
 						aria-current={currentPath === item.href ? 'page' : undefined}
 					>
 						<div class="relative flex items-center min-w-0 flex-1">
 							<IconComponent 
-								class="w-5 h-5 mr-3 flex-shrink-0 {currentPath === item.href ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}" 
+								class="w-5 h-5 mr-3 flex-shrink-0 {currentPath === item.href ? 'text-white' : 'text-gray-500 group-hover:text-indigo-600'}" 
 								aria-hidden="true" 
 							/>
 							<div class="min-w-0 flex-1">
@@ -91,7 +107,7 @@
 										</span>
 									{/if}
 								</div>
-								<p class="text-xs text-gray-500 truncate mt-0.5">{item.description}</p>
+								<p class="text-xs {currentPath === item.href ? 'text-white/80' : 'text-gray-500'} truncate mt-0.5">{item.description}</p>
 							</div>
 						</div>
 					</a>
