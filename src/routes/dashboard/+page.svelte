@@ -12,6 +12,7 @@
 	import { cachedQuery, getCacheKey } from '$lib/utils/queryCache';
 	import { lazyLoader, isAnchorWidget, isQuietWidget } from '$lib/utils/lazyLoader';
 	import { loadQuietWidget, hasQuietLoader } from '$lib/utils/quietWidgetLoader';
+	import { performanceTracker, trackSupabaseQuery } from '$lib/utils/performanceTracker';
 
 	let widgets: WidgetConfig[] = $state([]);
 	let loadedWidgets: { config: WidgetConfig, component: any }[] = $state([]);
@@ -153,29 +154,33 @@
 		try {
 			loading = true;
 
-			// Load items with caching
+			// Load items with caching and performance tracking
 			const itemsCacheKey = getCacheKey('items', { order: 'created_at' });
 			const itemsData = await cachedQuery(itemsCacheKey, async () => {
-				const { data, error } = await supabase
-					.from('items')
-					.select('*')
-					.order('created_at', { ascending: false });
-				
-				if (error) throw error;
-				return data || [];
+				return trackSupabaseQuery('dashboard', 'load-items', async () => {
+					const { data, error } = await supabase
+						.from('items')
+						.select('*')
+						.order('created_at', { ascending: false });
+					
+					if (error) throw error;
+					return data || [];
+				});
 			});
 			items = itemsData;
 
-			// Load interactions with caching
+			// Load interactions with caching and performance tracking
 			const interactionsCacheKey = getCacheKey('interactions', { order: 'created_at' });
 			const interactionsData = await cachedQuery(interactionsCacheKey, async () => {
-				const { data, error } = await supabase
-					.from('interactions')
-					.select('*')
-					.order('created_at', { ascending: false });
-				
-				if (error) throw error;
-				return data || [];
+				return trackSupabaseQuery('dashboard', 'load-interactions', async () => {
+					const { data, error } = await supabase
+						.from('interactions')
+						.select('*')
+						.order('created_at', { ascending: false });
+					
+					if (error) throw error;
+					return data || [];
+				});
 			});
 			interactions = interactionsData;
 
@@ -191,6 +196,11 @@
 
 	onMount(() => {
 		loadData();
+		
+		// Log initial performance metrics after a short delay to capture bundle load
+		setTimeout(() => {
+			performanceTracker.logMetrics('Dashboard Loaded');
+		}, 1000);
 	});
 </script>
 

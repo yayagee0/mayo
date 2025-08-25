@@ -248,6 +248,7 @@
 					<div class="rounded-lg overflow-hidden">
 						<video controls class="w-full h-auto">
 							<source src={mediaUrl} type="video/mp4" />
+							<track kind="captions" srclang="en" src="/captions.vtt" default />
 						</video>
 					</div>
 				{:else}

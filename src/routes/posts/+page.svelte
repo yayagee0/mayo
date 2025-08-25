@@ -1,7 +1,4 @@
 <script lang="ts">
-  // ✅ Disable SSR for this page (fixes 500 errors on refresh)
-  export const ssr = false;
-
   import { onMount } from 'svelte';
   import { session } from '$lib/stores/sessionStore';
   import { goto } from '$app/navigation';

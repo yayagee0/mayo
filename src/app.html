@@ -23,9 +23,13 @@
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
 		
-		<!-- Service Worker Registration -->
+		<!-- Service Worker Registration (PWA) -->
+		<!-- Feature-flagged: only active when PUBLIC_ENABLE_PWA=true -->
 		<script>
-			if ('serviceWorker' in navigator) {
+			// PWA Service Worker registration - disabled by default
+			const pwaEnabled = '%sveltekit.env.PUBLIC_ENABLE_PWA%' === 'true';
+			
+			if (pwaEnabled && 'serviceWorker' in navigator) {
 				window.addEventListener('load', () => {
 					navigator.serviceWorker.register('/sw.js')
 						.then((registration) => {
@@ -35,6 +39,8 @@
 							console.log('SW registration failed: ', registrationError);
 						});
 				});
+			} else if (!pwaEnabled) {
+				console.log('PWA disabled via PUBLIC_ENABLE_PWA flag');
 			}
 		</script>
 	</body>
