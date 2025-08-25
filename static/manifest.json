@@ -1,11 +1,11 @@
 {
-  "name": "Mayo - FamilyNest",
+  "name": "Mayo — Family Engagement",
   "short_name": "Mayo",
   "description": "Your family's space for memories & reflection",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f9fafb",
-  "theme_color": "#0ea5e9",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "icons": [
     {
