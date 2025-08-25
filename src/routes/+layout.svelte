@@ -7,6 +7,8 @@
 	import BottomNav from '$lib/../components/ui/BottomNav.svelte';
 	import Sidebar from '$lib/../components/ui/Sidebar.svelte';
 	import PostComposer from '$lib/../components/PostComposer.svelte';
+	import PWAInstallPrompt from '$lib/../components/ui/PWAInstallPrompt.svelte';
+	import { registerServiceWorker } from '$lib/utils/pwa';
 
 	let { children } = $props();
 
@@ -36,6 +38,9 @@
 	}
 
 	onMount(() => {
+		// Register service worker for PWA functionality
+		registerServiceWorker();
+		
 		// Check if user is authenticated but not allowed
 		if (isAuthenticated && userEmail && !isAllowedUser) {
 			window.location.href = '/access-denied';
@@ -90,4 +95,7 @@
 			</div>
 		</div>
 	{/if}
+	
+	<!-- PWA Install Prompt -->
+	<PWAInstallPrompt />
 </div>

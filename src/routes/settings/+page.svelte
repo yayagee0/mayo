@@ -11,6 +11,7 @@
 	let loading = $state(true);
 	let storageUsage = $state('Loading...');
 	let cleaningUp = $state(false);
+	let analyticsEnabled = $state(true); // Analytics card enabled by default
 
 	// Check if user is a parent (only parents can access settings)
 	let isParent = $derived(() => {
@@ -30,6 +31,9 @@
 			return;
 		}
 
+		// Load settings
+		loadAnalyticsSettings();
+		
 		await fetchStorageUsage();
 		loading = false;
 	});
@@ -167,6 +171,33 @@
 		}
 		return 0;
 	});
+
+	// Analytics settings functions
+	function loadAnalyticsSettings() {
+		if (typeof localStorage !== 'undefined') {
+			const saved = localStorage.getItem('analyticsEnabled');
+			if (saved !== null) {
+				analyticsEnabled = JSON.parse(saved);
+			}
+		}
+	}
+
+	function saveAnalyticsSettings() {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem('analyticsEnabled', JSON.stringify(analyticsEnabled));
+		}
+	}
+
+	function toggleAnalytics() {
+		analyticsEnabled = !analyticsEnabled;
+		saveAnalyticsSettings();
+		
+		notificationStore.add({
+			type: 'success',
+			title: 'Settings Updated',
+			message: `Analytics ${analyticsEnabled ? 'enabled' : 'disabled'}`
+		});
+	}
 </script>
 
 <svelte:head>
@@ -298,6 +329,42 @@
 								Please make sure you have backups of any important photos or videos.
 							</div>
 						</div>
+					</div>
+				</div>
+
+				<!-- Analytics Settings Section -->
+				<div class="card">
+					<h2 class="text-lg font-semibold text-gray-900 mb-4">Dashboard Analytics</h2>
+					
+					<div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+						<div class="flex-1">
+							<h3 class="text-sm font-medium text-gray-900">Family Insights Widget</h3>
+							<p class="text-sm text-gray-600 mt-1">
+								Show family engagement statistics on the dashboard. Displays private analytics using only your family's data.
+							</p>
+						</div>
+						<div class="ml-4">
+							<button
+								type="button"
+								onclick={toggleAnalytics}
+								class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+								class:bg-blue-600={analyticsEnabled}
+								class:bg-gray-200={!analyticsEnabled}
+								role="switch"
+								aria-checked={analyticsEnabled}
+								aria-labelledby="analytics-toggle-label"
+							>
+								<span
+									class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+									class:translate-x-5={analyticsEnabled}
+									class:translate-x-0={!analyticsEnabled}
+								></span>
+							</button>
+						</div>
+					</div>
+
+					<div class="mt-3 text-xs text-gray-500">
+						📊 Analytics are completely private and family-only. No data is shared with external services.
 					</div>
 				</div>
 
