@@ -6,12 +6,14 @@
 	let currentPath = $derived($page.url.pathname);
 	let unreadCount = $derived(notificationStore.getUnreadCount());
 
-	// Props for handling composer action
+	// Props for handling composer action and avatar
 	interface Props {
 		onComposerOpen?: () => void;
+		avatarUrl?: string | null;
+		profile?: { display_name?: string | null } | null;
 	}
 	
-	let { onComposerOpen }: Props = $props();
+	let { onComposerOpen, avatarUrl, profile }: Props = $props();
 
 	let navItems = $derived([
 		{ href: '/dashboard', label: 'Dashboard', icon: Home, description: 'Smart widgets & overview' },
@@ -36,12 +38,23 @@
 	<!-- Header -->
 	<div class="p-6 border-b border-gray-200">
 		<div class="flex items-center">
-			<div class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 w-8 h-8 flex items-center justify-center text-white font-bold mr-3" aria-label="Family (Ghassan & Mariem)">
-				GM
+			{#if avatarUrl}
+				<img 
+					src={avatarUrl} 
+					alt="Profile avatar"
+					class="rounded-full w-10 h-10 object-cover border-2 border-gray-200 mr-3"
+					onerror={() => avatarUrl = null}
+				/>
+			{:else}
+				<div class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 w-10 h-10 flex items-center justify-center text-white font-bold mr-3" aria-label="User avatar">
+					{profile?.display_name?.[0]?.toUpperCase() ?? "U"}
+				</div>
+			{/if}
+			<div>
+				<h1 class="text-xl font-bold text-gray-900">Family</h1>
+				<p class="text-sm text-gray-500">Family Connection Hub</p>
 			</div>
-			<h1 class="text-xl font-bold text-gray-900">Family</h1>
 		</div>
-		<p class="text-sm text-gray-500 mt-1">Family Connection Hub</p>
 	</div>
 	
 	<!-- Navigation Items -->

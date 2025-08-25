@@ -32,11 +32,16 @@
 	let showComposer = $state(false);
 
 	// Avatar state
-	let avatarUrl: string | null = null;
+	let avatarUrl: string | null = $state(null);
 
-	$: if ($currentUserProfile?.avatar_url) {
-		resolveAvatar($currentUserProfile).then(url => avatarUrl = url);
-	}
+	// Update avatar URL when profile changes
+	$effect(() => {
+		if ($currentUserProfile?.avatar_url) {
+			resolveAvatar($currentUserProfile).then(url => avatarUrl = url);
+		} else {
+			avatarUrl = null;
+		}
+	});
 
 	function handleComposerOpen() {
 		showComposer = true;
@@ -54,6 +59,15 @@
 		if (isAuthenticated && userEmail && !isAllowedUser) {
 			window.location.href = '/access-denied';
 		}
+
+		// Auto-refresh avatar URL every 55 minutes to prevent expiration
+		const refreshInterval = setInterval(() => {
+			if ($currentUserProfile?.avatar_url) {
+				resolveAvatar($currentUserProfile).then(url => avatarUrl = url);
+			}
+		}, 55 * 60 * 1000);
+
+		return () => clearInterval(refreshInterval);
 	});
 </script>
 
