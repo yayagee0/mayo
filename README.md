@@ -58,16 +58,18 @@ Coverage includes:
 
 ## 🔒 Security & Access
 
-- **4-person allowlist** → only specific family emails may log in  
-- **Server-side allowlist** enforced  
-- **RLS policies** on every table  
-- **Google OAuth only**  
+- **4-person allowlist** → only specific family emails may log in (Google OAuth only).
+- **RLS is completely disabled** for all tables.
+- **Authenticated role** has full privileges (SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRIGGER, TRUNCATE).
+- **Anon role** has no privileges.
+- New tables automatically grant privileges to `authenticated`.
+- Security enforced at the **Auth allowlist layer**, not by row policies.  
 
 ---
 
 ## 📦 Schema & Database
 
-Schema is **locked and immutable** (`PHASE0_SCHEMA_LOCKED.sql`).  
+Schema is **locked and immutable** (`PHASE0_SCHEMA_NO_RLS.sql`).  
 
 ### Core Tables (Phase 0)
 - `app_settings`  
@@ -86,7 +88,7 @@ Schema is **locked and immutable** (`PHASE0_SCHEMA_LOCKED.sql`).
 ### Extended Tables (Phase 2)
 - `islamic_questions` (Q&A for kids with reassuring explanations)  
 
-RLS is **enabled for all tables**.  
+**RLS is disabled for all tables** - security enforced via allowlist only.  
 
 ---
 

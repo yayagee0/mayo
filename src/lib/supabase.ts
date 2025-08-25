@@ -394,4 +394,36 @@ export interface Database {
   }
 }
 
+// Environment-based client creation
+function createSupabaseClient() {
+  // Check for test environment first
+  const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
+  const isVitestEnv = typeof import.meta !== 'undefined' && import.meta.env?.VITEST
+  
+  // Always use mocks in test environments
+  if (isTest || isVitestEnv) {
+    console.warn('[Supabase] Using mock client in test environment')
+    // Dynamic import to avoid issues in production build
+    return import('./supabase.mock').then(mod => mod.mockSupabaseClient)
+  }
+  
+  // Check for development mock flag
+  const useMocks = typeof import.meta !== 'undefined' && import.meta.env?.VITE_USE_MOCKS === 'true'
+  
+  if (useMocks) {
+    console.warn('[Supabase] Using mock client (VITE_USE_MOCKS=true)')
+    return import('./supabase.mock').then(mod => mod.mockSupabaseClient)
+  }
+  
+  // Production - use real Supabase client
+  console.log('[Supabase] Using real client')
+  return Promise.resolve(createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY))
+}
+
+// Export async client getter for environments that support it
+export async function getSupabaseClient() {
+  return await createSupabaseClient()
+}
+
+// Export synchronous client for compatibility (will be real client in production)
 export const supabase = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)

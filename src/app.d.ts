@@ -10,4 +10,14 @@ declare global {
 	}
 }
 
+// Environment variables
+interface ImportMetaEnv {
+	readonly VITE_USE_MOCKS?: string
+	readonly VITEST?: boolean
+}
+
+interface ImportMeta {
+	readonly env: ImportMetaEnv
+}
+
 export {};

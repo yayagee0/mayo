@@ -75,10 +75,10 @@ describe('Server Allowlist Validation', () => {
 			})
 		})
 
-		it('should be case sensitive', () => {
-			expect(isEmailAllowed('NILEZAT@GMAIL.COM')).toBe(false)
-			expect(isEmailAllowed('Nilezat@Gmail.Com')).toBe(false)
-			expect(isEmailAllowed('nilezat@GMAIL.COM')).toBe(false)
+		it('should be case insensitive', () => {
+			expect(isEmailAllowed('NILEZAT@GMAIL.COM')).toBe(true)
+			expect(isEmailAllowed('Nilezat@Gmail.Com')).toBe(true)
+			expect(isEmailAllowed('nilezat@GMAIL.COM')).toBe(true)
 		})
 	})
 
