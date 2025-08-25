@@ -98,7 +98,7 @@
 	{/if}
 	
 	<!-- PWA Install Prompt (only if PWA is enabled) -->
-	{#if isPWAEnabled()}
+	{#if env.PUBLIC_ENABLE_PWA === 'true'}
 		<PWAInstallPrompt />
 	{/if}
 </div>
