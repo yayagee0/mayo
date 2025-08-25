@@ -1,19 +1,28 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { notificationStore } from '$lib/stores/notificationStore';
+	import { openComposer } from '$lib/stores/composerStore';
+	import { currentUserAvatar } from '$lib/stores/avatarStore';
+	import { currentUserProfile } from '$lib/stores/profileStore';
 	import { Home, FileText, User, Plus, Bell } from 'lucide-svelte';
 
 	let currentPath = $derived($page.url.pathname);
 	let unreadCount = $derived(notificationStore.getUnreadCount());
+	let avatarUrl = $derived($currentUserAvatar);
+	let profile = $derived($currentUserProfile);
 
-	// Props for handling composer action and avatar
+	// Props for handling composer action and avatar - kept for backward compatibility
 	interface Props {
 		onComposerOpen?: () => void;
 		avatarUrl?: string | null;
 		profile?: { display_name?: string | null } | null;
 	}
 	
-	let { onComposerOpen, avatarUrl, profile }: Props = $props();
+	let { onComposerOpen, avatarUrl: propAvatarUrl, profile: propProfile }: Props = $props();
+
+	// Use store values as primary, props as fallback
+	let displayAvatarUrl = $derived(avatarUrl || propAvatarUrl);
+	let displayProfile = $derived(profile || propProfile);
 
 	let navItems = $derived([
 		{ href: '/dashboard', label: 'Dashboard', icon: Home, description: 'Smart widgets & overview' },
@@ -26,13 +35,13 @@
 	function handleItemClick(item: typeof navItems[0], event: Event) {
 		if (item.action === 'composer') {
 			event.preventDefault();
-			onComposerOpen?.();
+			openComposer();
 		}
 	}
 </script>
 
 <aside 
-	class="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 shadow-sm z-40 flex flex-col"
+	class="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 shadow-lg z-40 flex flex-col @container"
 	aria-label="Main navigation"
 >
 	<!-- Header -->
@@ -53,20 +62,20 @@
 		
 		<!-- Current user info -->
 		<div class="flex items-center justify-center">
-			{#if avatarUrl}
+			{#if displayAvatarUrl}
 				<img 
-					src={avatarUrl} 
+					src={displayAvatarUrl} 
 					alt="Profile avatar"
-					class="rounded-full w-10 h-10 object-cover border-2 border-gray-200 mr-3"
-					onerror={() => avatarUrl = null}
+					class="rounded-full w-10 h-10 object-cover border-2 border-gray-200 me-3"
+					onerror={() => displayAvatarUrl = null}
 				/>
 			{:else}
-				<div class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 w-10 h-10 flex items-center justify-center text-white font-bold mr-3" aria-label="User avatar">
-					{profile?.display_name?.[0]?.toUpperCase() ?? "U"}
+				<div class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 w-10 h-10 flex items-center justify-center text-white font-bold me-3" aria-label="User avatar">
+					{displayProfile?.display_name?.[0]?.toUpperCase() ?? "U"}
 				</div>
 			{/if}
 			<div>
-				<p class="text-sm font-medium text-gray-700">{profile?.display_name || 'Family Member'}</p>
+				<p class="text-sm font-medium text-gray-700">{displayProfile?.display_name || 'Family Member'}</p>
 			</div>
 		</div>
 	</div>
@@ -80,7 +89,7 @@
 					<a 
 						href={item.href}
 						onclick={(e) => handleItemClick(item, e)}
-						class="flex items-center p-3 text-sm rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 group"
+						class="flex items-center ps-4 pe-4 py-3 text-sm rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 group animate-slide-up"
 						class:bg-gradient-to-r={currentPath === item.href}
 						class:from-indigo-500={currentPath === item.href}
 						class:to-purple-500={currentPath === item.href}
@@ -95,14 +104,14 @@
 					>
 						<div class="relative flex items-center min-w-0 flex-1">
 							<IconComponent 
-								class="w-5 h-5 mr-3 flex-shrink-0 {currentPath === item.href ? 'text-white' : 'text-gray-500 group-hover:text-indigo-600'}" 
+								class="w-5 h-5 me-3 flex-shrink-0 {currentPath === item.href ? 'text-white' : 'text-gray-500 group-hover:text-indigo-600'}" 
 								aria-hidden="true" 
 							/>
 							<div class="min-w-0 flex-1">
 								<div class="flex items-center justify-between">
 									<span class="font-medium truncate">{item.label}</span>
 									{#if item.unreadCount && item.unreadCount > 0}
-										<span class="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-5 ml-2">
+										<span class="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-5 ms-2">
 											{item.unreadCount > 99 ? '99+' : item.unreadCount}
 										</span>
 									{/if}

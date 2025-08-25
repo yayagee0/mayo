@@ -3,15 +3,19 @@
 	import { session, user } from '$lib/stores/sessionStore';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { afterNavigate } from '$app/navigation';
 	import { supabase } from '$lib/supabase';
 	import BottomNav from '$lib/../components/ui/BottomNav.svelte';
 	import Sidebar from '$lib/../components/ui/Sidebar.svelte';
 	import PostComposer from '$lib/../components/PostComposer.svelte';
 	import PWAInstallPrompt from '$lib/../components/ui/PWAInstallPrompt.svelte';
+	import TopbarGreeting from '$lib/../components/TopbarGreeting.svelte';
 	import { handleServiceWorker } from '$lib/pwa';
 	import { env } from '$env/dynamic/public';
 	import { currentUserProfile, resolveAvatar } from '$lib/stores/profileStore';
 	import { getDefaultAvatarForUser } from '$lib/avatarBank';
+	import { composerStore, closeComposer } from '$lib/stores/composerStore';
+	import { currentUserAvatar } from '$lib/stores/avatarStore';
 
 	let { children } = $props();
 
@@ -29,41 +33,24 @@
 	let showBottomNav = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
 	let showSidebar = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
 
-	// PostComposer modal state
-	let showComposer = $state(false);
+	// PostComposer modal state using store
+	let showComposer = $derived($composerStore);
 
-	// Avatar state with fallback logic
-	let avatarUrl: string | null = $state(null);
-
-	// Get fallback avatar with priority system
-	function getFallbackAvatar(): string | null {
-		if (!$currentUserProfile) return null;
-		
-		// Priority 1: User uploaded photo (handled by resolveAvatar)
-		// Priority 2: Avatar selected from local bank
-		// Priority 3: Default avatar based on user identifier
-		const identifier = $currentUserProfile.email || $currentUserProfile.display_name || 'user';
-		return getDefaultAvatarForUser(identifier);
-	}
-
-	// Update avatar URL when profile changes
-	$effect(() => {
-		if ($currentUserProfile?.avatar_url) {
-			resolveAvatar($currentUserProfile).then(url => {
-				avatarUrl = url || getFallbackAvatar();
-			});
-		} else {
-			avatarUrl = getFallbackAvatar();
-		}
-	});
+	// Avatar state with reactive store
+	let avatarUrl = $derived($currentUserAvatar);
 
 	function handleComposerOpen() {
-		showComposer = true;
+		composerStore.set(true);
 	}
 
 	function handleComposerClose() {
-		showComposer = false;
+		closeComposer();
 	}
+
+	// Auto-close composer on navigation
+	afterNavigate(() => {
+		closeComposer();
+	});
 
 	onMount(() => {
 		// Handle service worker registration/unregistration based on PWA flag
@@ -73,17 +60,6 @@
 		if (isAuthenticated && userEmail && !isAllowedUser) {
 			window.location.href = '/access-denied';
 		}
-
-		// Auto-refresh avatar URL every 55 minutes to prevent expiration
-		const refreshInterval = setInterval(() => {
-			if ($currentUserProfile?.avatar_url) {
-				resolveAvatar($currentUserProfile).then(url => {
-					avatarUrl = url || getFallbackAvatar();
-				});
-			}
-		}, 55 * 60 * 1000);
-
-		return () => clearInterval(refreshInterval);
 	});
 </script>
 
@@ -111,7 +87,7 @@
 			<div class="flex items-center justify-between">
 				<div>
 					<h1 class="text-lg font-semibold text-gray-900">
-						Welcome back, {$currentUserProfile?.display_name?.[0]?.toUpperCase() || $currentUserProfile?.email?.[0]?.toUpperCase() || 'User'} 🙏
+						Welcome back, {$currentUserProfile?.display_name || $currentUserProfile?.email?.split('@')[0] || 'User'} 🙏
 					</h1>
 					<p class="text-sm text-gray-500">Our family hub</p>
 				</div>
@@ -137,6 +113,11 @@
 		class:md:ml-64={showSidebar}
 		class:pb-20={showBottomNav}
 	>
+		<!-- Topbar Greeting (below nav, above content) -->
+		{#if isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied')}
+			<TopbarGreeting profile={$currentUserProfile} />
+		{/if}
+		
 		{@render children?.()}
 	</div>
 	
@@ -149,10 +130,11 @@
 	
 	<!-- PostComposer Modal -->
 	{#if showComposer}
-		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+		<div class="fixed inset-0 bg-primary/80 backdrop-blur-sm z-40"></div>
+		<div class="fixed inset-0 z-50 flex items-center justify-center p-4"
 			class:md:ml-64={showSidebar}
 		>
-			<div class="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+			<div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-xl animate-fade-in">
 				<PostComposer 
 					onPostCreated={handleComposerClose}
 					onCancel={handleComposerClose}
