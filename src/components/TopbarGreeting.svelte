@@ -51,13 +51,13 @@
 	});
 </script>
 
-<div class="bg-white border-b border-gray-200/50 animate-fade-in">
+<div class="hidden md:block bg-white border-b border-gray-200/50 animate-fade-in">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-		<div class="text-center">
-			<h2 class="text-lg font-semibold text-gray-900 mb-1">
+		<div class="space-y-1">
+			<h2 class="text-lg font-semibold text-gray-900">
 				Welcome back, {displayName} 🙏
 			</h2>
-			<p class="text-sm text-gray-600">
+			<p class="text-sm text-gray-500">
 				{secondaryMessage}
 			</p>
 		</div>

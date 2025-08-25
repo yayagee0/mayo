@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Young boy (7 years old) - playful blue theme -->
+  <circle cx="60" cy="60" r="60" fill="#E3F2FD"/>
+  
+  <!-- Face -->
+  <circle cx="60" cy="55" r="35" fill="#FFDBCB"/>
+  
+  <!-- Hair -->
+  <path d="M25 45C25 25 40 15 60 15C80 15 95 25 95 45C95 35 85 25 75 25C70 20 65 20 60 20C55 20 50 20 45 25C35 25 25 35 25 45Z" fill="#8B4513"/>
+  
+  <!-- Eyes -->
+  <circle cx="50" cy="50" r="4" fill="#333"/>
+  <circle cx="70" cy="50" r="4" fill="#333"/>
+  <circle cx="51" cy="49" r="1" fill="#FFF"/>
+  <circle cx="71" cy="49" r="1" fill="#FFF"/>
+  
+  <!-- Nose -->
+  <circle cx="60" cy="58" r="1.5" fill="#FFB6A3"/>
+  
+  <!-- Mouth -->
+  <path d="M55 65C55 68 57 70 60 70C63 70 65 68 65 65" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Shirt -->
+  <path d="M30 90C30 85 40 80 60 80C80 80 90 85 90 90L90 120L30 120Z" fill="#2196F3"/>
+  
+  <!-- Collar -->
+  <path d="M45 80L50 85L60 80L70 85L75 80" stroke="#1976D2" stroke-width="2" fill="none"/>
+</svg>

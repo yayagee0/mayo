@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Exaggerated cartoon avatar - cosmic theme -->
+  <defs>
+    <radialGradient id="cosmicBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#667eea"/>
+      <stop offset="50%" style="stop-color:#764ba2"/>
+      <stop offset="100%" style="stop-color:#2C1810"/>
+    </radialGradient>
+    <linearGradient id="starHair" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFA500"/>
+      <stop offset="100%" style="stop-color:#FF6347"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Cosmic background -->
+  <circle cx="60" cy="60" r="60" fill="url(#cosmicBg)"/>
+  
+  <!-- Stars in background -->
+  <circle cx="20" cy="25" r="1" fill="#FFF"/>
+  <circle cx="35" cy="15" r="1.5" fill="#FFD700"/>
+  <circle cx="85" cy="20" r="1" fill="#FFF"/>
+  <circle cx="95" cy="35" r="1.5" fill="#FFD700"/>
+  <circle cx="15" cy="85" r="1" fill="#FFF"/>
+  <circle cx="90" cy="90" r="1.5" fill="#FFD700"/>
+  
+  <!-- Face with cosmic glow -->
+  <circle cx="60" cy="55" r="30" fill="#FFDBCB" stroke="#FFD700" stroke-width="3"/>
+  
+  <!-- Spiky star hair -->
+  <path d="M60 20L65 10L70 20L80 15L75 25L85 30L75 35L80 45L70 40L65 50L60 40L55 50L50 40L40 45L45 35L35 30L45 25L40 15L50 20L55 10Z" fill="url(#starHair)" stroke="#333" stroke-width="2"/>
+  
+  <!-- Cartoon outline -->
+  <circle cx="60" cy="55" r="30" fill="none" stroke="#333" stroke-width="4"/>
+  
+  <!-- Huge cartoon eyes -->
+  <circle cx="48" cy="45" r="8" fill="#FFF" stroke="#333" stroke-width="2"/>
+  <circle cx="72" cy="45" r="8" fill="#FFF" stroke="#333" stroke-width="2"/>
+  <circle cx="48" cy="45" r="5" fill="#333"/>
+  <circle cx="72" cy="45" r="5" fill="#333"/>
+  <circle cx="50" cy="42" r="2.5" fill="#FFF"/>
+  <circle cx="74" cy="42" r="2.5" fill="#FFF"/>
+  
+  <!-- Exaggerated eyebrows -->
+  <path d="M38 35L58 38" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+  <path d="M62 38L82 35" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Button nose -->
+  <circle cx="60" cy="58" r="2.5" fill="#FFB6A3" stroke="#333" stroke-width="2"/>
+  
+  <!-- Huge grin -->
+  <path d="M45 70C45 78 51 85 60 85C69 85 75 78 75 70" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
+  
+  <!-- Exaggerated teeth -->
+  <rect x="52" y="70" width="3" height="6" fill="#FFF" stroke="#333" stroke-width="1"/>
+  <rect x="56" y="70" width="3" height="6" fill="#FFF" stroke="#333" stroke-width="1"/>
+  <rect x="60" y="70" width="3" height="6" fill="#FFF" stroke="#333" stroke-width="1"/>
+  <rect x="64" y="70" width="3" height="6" fill="#FFF" stroke="#333" stroke-width="1"/>
+  
+  <!-- Cosmic outfit -->
+  <path d="M30 90C30 85 40 80 60 80C80 80 90 85 90 90L90 120L30 120Z" fill="url(#cosmicBg)"/>
+  
+  <!-- Cosmic pattern -->
+  <circle cx="45" cy="95" r="2" fill="#FFD700"/>
+  <circle cx="75" cy="95" r="2" fill="#FFD700"/>
+  <circle cx="60" cy="105" r="3" fill="#FFF"/>
+  <path d="M40 110L80 110" stroke="#FFD700" stroke-width="2"/>
+  
+  <!-- Cartoon outline for body -->
+  <path d="M30 90C30 85 40 80 60 80C80 80 90 85 90 90L90 120L30 120Z" fill="none" stroke="#333" stroke-width="3"/>
+</svg>

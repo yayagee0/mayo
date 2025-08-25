@@ -85,7 +85,7 @@
 	{#if isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied')}
 		<div class="md:hidden bg-white border-b border-gray-200 px-4 py-3">
 			<div class="flex items-center justify-between">
-				<div>
+				<div class="space-y-1">
 					<h1 class="text-lg font-semibold text-gray-900">
 						Welcome back, {$currentUserProfile?.display_name || $currentUserProfile?.email?.split('@')[0] || 'User'} 🙏
 					</h1>

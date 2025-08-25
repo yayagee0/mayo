@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Man (early 40s) - casual brown theme -->
+  <circle cx="60" cy="60" r="60" fill="#EFEBE9"/>
+  
+  <!-- Face -->
+  <circle cx="60" cy="55" r="31" fill="#FFDBCB"/>
+  
+  <!-- Hair - casual with some gray -->
+  <path d="M34 40C34 24 46 14 60 14C74 14 86 24 86 40C86 36 83 33 77 31C74 28 67 26 60 26C53 26 46 28 43 31C37 33 34 36 34 40Z" fill="#4A4A4A"/>
+  
+  <!-- Gray streaks -->
+  <path d="M45 32C50 29 55 28 60 28" stroke="#808080" stroke-width="1"/>
+  <path d="M75 32C72 30 68 29 65 29" stroke="#808080" stroke-width="1"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="52" cy="51" rx="3.5" ry="3" fill="#333"/>
+  <ellipse cx="68" cy="51" rx="3.5" ry="3" fill="#333"/>
+  <circle cx="53" cy="50" r="1" fill="#FFF"/>
+  <circle cx="69" cy="50" r="1" fill="#FFF"/>
+  
+  <!-- Smile lines -->
+  <path d="M46 58C48 60 49 61 50 62" stroke="#FFB6A3" stroke-width="1" fill="none"/>
+  <path d="M70 62C71 61 72 60 74 58" stroke="#FFB6A3" stroke-width="1" fill="none"/>
+  
+  <!-- Eyebrows -->
+  <path d="M48 46L56 47" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M64 47L72 46" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Nose -->
+  <path d="M58 58L62 58L60 62Z" fill="#FFB6A3"/>
+  
+  <!-- Moustache -->
+  <path d="M54 63C56 64 58 64 60 64C62 64 64 64 66 63" stroke="#4A4A4A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Goatee -->
+  <ellipse cx="60" cy="72" rx="4" ry="6" fill="#4A4A4A"/>
+  
+  <!-- Mouth -->
+  <path d="M56 66C56 68 58 69 60 69C62 69 64 68 64 66" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Casual shirt -->
+  <path d="M36 86C36 81 46 76 60 76C74 76 84 81 84 86L84 120L36 120Z" fill="#8D6E63"/>
+  
+  <!-- Shirt pocket -->
+  <rect x="65" y="95" width="8" height="10" fill="none" stroke="#6D4C41" stroke-width="1"/>
+  
+  <!-- Casual collar -->
+  <path d="M48 86L55 78L60 85L65 78L72 86" stroke="#6D4C41" stroke-width="2" fill="none"/>
+</svg>
