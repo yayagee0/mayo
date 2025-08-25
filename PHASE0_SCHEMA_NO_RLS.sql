@@ -1,5 +1,9 @@
 -- ======================================================
--- FamilyNest Phase 2 Locked Schema (RLS DISABLED)
+-- FamilyNest Phase 2 Locked Schema (RLS DISABLED) - CANONICAL
+-- ✅ This is the authoritative schema file for production
+-- ✅ RLS disabled by Product Owner decision per APP_STATUS_REVIEW.md
+-- ✅ Security enforced via allowlist only (frontend-controlled)
+-- ✅ Schema frozen - no changes without PO approval
 -- NO RLS - Security enforced via allowlist only
 -- ======================================================
 

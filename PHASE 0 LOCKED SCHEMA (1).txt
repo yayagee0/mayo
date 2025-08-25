@@ -1,6 +1,9 @@
 -- ======================================================
--- FamilyNest Phase 0 Locked Schema (Updated)
--- Reflects current Supabase state as of now
+-- FamilyNest Phase 0 Locked Schema (DEPRECATED)
+-- ⚠️  THIS FILE IS OBSOLETE AND CONTRADICTS CURRENT IMPLEMENTATION
+-- ⚠️  USE PHASE0_SCHEMA_NO_RLS.sql AS THE CANONICAL SCHEMA
+-- ⚠️  This file contains RLS policies that are NO LONGER USED
+-- Reflects historical Supabase state - DO NOT USE
 -- ======================================================
 
 -- EXTENSIONS
