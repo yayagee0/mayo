@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { notificationStore } from '$lib/stores/notificationStore';
+	import { openComposer } from '$lib/stores/composerStore';
 	import { Home, FileText, User, Plus, Bell } from 'lucide-svelte';
 
 	let currentPath = $derived($page.url.pathname);
@@ -26,7 +27,7 @@
 	function handleItemClick(item: typeof navItems[0], event: Event) {
 		if (item.action === 'composer') {
 			event.preventDefault();
-			onComposerOpen?.();
+			openComposer();
 		}
 	}
 </script>

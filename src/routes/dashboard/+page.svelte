@@ -337,9 +337,9 @@
 									</div>
 								</div>
 							{:else if quietWidgetsLoaded && loadedQuietWidgets.length > 0}
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+								<div class="grid grid-cols-1 @container md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
 									{#each loadedQuietWidgets as { config: widget, component: Component } (widget.id)}
-										<div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+										<div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 animate-fade-in">
 											<div class="flex items-center gap-2 mb-4">
 												<h4 class="text-sm font-semibold text-gray-900">{widget.name}</h4>
 											</div>
