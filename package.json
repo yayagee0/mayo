@@ -12,7 +12,10 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest",
 		"test:ui": "vitest --ui",
-		"test:run": "vitest run"
+		"test:run": "vitest run",
+		"analyze:before": "node scripts/analyze-bundle.js before",
+		"analyze:after": "node scripts/analyze-bundle.js after",
+		"analyze:compare": "node scripts/analyze-bundle.js compare"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.0",
@@ -30,6 +33,7 @@
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5.0.0",
 		"vite": "^7.0.4",
+		"vite-bundle-analyzer": "^1.2.1",
 		"vitest": "^3.2.4"
 	},
 	"dependencies": {
