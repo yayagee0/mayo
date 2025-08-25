@@ -10,6 +10,7 @@
 	import PWAInstallPrompt from '$lib/../components/ui/PWAInstallPrompt.svelte';
 	import { handleServiceWorker } from '$lib/pwa';
 	import { env } from '$env/dynamic/public';
+	import { currentUserProfile, resolveAvatar } from '$lib/stores/profileStore';
 
 	let { children } = $props();
 
@@ -29,6 +30,13 @@
 
 	// PostComposer modal state
 	let showComposer = $state(false);
+
+	// Avatar state
+	let avatarUrl: string | null = null;
+
+	$: if ($currentUserProfile?.avatar_url) {
+		resolveAvatar($currentUserProfile).then(url => avatarUrl = url);
+	}
 
 	function handleComposerOpen() {
 		showComposer = true;
@@ -63,7 +71,7 @@
 	{#if showSidebar}
 		<!-- Desktop/Tablet Sidebar -->
 		<div class="hidden md:block">
-			<Sidebar onComposerOpen={handleComposerOpen} />
+			<Sidebar onComposerOpen={handleComposerOpen} avatarUrl={avatarUrl} profile={$currentUserProfile} />
 		</div>
 	{/if}
 	
@@ -78,7 +86,7 @@
 	<!-- Mobile Bottom Navigation -->
 	{#if showBottomNav}
 		<div class="md:hidden">
-			<BottomNav onComposerOpen={handleComposerOpen} />
+			<BottomNav onComposerOpen={handleComposerOpen} avatarUrl={avatarUrl} profile={$currentUserProfile} />
 		</div>
 	{/if}
 	
