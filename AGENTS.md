@@ -83,7 +83,7 @@ This document defines the technical, architectural, and behavioral constraints f
 ## 🧠 DESIGN PHILOSOPHY
 
 - Schema-First: Data drives design. Schema never changes without PO approval.  
-- Contractual AI: Copilot, codegen, or any LLM must obey this file and `PHASE0_SCHEMA_LOCKED.sql`.  
+- Contractual AI: Copilot, codegen, or any LLM must obey this file and `PHASE0_SCHEMA_NO_RLS.sql`.  
 - No Dead Ends: All screens should offer CTAs or Smart Cards, never show blanks.  
 - Single-Family Privacy: All storage, media, and feeds are locked to one household context.  
 
@@ -115,7 +115,7 @@ This document defines the technical, architectural, and behavioral constraints f
 
 | File                          | Description                              |
 |-------------------------------|------------------------------------------|
-| PHASE0_SCHEMA_LOCKED.sql      | Canonical schema (Phase 0–2 tables)      |
+| PHASE0_SCHEMA_NO_RLS.sql      | Canonical schema (Phase 0–2 tables)      |
 | COPILOT_PROMPT_PHASE2_FULL.txt| AI codegen scaffold guide                |
 | README.md                     | Project overview and usage instructions |
 | AGENTS.md                     | Enforcement document for humans + AI    |

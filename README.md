@@ -92,6 +92,24 @@ Schema is **locked and immutable** (`PHASE0_SCHEMA_NO_RLS.sql`).
 
 ---
 
+## ⚠️ Known Issues
+
+Current status shows some areas requiring attention:
+
+### Bundle Size Growth
+- **Current**: 2080KB JS + 52KB CSS
+- **Previous**: 577KB JS + 44KB CSS  
+- **Impact**: Bundle size has increased significantly and needs investigation
+- **Solution**: Implement advanced lazy loading and code splitting strategies
+
+### Accessibility Warnings
+- **Video Captions**: PostCard.svelte missing caption tracks for WCAG compliance
+- **SSR Export**: posts/+page.svelte export configuration needs migration to +page.server.ts
+
+These issues are tracked and prioritized for upcoming releases.
+
+---
+
 ## 📊 Widgets
 
 ### Anchor Widgets (always shown, 3–4 max on load)
