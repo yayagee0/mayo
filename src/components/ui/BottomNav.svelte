@@ -2,19 +2,27 @@
 	import { page } from '$app/stores';
 	import { notificationStore } from '$lib/stores/notificationStore';
 	import { openComposer } from '$lib/stores/composerStore';
+	import { currentUserAvatar } from '$lib/stores/avatarStore';
+	import { currentUserProfile } from '$lib/stores/profileStore';
 	import { Home, FileText, User, Plus, Bell } from 'lucide-svelte';
 
 	let currentPath = $derived($page.url.pathname);
 	let unreadCount = $derived(notificationStore.getUnreadCount());
+	let avatarUrl = $derived($currentUserAvatar);
+	let profile = $derived($currentUserProfile);
 
-	// Props for handling composer action and avatar
+	// Props for handling composer action and avatar - kept for backward compatibility
 	interface Props {
 		onComposerOpen?: () => void;
 		avatarUrl?: string | null;
 		profile?: { display_name?: string | null } | null;
 	}
 	
-	let { onComposerOpen, avatarUrl, profile }: Props = $props();
+	let { onComposerOpen, avatarUrl: propAvatarUrl, profile: propProfile }: Props = $props();
+
+	// Use store values as primary, props as fallback
+	let displayAvatarUrl = $derived(avatarUrl || propAvatarUrl);
+	let displayProfile = $derived(profile || propProfile);
 
 	let navItems = $derived([
 		{ href: '/dashboard', label: 'Home', icon: Home },
@@ -53,16 +61,16 @@
 				<div class="relative">
 					{#if item.href === '/profile'}
 						<!-- Show avatar for profile item -->
-						{#if avatarUrl}
+						{#if displayAvatarUrl}
 							<img 
-								src={avatarUrl} 
+								src={displayAvatarUrl} 
 								alt="Profile avatar"
 								class="w-6 h-6 rounded-full object-cover border border-gray-200 mb-1"
-								onerror={() => avatarUrl = null}
+								onerror={() => displayAvatarUrl = null}
 							/>
 						{:else}
 							<div class="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold mb-1">
-								{profile?.display_name?.[0]?.toUpperCase() ?? "U"}
+								{displayProfile?.display_name?.[0]?.toUpperCase() ?? "U"}
 							</div>
 						{/if}
 					{:else}

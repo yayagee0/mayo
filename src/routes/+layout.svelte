@@ -15,6 +15,7 @@
 	import { currentUserProfile, resolveAvatar } from '$lib/stores/profileStore';
 	import { getDefaultAvatarForUser } from '$lib/avatarBank';
 	import { composerStore, closeComposer } from '$lib/stores/composerStore';
+	import { currentUserAvatar } from '$lib/stores/avatarStore';
 
 	let { children } = $props();
 
@@ -35,30 +36,8 @@
 	// PostComposer modal state using store
 	let showComposer = $derived($composerStore);
 
-	// Avatar state with fallback logic
-	let avatarUrl: string | null = $state(null);
-
-	// Get fallback avatar with priority system
-	function getFallbackAvatar(): string | null {
-		if (!$currentUserProfile) return null;
-		
-		// Priority 1: User uploaded photo (handled by resolveAvatar)
-		// Priority 2: Avatar selected from local bank
-		// Priority 3: Default avatar based on user identifier
-		const identifier = $currentUserProfile.email || $currentUserProfile.display_name || 'user';
-		return getDefaultAvatarForUser(identifier);
-	}
-
-	// Update avatar URL when profile changes
-	$effect(() => {
-		if ($currentUserProfile?.avatar_url) {
-			resolveAvatar($currentUserProfile).then(url => {
-				avatarUrl = url || getFallbackAvatar();
-			});
-		} else {
-			avatarUrl = getFallbackAvatar();
-		}
-	});
+	// Avatar state with reactive store
+	let avatarUrl = $derived($currentUserAvatar);
 
 	function handleComposerOpen() {
 		composerStore.set(true);
@@ -81,17 +60,6 @@
 		if (isAuthenticated && userEmail && !isAllowedUser) {
 			window.location.href = '/access-denied';
 		}
-
-		// Auto-refresh avatar URL every 55 minutes to prevent expiration
-		const refreshInterval = setInterval(() => {
-			if ($currentUserProfile?.avatar_url) {
-				resolveAvatar($currentUserProfile).then(url => {
-					avatarUrl = url || getFallbackAvatar();
-				});
-			}
-		}, 55 * 60 * 1000);
-
-		return () => clearInterval(refreshInterval);
 	});
 </script>
 
