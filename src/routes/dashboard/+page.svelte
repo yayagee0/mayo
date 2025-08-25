@@ -9,6 +9,8 @@
 	import { HeartHandshake, Leaf, ChevronDown, User } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
+	import { cachedQuery, getCacheKey } from '$lib/utils/queryCache';
+	import { lazyLoader, isAnchorWidget, isQuietWidget } from '$lib/utils/lazyLoader';
 
 	let widgets: WidgetConfig[] = $state([]);
 	let loadedWidgets: { config: WidgetConfig, component: any }[] = $state([]);
@@ -93,25 +95,33 @@
 		try {
 			loading = true;
 
-			// Load items
-			const { data: itemsData, error: itemsError } = await supabase
-				.from('items')
-				.select('*')
-				.order('created_at', { ascending: false });
+			// Load items with caching
+			const itemsCacheKey = getCacheKey('items', { order: 'created_at' });
+			const itemsData = await cachedQuery(itemsCacheKey, async () => {
+				const { data, error } = await supabase
+					.from('items')
+					.select('*')
+					.order('created_at', { ascending: false });
+				
+				if (error) throw error;
+				return data || [];
+			});
+			items = itemsData;
 
-			if (itemsError) throw itemsError;
-			items = itemsData || [];
+			// Load interactions with caching
+			const interactionsCacheKey = getCacheKey('interactions', { order: 'created_at' });
+			const interactionsData = await cachedQuery(interactionsCacheKey, async () => {
+				const { data, error } = await supabase
+					.from('interactions')
+					.select('*')
+					.order('created_at', { ascending: false });
+				
+				if (error) throw error;
+				return data || [];
+			});
+			interactions = interactionsData;
 
-			// Load interactions
-			const { data: interactionsData, error: interactionsError } = await supabase
-				.from('interactions')
-				.select('*')
-				.order('created_at', { ascending: false });
-
-			if (interactionsError) throw interactionsError;
-			interactions = interactionsData || [];
-
-			// Load widgets
+			// Load anchor widgets immediately, lazy load quiet widgets
 			await loadWidgets();
 
 		} catch (error) {
@@ -252,7 +262,7 @@
 					{#if widgetCollapseStates['quietMode']}
 						<div class="px-6 pb-6 border-t border-gray-100 bg-gray-50">
 							<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-								{#each loadedWidgets.filter(w => ['wall', 'scenarioDigest', 'profileQuiz', 'agePlayground', 'professionCard', 'islamicQA', 'islamicReflectionDigest', 'weeklyReflectionDigest'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
+								{#each loadedWidgets.filter(w => ['wall', 'scenarioDigest', 'profileQuiz', 'agePlayground', 'professionCard', 'islamicQA', 'islamicReflectionDigest', 'weeklyReflectionDigest', 'analytics'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 									<div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
 										<div class="flex items-center gap-2 mb-4">
 											<h4 class="text-sm font-semibold text-gray-900">{widget.name}</h4>
