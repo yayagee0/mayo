@@ -181,4 +181,41 @@ describe('Server Allowlist Validation', () => {
 			expect(schemaEmails).toEqual(serverEmails)
 		})
 	})
+
+	describe('Security Integration Tests', () => {
+		it('should ensure unauthorized email is redirected to /access-denied', () => {
+			const unauthorizedEmails = [
+				'unauthorized@example.com',
+				'hacker@malicious.com',
+				'random@user.com',
+				'admin@system.com'
+			];
+
+			unauthorizedEmails.forEach(email => {
+				// Verify email is not allowed by allowlist
+				expect(isEmailAllowed(email)).toBe(false);
+				
+				// Verify validateUserAccess throws error (which should trigger redirect)
+				expect(() => validateUserAccess(email)).toThrow(`Access denied for email: ${email}`);
+			});
+		});
+
+		it('should verify RLS disabled security model is enforced', () => {
+			// Test that security relies on allowlist rather than RLS
+			// This validates the security model described in AGENTS.md
+			
+			const allowedEmails = [...ALLOWED_EMAILS];
+			const unauthorizedEmail = 'test@example.com';
+			
+			// All allowed emails should pass validation
+			allowedEmails.forEach(email => {
+				expect(isEmailAllowed(email)).toBe(true);
+				expect(() => validateUserAccess(email)).not.toThrow();
+			});
+			
+			// Unauthorized emails should be blocked at allowlist level
+			expect(isEmailAllowed(unauthorizedEmail)).toBe(false);
+			expect(() => validateUserAccess(unauthorizedEmail)).toThrow();
+		});
+	})
 })

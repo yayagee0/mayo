@@ -9,6 +9,7 @@
 	import PostComposer from '$lib/../components/PostComposer.svelte';
 	import PWAInstallPrompt from '$lib/../components/ui/PWAInstallPrompt.svelte';
 	import { registerServiceWorker } from '$lib/utils/pwa';
+	import { env } from '$env/dynamic/public';
 
 	let { children } = $props();
 
@@ -37,9 +38,14 @@
 		showComposer = false;
 	}
 
+	// PWA feature flag check
+	const isPWAEnabled = () => env.PUBLIC_ENABLE_PWA === 'true';
+
 	onMount(() => {
-		// Register service worker for PWA functionality
-		registerServiceWorker();
+		// Register service worker for PWA functionality (if enabled)
+		if (isPWAEnabled()) {
+			registerServiceWorker();
+		}
 		
 		// Check if user is authenticated but not allowed
 		if (isAuthenticated && userEmail && !isAllowedUser) {
@@ -96,6 +102,8 @@
 		</div>
 	{/if}
 	
-	<!-- PWA Install Prompt -->
-	<PWAInstallPrompt />
+	<!-- PWA Install Prompt (only if PWA is enabled) -->
+	{#if isPWAEnabled()}
+		<PWAInstallPrompt />
+	{/if}
 </div>

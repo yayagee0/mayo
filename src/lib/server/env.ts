@@ -1,10 +1,12 @@
 import { z } from 'zod';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 // Environment validation schema
 const envSchema = z.object({
   PUBLIC_SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
-  PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required')
+  PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
+  PUBLIC_ENABLE_PWA: z.string().transform(val => val === 'true').default('false')
 });
 
 /**
@@ -24,7 +26,8 @@ export function validateOnStartup() {
   try {
     envSchema.parse({
       PUBLIC_SUPABASE_URL,
-      PUBLIC_SUPABASE_ANON_KEY
+      PUBLIC_SUPABASE_ANON_KEY,
+      PUBLIC_ENABLE_PWA: env.PUBLIC_ENABLE_PWA
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -40,7 +43,8 @@ validateOnStartup();
 
 const validatedEnv = envSchema.parse({
   PUBLIC_SUPABASE_URL,
-  PUBLIC_SUPABASE_ANON_KEY
+  PUBLIC_SUPABASE_ANON_KEY,
+  PUBLIC_ENABLE_PWA: env.PUBLIC_ENABLE_PWA
 });
 
 export default validatedEnv;
@@ -48,6 +52,11 @@ export default validatedEnv;
 // Helper function to get validated environment variables
 export function getValidatedEnv() {
   return validatedEnv;
+}
+
+// PWA feature flag
+export function isPWAEnabled(): boolean {
+  return validatedEnv.PUBLIC_ENABLE_PWA;
 }
 
 // Type-safe environment variables
