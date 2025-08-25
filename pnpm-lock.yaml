@@ -84,6 +84,9 @@ importers:
       vite:
         specifier: ^7.0.4
         version: 7.1.3(@types/node@24.3.0)(jiti@1.21.7)(yaml@2.8.1)
+      vite-bundle-analyzer:
+        specifier: ^1.2.1
+        version: 1.2.1
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.3.0)(@vitest/ui@3.2.4)(jiti@1.21.7)(jsdom@26.1.0)(yaml@2.8.1)
@@ -1386,6 +1389,10 @@ packages:
 
   uzip@0.20201231.0:
     resolution: {integrity: sha512-OZeJfZP+R0z9D6TmBgLq2LHzSSptGMGDGigGiEe0pr8UBe/7fdflgHlHBNDASTXB5jnFuxHpNaJywSg8YFeGng==}
+
+  vite-bundle-analyzer@1.2.1:
+    resolution: {integrity: sha512-dpJMQBnVjieMirpHILmgGsZAWU8fGyqK3ckj6O48wdy3fARlH7Mnz7BfYFUsd3ZdbuXjsYe7t5I/q2zsMOd5ig==}
+    hasBin: true
 
   vite-node@3.2.4:
     resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
@@ -2753,6 +2760,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   uzip@0.20201231.0: {}
+
+  vite-bundle-analyzer@1.2.1: {}
 
   vite-node@3.2.4(@types/node@24.3.0)(jiti@1.21.7)(yaml@2.8.1):
     dependencies:
