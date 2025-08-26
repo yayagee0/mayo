@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Man (early 40s) - professional navy theme -->
+  <circle cx="60" cy="60" r="60" fill="#E8EAF6"/>
+  
+  <!-- Face -->
+  <circle cx="60" cy="55" r="32" fill="#FFDBCB"/>
+  
+  <!-- Hair - short professional cut with slight receding -->
+  <path d="M33 42C33 25 45 15 60 15C75 15 87 25 87 42C87 38 84 35 78 33C75 30 68 28 60 28C52 28 45 30 42 33C36 35 33 38 33 42Z" fill="#2C2C2C"/>
+  
+  <!-- Hairline -->
+  <path d="M40 35C45 32 55 30 60 30C65 30 75 32 80 35" stroke="#1C1C1C" stroke-width="1"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="52" cy="50" rx="3.5" ry="3" fill="#333"/>
+  <ellipse cx="68" cy="50" rx="3.5" ry="3" fill="#333"/>
+  <circle cx="53" cy="49" r="1" fill="#FFF"/>
+  <circle cx="69" cy="49" r="1" fill="#FFF"/>
+  
+  <!-- Eyebrows -->
+  <path d="M48 45L56 46" stroke="#2C2C2C" stroke-width="2" stroke-linecap="round"/>
+  <path d="M64 46L72 45" stroke="#2C2C2C" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Nose -->
+  <path d="M58 57L62 57L60 61Z" fill="#FFB6A3"/>
+  
+  <!-- Moustache -->
+  <path d="M55 62C57 63 58 63 60 63C62 63 63 63 65 62" stroke="#2C2C2C" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Beard -->
+  <path d="M52 68C52 72 55 75 60 75C65 75 68 72 68 68C68 70 66 72 64 73C62 74 58 74 56 73C54 72 52 70 52 68Z" fill="#2C2C2C"/>
+  
+  <!-- Mouth -->
+  <path d="M57 65C57 66 58.5 67 60 67C61.5 67 63 66 63 65" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Shirt and tie -->
+  <path d="M35 85C35 80 45 75 60 75C75 75 85 80 85 85L85 120L35 120Z" fill="#1E3A8A"/>
+  
+  <!-- Tie -->
+  <path d="M60 85L60 120" stroke="#DC2626" stroke-width="8"/>
+  <path d="M60 85L60 120" stroke="#B91C1C" stroke-width="6"/>
+  
+  <!-- Collar -->
+  <path d="M50 85L60 75L70 85" stroke="#FFF" stroke-width="2" fill="none"/>
+</svg>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Woman (mid-30s) - warm coral theme -->
+  <circle cx="60" cy="60" r="60" fill="#FCE4EC"/>
+  
+  <!-- Face -->
+  <circle cx="60" cy="55" r="29" fill="#FFDBCB"/>
+  
+  <!-- Hair - shoulder length black hair with side part -->
+  <path d="M32 38C32 22 44 12 60 12C76 12 88 22 88 38C88 32 85 28 80 26C85 35 88 45 88 55C88 65 85 70 78 72C70 75 50 75 42 72C35 70 32 65 32 55C32 45 35 35 40 26C35 28 32 32 32 38Z" fill="#1A1A1A"/>
+  
+  <!-- Side part -->
+  <path d="M45 25C50 20 55 18 60 18" stroke="#0F0F0F" stroke-width="2"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="52" cy="51" rx="3.5" ry="3" fill="#333"/>
+  <ellipse cx="68" cy="51" rx="3.5" ry="3" fill="#333"/>
+  <circle cx="53" cy="50" r="1" fill="#FFF"/>
+  <circle cx="69" cy="50" r="1" fill="#FFF"/>
+  
+  <!-- Eyelashes -->
+  <path d="M49 48L49 46" stroke="#333" stroke-width="1"/>
+  <path d="M52 47L52 45" stroke="#333" stroke-width="1"/>
+  <path d="M55 48L55 46" stroke="#333" stroke-width="1"/>
+  <path d="M65 48L65 46" stroke="#333" stroke-width="1"/>
+  <path d="M68 47L68 45" stroke="#333" stroke-width="1"/>
+  <path d="M71 48L71 46" stroke="#333" stroke-width="1"/>
+  
+  <!-- Eyebrows -->
+  <path d="M48 45L56 46" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M64 46L72 45" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Nose -->
+  <path d="M59 57L61 57L60 60Z" fill="#FFB6A3"/>
+  
+  <!-- Lips -->
+  <ellipse cx="60" cy="66" rx="3.5" ry="1.8" fill="#FF8A65"/>
+  
+  <!-- Blouse -->
+  <path d="M36 86C36 81 46 76 60 76C74 76 84 81 84 86L84 120L36 120Z" fill="#FF7043"/>
+  
+  <!-- Blouse pattern -->
+  <circle cx="50" cy="95" r="2" fill="#FF5722" opacity="0.6"/>
+  <circle cx="70" cy="95" r="2" fill="#FF5722" opacity="0.6"/>
+  <circle cx="60" cy="105" r="2" fill="#FF5722" opacity="0.6"/>
+</svg>

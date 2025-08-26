@@ -37,12 +37,16 @@
       <button
         onclick={() => selectAvatar(avatar)}
         disabled={selecting}
-        class="relative w-14 h-14 rounded-full border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="relative w-14 h-14 rounded-full border-2 transition focus:outline-none hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         class:border-primary-500={selectedAvatar === avatar}
         class:ring-2={selectedAvatar === avatar}
         class:ring-primary-500={selectedAvatar === avatar}
         class:ring-offset-2={selectedAvatar === avatar}
         class:border-gray-200={selectedAvatar !== avatar}
+        class:hover:ring-2={selectedAvatar !== avatar}
+        class:hover:ring-primary-80={selectedAvatar !== avatar}
+        class:focus:ring-2={true}
+        class:focus:ring-primary-80={true}
         aria-label="Select avatar {index + 1}"
       >
         <img 

@@ -10,6 +10,17 @@ export const avatarBank = [
   "/avatars/avatar-4.svg",
   "/avatars/avatar-5.svg",
   "/avatars/avatar-6.svg",
+  "/avatars/avatar-7.svg",  // Young boy (7 years) - playful blue
+  "/avatars/avatar-8.svg",  // Young boy (11 years) - playful green
+  "/avatars/avatar-9.svg",  // Young boy - playful orange with curly hair
+  "/avatars/avatar-10.svg", // Woman (mid-30s) - elegant purple with long hair
+  "/avatars/avatar-11.svg", // Woman (mid-30s) - warm coral with side part
+  "/avatars/avatar-12.svg", // Woman (mid-30s) - soft teal with bob cut
+  "/avatars/avatar-13.svg", // Man (early 40s) - professional navy with beard
+  "/avatars/avatar-14.svg", // Man (early 40s) - casual brown with goatee
+  "/avatars/avatar-15.svg", // Man (early 40s) - creative green with glasses and beard
+  "/avatars/avatar-16.svg", // Fun avatar - bright rainbow gradient
+  "/avatars/avatar-17.svg", // Exaggerated cartoon - cosmic theme
 ];
 
 /**
