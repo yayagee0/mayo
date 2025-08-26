@@ -9,20 +9,17 @@
 	import { HeartHandshake, Leaf, ChevronDown, User } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
 	import TopBar from '$lib/../components/TopBar.svelte';
+	import ExploreMoreSection from '$lib/../components/ExploreMoreSection.svelte';
 	import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
 	import { cachedQuery, getCacheKey } from '$lib/utils/queryCache';
-	import { lazyLoader, isAnchorWidget, isQuietWidget } from '$lib/utils/lazyLoader';
-	import { loadQuietWidget, hasQuietLoader } from '$lib/utils/quietWidgetLoader';
+	import { lazyLoader, isAnchorWidget } from '$lib/utils/lazyLoader';
 	import { performanceTracker, trackSupabaseQuery } from '$lib/utils/performanceTracker';
 
 	let widgets: WidgetConfig[] = $state([]);
 	let loadedWidgets: { config: WidgetConfig, component: any }[] = $state([]);
-	let loadedQuietWidgets: { config: WidgetConfig, component: any }[] = $state([]);
 	let items: Database['public']['Tables']['items']['Row'][] = $state([]);
 	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
 	let loading = $state(true);
-	let quietWidgetsLoading = $state(false);
-	let quietWidgetsLoaded = $state(false);
 	let userName = $derived($user?.user_metadata?.full_name || $user?.email?.split('@')[0] || 'Friend');
 
 	// Individual widget collapse states
@@ -39,8 +36,6 @@
 				initialStates[widget.id] = false;
 			}
 		});
-		// Add quietMode state - starts collapsed
-		initialStates['quietMode'] = false;
 		widgetCollapseStates = initialStates;
 	}
 	
@@ -91,58 +86,8 @@
 		initializeWidgetStates(widgets);
 	}
 
-	async function loadQuietWidgets() {
-		if (quietWidgetsLoaded || quietWidgetsLoading) {
-			return;
-		}
-
-		quietWidgetsLoading = true;
-		
-		try {
-			// Filter only quiet widgets for lazy loading
-			const quietWidgets = widgets.filter(widget => isQuietWidget(widget.id));
-			
-			// Load components for quiet widgets using specialized loader
-			const componentPromises = quietWidgets.map(async (widget) => {
-				try {
-					let component;
-					
-					// Use specialized quiet widget loader if available
-					if (hasQuietLoader(widget.id)) {
-						component = await loadQuietWidget(widget.id);
-					} else {
-						// Fallback to registry function
-						const componentModule = await (widget.component as () => Promise<{default: any}>)();
-						component = componentModule.default;
-					}
-					
-					return { 
-						config: widget, 
-						component: component
-					};
-				} catch (error) {
-					console.error(`Failed to load quiet widget ${widget.id}:`, error);
-					return null;
-				}
-			});
-
-			const results = await Promise.all(componentPromises);
-			loadedQuietWidgets = results.filter(result => result !== null) as { config: WidgetConfig, component: any }[];
-			quietWidgetsLoaded = true;
-		} catch (error) {
-			console.error('Error loading quiet widgets:', error);
-		} finally {
-			quietWidgetsLoading = false;
-		}
-	}
-
-	// Enhanced toggle function to trigger lazy loading
-	async function toggleWidget(widgetId: string) {
-		// If toggling quiet mode and widgets aren't loaded yet, load them
-		if (widgetId === 'quietMode' && !widgetCollapseStates[widgetId] && !quietWidgetsLoaded) {
-			await loadQuietWidgets();
-		}
-		
+	// Enhanced toggle function
+	function toggleWidget(widgetId: string) {
 		widgetCollapseStates[widgetId] = !widgetCollapseStates[widgetId];
 	}
 
@@ -264,72 +209,16 @@
 				{/each}
 			</div>
 
-			<!-- QUIET MODE WIDGETS - Collapsed by default, shown in "Explore More" -->
-			<div class="w-full max-w-4xl mx-auto">
-				<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-					<button
-						type="button"
-						onclick={() => toggleWidget('quietMode')}
-						class="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-gray-50 transition-colors"
-						aria-expanded={widgetCollapseStates['quietMode']}
-					>
-						<div class="flex items-center gap-4">
-							<span class="text-3xl">🔍</span>
-							<div>
-								<h3 class="text-lg font-semibold text-gray-900">Explore More</h3>
-								<p class="text-sm text-gray-500">Additional activities, memories, and family insights</p>
-							</div>
-						</div>
-						<ChevronDown 
-							class="w-6 h-6 text-gray-400 transition-transform duration-300 ease-in-out {widgetCollapseStates['quietMode'] ? 'rotate-180' : ''}"
-							aria-hidden="true"
-						/>
-					</button>
-					
-					{#if widgetCollapseStates['quietMode']}
-						<div class="px-6 pb-6 border-t border-gray-100 bg-gray-50">
-							{#if quietWidgetsLoading}
-								<div class="flex items-center justify-center py-12">
-									<div class="flex items-center gap-3">
-										<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-										<p class="text-gray-600">Loading additional widgets...</p>
-									</div>
-								</div>
-							{:else if quietWidgetsLoaded && loadedQuietWidgets.length > 0}
-								<div class="grid grid-cols-1 @container md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-									{#each loadedQuietWidgets as { config: widget, component: Component } (widget.id)}
-										<div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 animate-fade-in">
-											<div class="flex items-center gap-2 mb-4">
-												<h4 class="text-sm font-semibold text-gray-900">{widget.name}</h4>
-											</div>
-											<button
-												type="button"
-												class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
-												onmouseenter={() => handleWidgetView(widget.id)}
-												onclick={() => handleWidgetInteraction(widget.id)}
-												aria-label="View {widget.name} widget"
-											>
-												<Component 
-													session={$session}
-													{profiles}
-													{items}
-													{interactions}
-													{widget}
-												/>
-											</button>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<div class="text-center py-12">
-									<Leaf class="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />
-									<p class="text-gray-500">No additional widgets available at this time.</p>
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
-			</div>
+			<!-- EXPLORE MORE SECTION - Organized quiet widgets -->
+			<ExploreMoreSection 
+				{widgets}
+				session={$session}
+				{profiles}
+				{items}
+				{interactions}
+				onWidgetView={handleWidgetView}
+				onWidgetInteraction={handleWidgetInteraction}
+			/>
 
 			{#if loadedWidgets.length === 0}
 				<div class="text-center py-16">
