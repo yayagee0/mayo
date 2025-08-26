@@ -9,7 +9,6 @@
 	import Sidebar from '$lib/../components/ui/Sidebar.svelte';
 	import PostComposer from '$lib/../components/PostComposer.svelte';
 	import PWAInstallPrompt from '$lib/../components/ui/PWAInstallPrompt.svelte';
-	import TopbarGreeting from '$lib/../components/TopbarGreeting.svelte';
 	import { handleServiceWorker } from '$lib/pwa';
 	import { env } from '$env/dynamic/public';
 	import { currentUserProfile, resolveAvatar } from '$lib/stores/profileStore';
@@ -112,13 +111,6 @@
 		class:md:ml-64={showSidebar}
 		class:pb-20={showBottomNav}
 	>
-		<!-- Desktop Topbar Greeting (only on desktop) -->
-		{#if isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied')}
-			<div class="hidden md:block">
-				<TopbarGreeting profile={$currentUserProfile} />
-			</div>
-		{/if}
-		
 		{@render children?.()}
 	</div>
 	

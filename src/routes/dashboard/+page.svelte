@@ -8,6 +8,7 @@
 	import { supabase } from '$lib/supabase';
 	import { HeartHandshake, Leaf, ChevronDown, User } from 'lucide-svelte';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import TopBar from '$lib/../components/TopBar.svelte';
 	import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
 	import { cachedQuery, getCacheKey } from '$lib/utils/queryCache';
 	import { lazyLoader, isAnchorWidget, isQuietWidget } from '$lib/utils/lazyLoader';
@@ -209,49 +210,7 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-	<!-- Header -->
-	<header class="bg-white border-b border-gray-200">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-			<div class="flex items-center justify-between">
-				<div class="flex items-center gap-4">
-					<HeartHandshake class="w-8 h-8 text-primary-600" aria-hidden="true" />
-					<div>
-						<h1 class="text-2xl font-bold text-gray-900">FamilyNest</h1>
-						<p class="text-sm text-gray-600">Your family's sacred space</p>
-					</div>
-				</div>
-				
-				<div class="flex items-center gap-4">
-					<div class="text-right">
-						<p class="text-sm font-medium text-gray-900">
-							🌿 Salam {userName}
-						</p>
-						<p class="text-xs text-gray-500">Welcome back</p>
-					</div>
-					
-					{#if $currentUserProfile}
-						{@const profile = $currentUserProfile}
-						{#if profile && profile.avatar_url}
-							<img
-								src="{profile.avatar_url}?t={Date.now()}"
-								alt={profile.display_name || 'User avatar'}
-								class="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-							/>
-						{:else}
-							<div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600">
-								{profile?.display_name?.charAt(0) || 'U'}
-							</div>
-						{/if}
-					{:else}
-						<div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-							<User class="w-6 h-6 text-gray-600" aria-hidden="true" />
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-	</header>
-
+	<TopBar {userName} />
 	<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 		{#if loading}
 			<Loading skeleton={true} skeletonCount={4} />
