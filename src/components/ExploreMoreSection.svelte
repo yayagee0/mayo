@@ -19,6 +19,8 @@
 		interactions: Database['public']['Tables']['interactions']['Row'][];
 		onWidgetView: (widgetId: string) => void;
 		onWidgetInteraction: (widgetId: string) => void;
+		userRole: () => string;
+		widgetFilter: (widgetId: string) => boolean;
 	}
 
 	let { 
@@ -28,28 +30,40 @@
 		items, 
 		interactions, 
 		onWidgetView, 
-		onWidgetInteraction 
+		onWidgetInteraction,
+		userRole,
+		widgetFilter
 	}: Props = $props();
 
-	// Widget groupings based on requirements
+	// Widget groupings based on requirements and role visibility
 	const widgetGroups = {
 		familyDigests: {
 			title: 'Family Digests',
 			icon: Users,
 			widgets: ['weeklyReflectionDigest', 'islamicReflectionDigest', 'scenarioDigest'],
-			description: 'Family insights and reflections'
+			description: 'Family insights and reflections',
+			roleRestriction: 'parent' // Only show to parents
 		},
-		playFun: {
-			title: 'Play & Fun',
+		interactive: {
+			title: 'Interactive & Games',
 			icon: Gamepad2,
-			widgets: ['agePlayground', 'profileQuiz', 'professionCard'],
-			description: 'Interactive activities and games'
+			widgets: ['quiz', 'agePlayground', 'professionCard'],
+			description: 'Interactive activities and family games',
+			roleRestriction: null // Show to all users
 		},
 		faithLearning: {
 			title: 'Faith & Learning',
 			icon: BookOpen,
-			widgets: ['islamicQA', 'analytics', 'wall'],
-			description: 'Learning resources and archives'
+			widgets: ['islamicQA', 'scenario'],
+			description: 'Learning resources and scenarios',
+			roleRestriction: 'child' // Only show to children
+		},
+		analytics: {
+			title: 'Family Insights',
+			icon: Search,
+			widgets: ['analytics'],
+			description: 'Family analytics and insights',
+			roleRestriction: 'parent' // Only show to parents
 		}
 	};
 
@@ -62,8 +76,9 @@
 	// Group collapse states - default collapsed on mobile, expanded on desktop
 	let groupCollapseStates = $state({
 		familyDigests: false,
-		playFun: false,
-		faithLearning: false
+		interactive: false,
+		faithLearning: false,
+		analytics: false
 	});
 
 	// Initialize group states based on screen size
@@ -71,8 +86,9 @@
 		const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
 		groupCollapseStates = {
 			familyDigests: isDesktop,
-			playFun: isDesktop,
-			faithLearning: isDesktop
+			interactive: isDesktop,
+			faithLearning: isDesktop,
+			analytics: isDesktop
 		};
 	}
 
@@ -83,8 +99,10 @@
 		quietWidgetsLoading = true;
 		
 		try {
-			// Filter only quiet widgets for lazy loading
-			const quietWidgets = widgets.filter(widget => isQuietWidget(widget.id));
+			// Filter only quiet widgets for lazy loading and apply role-based filtering
+			const quietWidgets = widgets.filter(widget => 
+				isQuietWidget(widget.id) && widgetFilter(widget.id)
+			);
 			
 			// Load components for quiet widgets using specialized loader
 			const componentPromises = quietWidgets.map(async (widget) => {
@@ -133,9 +151,18 @@
 		groupCollapseStates[groupKey] = !groupCollapseStates[groupKey];
 	}
 
-	// Get widgets for a specific group
+	// Get widgets for a specific group with role filtering
 	function getWidgetsForGroup(groupWidgets: string[]) {
-		return loadedQuietWidgets.filter(w => groupWidgets.includes(w.config.id));
+		return loadedQuietWidgets.filter(w => 
+			groupWidgets.includes(w.config.id) && widgetFilter(w.config.id)
+		);
+	}
+
+	// Check if group should be visible based on role
+	function shouldShowGroup(group: any): boolean {
+		const role = userRole();
+		if (!group.roleRestriction) return true;
+		return role === group.roleRestriction;
 	}
 
 	// Handle keyboard navigation
@@ -205,7 +232,7 @@
 					{#each Object.entries(widgetGroups) as [groupKey, group] (groupKey)}
 						{@const groupWidgets = getWidgetsForGroup(group.widgets)}
 						{@const IconComponent = group.icon}
-						{#if groupWidgets.length > 0}
+						{#if shouldShowGroup(group) && groupWidgets.length > 0}
 							<!-- Group Accordion -->
 							<div class="bg-white rounded-xl shadow-sm border border-slate-200">
 								<button

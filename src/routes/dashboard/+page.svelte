@@ -14,6 +14,7 @@
 	import { cachedQuery, getCacheKey } from '$lib/utils/queryCache';
 	import { lazyLoader, isAnchorWidget } from '$lib/utils/lazyLoader';
 	import { performanceTracker, trackSupabaseQuery } from '$lib/utils/performanceTracker';
+	import { getUserRole } from '$lib/utils/roles';
 
 	let widgets: WidgetConfig[] = $state([]);
 	let loadedWidgets: { config: WidgetConfig, component: any }[] = $state([]);
@@ -30,7 +31,7 @@
 		const initialStates: Record<string, boolean> = {};
 		allWidgets.forEach(widget => {
 			// Default to expanded for anchor widgets, collapsed for others
-			if (['reflectionMood', 'ayah', 'birthday', 'scenario', 'closingRitual'].includes(widget.id)) {
+			if (['reflectionMood', 'ayah', 'birthday', 'wall', 'closingRitual'].includes(widget.id)) {
 				initialStates[widget.id] = true;
 			} else {
 				initialStates[widget.id] = false;
@@ -41,6 +42,9 @@
 	
 	// Use profileStore instead of local profiles state
 	let profiles = $derived($profileStore);
+
+	// Get current user role for widget filtering
+	let userRole = $derived(() => getUserRole($user?.email));
 
 	// Get current user's profile for avatar - use imported currentUserProfile store instead
 	// let currentUserProfile = $derived(() => {
@@ -58,11 +62,31 @@
 		widgetRegistry.recordInteraction(widgetId);
 	}
 
+	// Filter widgets based on role-based visibility rules
+	function shouldShowWidget(widgetId: string): boolean {
+		const role = userRole();
+		
+		// Parent-only widgets
+		if (['weeklyReflectionDigest', 'analytics', 'islamicReflectionDigest', 'scenarioDigest'].includes(widgetId)) {
+			return role === 'parent';
+		}
+		
+		// Children-only widgets  
+		if (['islamicQA', 'scenario'].includes(widgetId)) {
+			return role === 'child';
+		}
+		
+		// All other widgets are visible to everyone
+		return true;
+	}
+
 	async function loadAnchorWidgets() {
 		widgets = widgetRegistry.getSorted();
 		
-		// Filter only anchor widgets for immediate loading
-		const anchorWidgets = widgets.filter(widget => isAnchorWidget(widget.id));
+		// Filter only anchor widgets for immediate loading, and apply role-based filtering
+		const anchorWidgets = widgets.filter(widget => 
+			isAnchorWidget(widget.id) && shouldShowWidget(widget.id)
+		);
 		
 		// Load components for anchor widgets only
 		const componentPromises = anchorWidgets.map(async (widget) => {
@@ -160,14 +184,14 @@
 		{#if loading}
 			<Loading skeleton={true} skeletonCount={4} />
 		{:else}
-			<!-- ANCHOR WIDGETS - Maximum 3-4 visible at first load -->
+			<!-- ANCHOR WIDGETS - Always expanded, stacked vertically -->
 			<div class="space-y-8 mb-12">
 				<div class="text-center mb-8">
 					<h2 class="text-xl font-semibold text-gray-900 mb-2">Today's Family Connection</h2>
 					<p class="text-gray-600">Your daily anchors for staying close</p>
 				</div>
 				
-				{#each loadedWidgets.filter(w => ['reflectionMood', 'ayah', 'birthday', 'quiz', 'scenario'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
+				{#each loadedWidgets.filter(w => ['reflectionMood', 'ayah', 'birthday', 'wall'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
 					<div class="w-full max-w-2xl mx-auto">
 						<button
 							type="button"
@@ -218,6 +242,8 @@
 				{interactions}
 				onWidgetView={handleWidgetView}
 				onWidgetInteraction={handleWidgetInteraction}
+				{userRole}
+				widgetFilter={shouldShowWidget}
 			/>
 
 			{#if loadedWidgets.length === 0}

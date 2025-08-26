@@ -75,24 +75,24 @@ class LazyLoader {
 
 // Widget classification for lazy loading strategy
 export const ANCHOR_WIDGETS = [
-  'reflectionMood',
-  'ayah', 
-  'birthday',
-  'quiz',
-  'scenario',
-  'closingRitual'
+  'reflectionMood',  // Mood ("How are you feeling today?")
+  'ayah',           // Daily Ayah
+  'birthday',       // BirthdayCard (mandatory if birthday data exists)
+  'wall',           // Wall (limit to 5 latest posts)
+  'closingRitual'   // Closing Ritual (always visible)
 ] as const
 
 export const QUIET_WIDGETS = [
-  'wall',
-  'scenarioDigest',
-  'profileQuiz',
-  'agePlayground',
-  'professionCard',
-  'islamicQA',
-  'islamicReflectionDigest',
-  'weeklyReflectionDigest',
-  'analytics'
+  'quiz',                      // Quiz / Identity Game → All users
+  'weeklyReflectionDigest',    // Family Reflections Digest → Parents only
+  'analytics',                 // Family Insights → Parents only  
+  'islamicQA',                 // Islamic Q&A → Children only
+  'scenario',                  // Scenario Q&A → Children only
+  'islamicReflectionDigest',   // Islamic Reflection Digest → Parents only
+  'scenarioDigest',            // Scenario Reflection Digest → Parents only
+  'professionCard',            // Family Professions → All users
+  'agePlayground',             // Age Playground → All users
+  'profileQuiz'                // Legacy - merged into unified QuizCard
 ] as const
 
 export function isAnchorWidget(widgetId: string): boolean {

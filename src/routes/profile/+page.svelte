@@ -9,6 +9,7 @@
 	import { profileStore, resolveAvatar } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
 	import AvatarSelector from '$lib/../components/AvatarSelector.svelte';
+	import { ChevronDown, ChevronUp, Puzzle } from 'lucide-svelte';
 
 	let profile: Database['public']['Tables']['profiles']['Row'] | null = $state(null);
 	let loading = $state(true);
@@ -24,6 +25,13 @@
 
 	let fileInput = $state() as HTMLInputElement;
 
+	// Quiz Identity state
+	let quizAnswers = $state<(Database['public']['Tables']['quiz_answers']['Row'] & { 
+		quiz_questions: Database['public']['Tables']['quiz_questions']['Row'] | null 
+	})[]>([]);
+	let showAllQuizAnswers = $state(false);
+	let quizLoading = $state(false);
+
 	// Computed role values
 	let computedRole = $derived(() => $user?.email ? getUserRole($user.email as AllowedEmail) : 'member');
 	let roleDisplayName = $derived(() => $user?.email ? getRoleDisplayName($user.email) : 'Member');
@@ -35,6 +43,7 @@
 			return;
 		}
 		await loadProfile();
+		await loadQuizAnswers();
 		loading = false;
 	});
 
@@ -170,6 +179,46 @@
 		await supabase.auth.signOut();
 		goto('/');
 	}
+
+	async function loadQuizAnswers() {
+		if (!$user?.id) return;
+		
+		try {
+			quizLoading = true;
+			
+			const { data, error } = await supabase
+				.from('quiz_answers')
+				.select(`
+					*,
+					quiz_questions (*)
+				`)
+				.eq('user_id', $user.id)
+				.order('created_at', { ascending: false });
+			
+			if (error) throw error;
+			
+			quizAnswers = data || [];
+		} catch (error) {
+			console.error('Error loading quiz answers:', error);
+		} finally {
+			quizLoading = false;
+		}
+	}
+
+	function toggleQuizAnswers() {
+		showAllQuizAnswers = !showAllQuizAnswers;
+	}
+
+	// Get summary answers (first 2-3)
+	let summaryAnswers = $derived(() => quizAnswers.slice(0, 3));
+	
+	// Get option text from question options array
+	function getOptionText(question: any, answerIndex: number): string {
+		if (!question?.options || !Array.isArray(question.options) || answerIndex >= question.options.length) {
+			return 'Unknown option';
+		}
+		return question.options[answerIndex];
+	}
 </script>
 
 <svelte:head>
@@ -261,6 +310,86 @@
 						<button type="submit" disabled={saving} class="w-full btn btn-primary disabled:opacity-50">{saving ? 'Saving...' : 'Save Profile'}</button>
 					</div>
 				</form>
+			</div>
+			
+			<!-- Quiz Identity Section -->
+			<div class="card mt-6">
+				<div class="flex items-center gap-2 mb-4">
+					<Puzzle class="w-6 h-6 text-purple-600" aria-hidden="true" />
+					<h2 class="text-lg font-semibold text-gray-900">🧩 Your Quiz Identity</h2>
+				</div>
+				<p class="text-sm text-gray-600 mb-6">A light snapshot of how you answered — expand to see more.</p>
+
+				{#if quizLoading}
+					<div class="flex items-center justify-center py-8">
+						<Loading text="Loading quiz answers..." />
+					</div>
+				{:else if quizAnswers.length === 0}
+					<div class="text-center py-8">
+						<p class="text-gray-500 mb-2">No quiz answers yet!</p>
+						<p class="text-xs text-gray-400">Visit the dashboard to take the family quiz.</p>
+					</div>
+				{:else}
+					<!-- Summary view (first 2-3 answers) -->
+					<div class="space-y-3 mb-4">
+						{#each summaryAnswers as answer (answer.id)}
+							{#if answer.quiz_questions}
+								<div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+									<div class="text-sm">
+										<span class="font-medium text-gray-700">{answer.quiz_questions.question_text}</span>
+										<span class="text-gray-500 ml-2">→</span>
+										<span class="text-purple-600 font-medium ml-2">
+											{getOptionText(answer.quiz_questions, answer.answer_index)}
+										</span>
+									</div>
+								</div>
+							{/if}
+						{/each}
+					</div>
+
+					<!-- Toggle button -->
+					{#if quizAnswers.length > 3}
+						<button
+							type="button"
+							onclick={toggleQuizAnswers}
+							class="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 rounded px-2 py-1 transition-colors"
+							aria-expanded={showAllQuizAnswers}
+							aria-label={showAllQuizAnswers ? 'Show fewer answers' : 'Show more answers'}
+						>
+							{#if showAllQuizAnswers}
+								<ChevronUp class="w-4 h-4" aria-hidden="true" />
+								Show fewer answers
+							{:else}
+								<ChevronDown class="w-4 h-4" aria-hidden="true" />
+								Show all answers ({quizAnswers.length})
+							{/if}
+						</button>
+					{/if}
+
+					<!-- Expanded view -->
+					{#if showAllQuizAnswers}
+						<div class="mt-4 space-y-4 border-t pt-4">
+							<h3 class="text-base font-medium text-gray-900">All Quiz Answers</h3>
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								{#each quizAnswers as answer (answer.id)}
+									{#if answer.quiz_questions}
+										<div class="border border-gray-200 rounded-lg p-4 bg-white">
+											<h4 class="font-medium text-gray-900 text-sm mb-2">
+												{answer.quiz_questions.question_text}
+											</h4>
+											<p class="text-purple-600 font-medium text-sm">
+												{getOptionText(answer.quiz_questions, answer.answer_index)}
+											</p>
+											<p class="text-xs text-gray-400 mt-2">
+												Answered {new Date(answer.created_at).toLocaleDateString()}
+											</p>
+										</div>
+									{/if}
+								{/each}
+							</div>
+						</div>
+					{/if}
+				{/if}
 			</div>
 		{/if}
 	</main>

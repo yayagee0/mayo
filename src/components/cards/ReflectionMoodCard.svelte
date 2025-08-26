@@ -31,11 +31,9 @@
 		{ value: '😔', label: 'Sad', description: 'Feeling down today' }
 	];
 
-	// Get today's week start (Monday) to match schema
-	function getWeekStart(date = new Date()): string {
-		const d = dayjs(date);
-		const monday = d.startOf('week').add(1, 'day'); // dayjs starts week on Sunday, we want Monday
-		return monday.format('YYYY-MM-DD');
+	// Get today's date for daily reset
+	function getTodayDate(date = new Date()): string {
+		return dayjs(date).format('YYYY-MM-DD');
 	}
 
 	async function loadData() {
@@ -44,14 +42,14 @@
 		try {
 			loading = true;
 			error = '';
-			const weekStart = getWeekStart();
+			const today = getTodayDate();
 			
-			// Check if user has already submitted for this week
+			// Check if user has already submitted for today (daily reset)
 			const { data: existingReflection, error: fetchError } = await supabase
 				.from('reflections')
 				.select('*')
 				.eq('user_id', session.user.id)
-				.eq('week_start', weekStart)
+				.eq('week_start', today) // Using week_start field but storing daily date
 				.maybeSingle();
 
 			if (fetchError) throw fetchError;
@@ -80,13 +78,13 @@
 		try {
 			submitting = true;
 			error = '';
-			const weekStart = getWeekStart();
+			const today = getTodayDate();
 
 			const { error: upsertError } = await supabase
 				.from('reflections')
 				.upsert({
 					user_id: session.user.id,
-					week_start: weekStart,
+					week_start: today, // Using daily date instead of week start
 					mood_emoji: selectedMood,
 					reflection_text: reflectionText.trim() || null,
 					created_at: new Date().toISOString()
