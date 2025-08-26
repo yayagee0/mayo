@@ -87,9 +87,8 @@
 			<div class="flex items-center justify-between">
 				<div class="space-y-1">
 					<h1 class="text-lg font-semibold text-gray-900">
-						Welcome back, {$currentUserProfile?.display_name || $currentUserProfile?.email?.split('@')[0] || 'User'} 🙏
+						Welcome back, {$currentUserProfile?.display_name || $currentUserProfile?.email?.split('@')[0] || 'User'}
 					</h1>
-					<p class="text-sm text-gray-500">Our family hub</p>
 				</div>
 				<div class="flex-shrink-0">
 					{#if avatarUrl}
@@ -113,9 +112,11 @@
 		class:md:ml-64={showSidebar}
 		class:pb-20={showBottomNav}
 	>
-		<!-- Topbar Greeting (below nav, above content) -->
+		<!-- Desktop Topbar Greeting (only on desktop) -->
 		{#if isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied')}
-			<TopbarGreeting profile={$currentUserProfile} />
+			<div class="hidden md:block">
+				<TopbarGreeting profile={$currentUserProfile} />
+			</div>
 		{/if}
 		
 		{@render children?.()}

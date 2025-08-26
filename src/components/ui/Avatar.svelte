@@ -1,6 +1,7 @@
 <script lang="ts">
   import { currentUserProfile, profileStore } from '$lib/stores/profileStore'
   import { session } from '$lib/stores/sessionStore'
+  import { currentUserAvatar } from '$lib/stores/avatarStore'
 
   let uploading = false
   let error: string | null = null
@@ -33,9 +34,9 @@
 </script>
 
 <div class="flex flex-col items-center gap-2">
-  {#if $currentUserProfile?.avatar_url}
+  {#if $currentUserAvatar}
     <img
-      src="{$currentUserProfile.avatar_url}?t={Date.now()}"
+      src="{$currentUserAvatar}?t={Date.now()}"
       alt="Profile Avatar"
       class="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
     />

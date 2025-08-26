@@ -53,7 +53,7 @@
 
 <div class="hidden md:block bg-white border-b border-gray-200/50 animate-fade-in">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-		<div class="space-y-1">
+		<div class="space-y-1" role="status">
 			<h2 class="text-lg font-semibold text-gray-900">
 				Welcome back, {displayName} 🙏
 			</h2>
