@@ -9,6 +9,7 @@
 	import PostComposer from '$lib/../components/PostComposer.svelte';
 	import PostCard from '$lib/../components/PostCard.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
+	import { goto } from '$app/navigation';
 
 	dayjs.extend(relativeTime);
 
@@ -19,11 +20,11 @@
 	// Subscribe to profileStore instead of using props
 	let profiles = $derived($profileStore);
 
-	// Include posts + polls
+	// Include posts + polls - limit to 5 for anchor widget display
 	let recentPosts = $derived(items
 		.filter(item => (item.kind === 'post' || item.kind === 'poll') && !item.is_deleted)
 		.sort((a, b) => dayjs(b.created_at).unix() - dayjs(a.created_at).unix())
-		.slice(0, 3));
+		.slice(0, 5));
 
 	let showComposer = $state(false);
 
