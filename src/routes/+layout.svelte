@@ -87,9 +87,8 @@
 			<div class="flex items-center justify-between">
 				<div class="space-y-1">
 					<h1 class="text-lg font-semibold text-gray-900">
-						Welcome back, {$currentUserProfile?.display_name || $currentUserProfile?.email?.split('@')[0] || 'User'} 🙏
+						Welcome back, {$currentUserProfile?.display_name || $currentUserProfile?.email?.split('@')[0] || 'User'}
 					</h1>
-					<p class="text-sm text-gray-500">Our family hub</p>
 				</div>
 				<div class="flex-shrink-0">
 					{#if avatarUrl}
