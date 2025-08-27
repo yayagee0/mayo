@@ -5,6 +5,7 @@
 	import { supabase } from '$lib/supabase';
 	import type { Database } from '$lib/supabase';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { getUserRole, getRoleDisplayName, getSeededDisplayName, type AllowedEmail } from '$lib/utils/roles';
 	import { profileStore, resolveAvatar } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
@@ -265,28 +266,30 @@
 					<!-- Avatar -->
 					<div>
 						<label for="avatar-upload" class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
-						{#if avatarSignedUrl}
-							<div class="mb-4">
-								<img src={avatarSignedUrl} alt={displayName ? `${displayName}'s profile picture` : ""} class="w-20 h-20 rounded-full object-cover border-2 border-gray-200" onerror={() => avatarSignedUrl = null} />
+						<ComponentErrorBoundary componentName="Avatar Upload">
+							{#if avatarSignedUrl}
+								<div class="mb-4">
+									<img src={avatarSignedUrl} alt={displayName ? `${displayName}'s profile picture` : ""} class="w-20 h-20 rounded-full object-cover border-2 border-gray-200" onerror={() => avatarSignedUrl = null} />
+								</div>
+							{/if}
+							<div class="space-y-4">
+								<input type="file" bind:this={fileInput} onchange={handleFileSelect} accept="image/*" class="hidden" id="avatar-upload" />
+								<button type="button" onclick={() => fileInput.click()} disabled={uploading} class="btn btn-secondary flex items-center gap-2">
+									{#if uploading}
+										<div class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+										Uploading...
+									{:else} 📷 Upload Photo {/if}
+								</button>
+								
+								<!-- Avatar Bank Selector -->
+								<div class="border-t pt-4">
+									<AvatarSelector 
+										onSelection={handleAvatarSelection}
+										selectedAvatar={avatarPath} 
+									/>
+								</div>
 							</div>
-						{/if}
-						<div class="space-y-4">
-							<input type="file" bind:this={fileInput} onchange={handleFileSelect} accept="image/*" class="hidden" id="avatar-upload" />
-							<button type="button" onclick={() => fileInput.click()} disabled={uploading} class="btn btn-secondary flex items-center gap-2">
-								{#if uploading}
-									<div class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-									Uploading...
-								{:else} 📷 Upload Photo {/if}
-							</button>
-							
-							<!-- Avatar Bank Selector -->
-							<div class="border-t pt-4">
-								<AvatarSelector 
-									onSelection={handleAvatarSelection}
-									selectedAvatar={avatarPath} 
-								/>
-							</div>
-						</div>
+						</ComponentErrorBoundary>
 						<p class="text-xs text-gray-500 mt-2">Supported formats: JPG, PNG, GIF. Max size: 5MB.</p>
 					</div>
 
