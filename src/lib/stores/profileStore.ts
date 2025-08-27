@@ -142,10 +142,10 @@ class ProfileStore {
       }
 
       const ext = processedFile.name.split('.').pop() || 'jpg'
-      const fileName = `${userId}-avatar.${ext}`
+      const fileName = `avatars/${userId}-avatar.${ext}`
 
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from('post-media')
         .upload(fileName, processedFile, { upsert: true })
 
       if (uploadError) throw uploadError
@@ -191,14 +191,21 @@ export async function resolveAvatar(profile: Profile | null): Promise<string | n
   }
   
   // Otherwise, it's a Supabase storage path - create signed URL
-  const { data, error } = await supabase.storage
-    .from('avatars')
-    .createSignedUrl(profile.avatar_url, 3600); // 1h
-  if (error) {
-    console.error('Avatar signed URL error', error);
+  try {
+    const { data, error } = await supabase.storage
+      .from('post-media')
+      .createSignedUrl(profile.avatar_url, 3600); // 1h
+    
+    if (error) {
+      // Don't log as error for missing files, they may not have uploaded an avatar yet
+      console.debug('Avatar file not found for signed URL:', profile.avatar_url);
+      return null;
+    }
+    return data.signedUrl;
+  } catch (err) {
+    console.debug('Error creating avatar signed URL:', err);
     return null;
   }
-  return data.signedUrl;
 }
 
 export const parentProfiles = derived(profileStore, ($profiles) => $profiles.filter(p => p.role === 'parent'))
