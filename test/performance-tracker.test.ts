@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { performanceTracker, trackSupabaseQuery } from '../src/lib/utils/performanceTracker';
+import { performanceTracker, trackSupabaseQuery, trackWidgetRender } from '../src/lib/utils/performanceTracker';
 
 // Mock performance API
 const mockPerformance = {
@@ -178,6 +178,76 @@ describe('Performance Tracker', () => {
 
       performanceTracker.reset();
       expect(performanceTracker.getMetrics().supabaseQueries).toHaveLength(0);
+      expect(performanceTracker.getMetrics().widgetRenderTimes).toHaveLength(0);
+    });
+  });
+
+  describe('Widget Render Tracking', () => {
+    it('should track widget render duration correctly', () => {
+      mockPerformance.now.mockReturnValue(1250);
+
+      performanceTracker.trackWidgetRender('reflectionMood', 1000);
+
+      const metrics = performanceTracker.getMetrics();
+      expect(metrics.widgetRenderTimes).toHaveLength(1);
+      expect(metrics.widgetRenderTimes[0]).toMatchObject({
+        widget: 'reflectionMood',
+        duration: 250
+      });
+    });
+
+    it('should limit render history to 50 entries', () => {
+      // Add 55 render times
+      for (let i = 0; i < 55; i++) {
+        performanceTracker.trackWidgetRender(`widget-${i}`, 1000);
+      }
+
+      const metrics = performanceTracker.getMetrics();
+      expect(metrics.widgetRenderTimes).toHaveLength(50);
+    });
+
+    it('should handle performance API errors gracefully for renders', () => {
+      mockPerformance.now.mockImplementation(() => {
+        throw new Error('Performance API error');
+      });
+
+      expect(() => {
+        performanceTracker.trackWidgetRender('scenario', 1000);
+      }).not.toThrow();
+      
+      // Should still track the render even with API error
+      const metrics = performanceTracker.getMetrics();
+      expect(metrics.widgetRenderTimes).toHaveLength(1);
+    });
+  });
+
+  describe('trackWidgetRender helper function', () => {
+    it('should return a function that tracks render time', () => {
+      mockPerformance.now
+        .mockReturnValueOnce(1000) // start time
+        .mockReturnValueOnce(1150); // end time
+
+      const endTracking = trackWidgetRender('birthday');
+      expect(typeof endTracking).toBe('function');
+
+      endTracking();
+
+      const metrics = performanceTracker.getMetrics();
+      expect(metrics.widgetRenderTimes).toHaveLength(1);
+      expect(metrics.widgetRenderTimes[0]).toMatchObject({
+        widget: 'birthday',
+        duration: 150
+      });
+    });
+
+    it('should handle tracking errors gracefully', () => {
+      mockPerformance.now.mockReturnValue(2000);
+      
+      const endTracking = trackWidgetRender('test');
+      
+      expect(() => {
+        endTracking();
+      }).not.toThrow();
     });
   });
 });

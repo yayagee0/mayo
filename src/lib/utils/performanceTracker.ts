@@ -12,6 +12,11 @@ interface PerformanceMetrics {
     duration: number;
     timestamp: number;
   }>;
+  widgetRenderTimes: Array<{
+    widget: string;
+    duration: number;
+    timestamp: number;
+  }>;
   initialized: boolean;
 }
 
@@ -19,6 +24,7 @@ class PerformanceTracker {
   private metrics: PerformanceMetrics = {
     bundleLoadTime: 0,
     supabaseQueries: [],
+    widgetRenderTimes: [],
     initialized: false
   };
 
@@ -58,6 +64,41 @@ class PerformanceTracker {
     } catch (error) {
       // Silently fail
       console.debug('Failed to record bundle load time:', error);
+    }
+  }
+
+  /**
+   * Track widget render duration for performance monitoring
+   */
+  trackWidgetRender(widget: string, startTime: number): void {
+    try {
+      let duration = 0;
+      try {
+        const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        duration = now - startTime;
+      } catch {
+        // Fallback to 0 duration if performance API fails
+        duration = 0;
+      }
+      
+      this.metrics.widgetRenderTimes.push({
+        widget,
+        duration,
+        timestamp: Date.now()
+      });
+
+      // Keep only last 50 render times to prevent memory issues
+      if (this.metrics.widgetRenderTimes.length > 50) {
+        this.metrics.widgetRenderTimes.shift();
+      }
+
+      // Only log in development mode to avoid console spam
+      if (import.meta.env.DEV) {
+        console.debug(`[${widget}] render: ${duration.toFixed(2)}ms`);
+      }
+    } catch (error) {
+      // Silently fail
+      console.debug('Failed to track widget render:', error);
     }
   }
 
@@ -135,6 +176,7 @@ class PerformanceTracker {
     this.metrics = {
       bundleLoadTime: 0,
       supabaseQueries: [],
+      widgetRenderTimes: [],
       initialized: false
     };
     
@@ -170,4 +212,23 @@ export function trackSupabaseQuery<T>(
       console.debug('Failed to track query performance:', error);
     }
   });
+}
+
+// Helper function to track widget render times
+export function trackWidgetRender(widget: string): () => void {
+  let startTime: number;
+  try {
+    startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  } catch {
+    startTime = Date.now();
+  }
+  
+  return () => {
+    try {
+      performanceTracker.trackWidgetRender(widget, startTime);
+    } catch (error) {
+      // Silently fail to avoid breaking the app
+      console.debug('Failed to track render performance:', error);
+    }
+  };
 }
