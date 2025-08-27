@@ -8,7 +8,8 @@ describe('Widget Restructure Tests', () => {
 				'reflectionMood',  // Mood ("How are you feeling today?")
 				'ayah',           // Daily Ayah
 				'birthday',       // BirthdayCard (mandatory if birthday data exists)
-				'wall',           // Wall (limit to 5 latest posts)
+				'quiz',           // Family Quiz
+				'scenario',       // What Would You Do?
 				'closingRitual'   // Closing Ritual (always visible)
 			];
 
@@ -19,23 +20,23 @@ describe('Widget Restructure Tests', () => {
 			expect(isAnchorWidget('reflectionMood')).toBe(true);
 			expect(isAnchorWidget('ayah')).toBe(true);
 			expect(isAnchorWidget('birthday')).toBe(true);
-			expect(isAnchorWidget('wall')).toBe(true);
+			expect(isAnchorWidget('quiz')).toBe(true);
+			expect(isAnchorWidget('scenario')).toBe(true);
 			expect(isAnchorWidget('closingRitual')).toBe(true);
 
 			// Should not be anchor widgets
-			expect(isAnchorWidget('quiz')).toBe(false);
-			expect(isAnchorWidget('scenario')).toBe(false);
+			expect(isAnchorWidget('wall')).toBe(false);
+			expect(isAnchorWidget('analytics')).toBe(false);
 		});
 	});
 
 	describe('Quiet Widget Classification', () => {
 		it('should classify correct widgets as quiet widgets', () => {
 			const expectedQuietWidgets = [
-				'quiz',                      // Quiz / Identity Game → All users
+				'wall',                      // Family Wall
 				'weeklyReflectionDigest',    // Family Reflections Digest → Parents only
 				'analytics',                 // Family Insights → Parents only  
 				'islamicQA',                 // Islamic Q&A → Children only
-				'scenario',                  // Scenario Q&A → Children only
 				'islamicReflectionDigest',   // Islamic Reflection Digest → Parents only
 				'scenarioDigest',            // Scenario Reflection Digest → Parents only
 				'professionCard',            // Family Professions → All users
@@ -47,11 +48,10 @@ describe('Widget Restructure Tests', () => {
 		});
 
 		it('should correctly identify quiet widgets using isQuietWidget function', () => {
-			expect(isQuietWidget('quiz')).toBe(true);
+			expect(isQuietWidget('wall')).toBe(true);
 			expect(isQuietWidget('weeklyReflectionDigest')).toBe(true);
 			expect(isQuietWidget('analytics')).toBe(true);
 			expect(isQuietWidget('islamicQA')).toBe(true);
-			expect(isQuietWidget('scenario')).toBe(true);
 			expect(isQuietWidget('scenarioDigest')).toBe(true);
 			expect(isQuietWidget('professionCard')).toBe(true);
 			expect(isQuietWidget('agePlayground')).toBe(true);
@@ -59,7 +59,8 @@ describe('Widget Restructure Tests', () => {
 			// Should not be quiet widgets
 			expect(isQuietWidget('reflectionMood')).toBe(false);
 			expect(isQuietWidget('ayah')).toBe(false);
-			expect(isQuietWidget('wall')).toBe(false);
+			expect(isQuietWidget('quiz')).toBe(false);
+			expect(isQuietWidget('scenario')).toBe(false);
 		});
 	});
 
