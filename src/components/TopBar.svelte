@@ -12,10 +12,12 @@
   let avatarSignedUrl: string | null = null;
 
   // Keep avatar in sync with profile
-  $: if ($currentUserProfile?.avatar_url) {
+  $: if ($currentUserProfile) {
     resolveAvatar($currentUserProfile)
       .then((url) => (avatarSignedUrl = url))
       .catch(() => (avatarSignedUrl = null));
+  } else {
+    avatarSignedUrl = null;
   }
 
   async function fetchLatestPost() {
