@@ -2,12 +2,21 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { supabase } from '$lib/supabase';
-  import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
+  import { currentUserProfile } from '$lib/stores/profileStore';
+  import { resolveAvatar } from '$lib/stores/profileStore';
   import { HeartHandshake, User } from 'lucide-svelte';
 
   export let userName: string = 'Friend';
 
   let secondaryMessage = "Loading...";
+  let avatarSignedUrl: string | null = null;
+
+  // Keep avatar in sync with profile
+  $: if ($currentUserProfile?.avatar_url) {
+    resolveAvatar($currentUserProfile)
+      .then((url) => (avatarSignedUrl = url))
+      .catch(() => (avatarSignedUrl = null));
+  }
 
   async function fetchLatestPost() {
     if (!browser) return; // Skip during SSR
@@ -22,9 +31,7 @@
 
       if (!error && data) {
         if (data.author_email !== $currentUserProfile?.email) {
-          const authorProfile = profileStore.findByEmail(data.author_email);
-          const recentAuthor = authorProfile?.display_name || data.author_email.split('@')[0];
-          secondaryMessage = `${recentAuthor} posted something today 💌`;
+          secondaryMessage = `${data.author_email.split('@')[0]} posted something today 💌`;
           return;
         }
       }
@@ -51,30 +58,29 @@
         </div>
       </div>
 
-      <!-- Greeting -->
-      <div class="text-right">
-        <p class="text-sm font-medium text-gray-900">
-          🌿 Salam {userName}
-        </p>
-        <p class="text-xs text-gray-500">
-          {secondaryMessage}
-        </p>
+      <!-- Greeting + Avatar -->
+      <div class="flex items-center gap-2">
+        <div class="text-right">
+          <p class="text-sm font-medium text-gray-900">
+            🌿 Salam {userName}
+          </p>
+          <p class="text-xs text-gray-500">
+            {secondaryMessage}
+          </p>
+        </div>
 
-        {#if $currentUserProfile}
-          {@const profile = $currentUserProfile}
-          {#if profile?.avatar_url}
-            <img
-              src="{profile.avatar_url}?t={Date.now()}"
-              alt={profile.display_name || 'User avatar'}
-              class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 inline-block ml-2"
-            />
-          {:else}
-            <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 ml-2">
-              {profile?.display_name?.charAt(0) || 'U'}
-            </div>
-          {/if}
+        {#if avatarSignedUrl}
+          <img
+            src={avatarSignedUrl}
+            alt={$currentUserProfile?.display_name || 'User avatar'}
+            class="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+          />
+        {:else if $currentUserProfile}
+          <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600">
+            {$currentUserProfile?.display_name?.charAt(0) || 'U'}
+          </div>
         {:else}
-          <User class="w-6 h-6 text-gray-600 ml-2" aria-hidden="true" />
+          <User class="w-6 h-6 text-gray-600" aria-hidden="true" />
         {/if}
       </div>
     </div>
