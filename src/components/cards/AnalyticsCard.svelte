@@ -4,14 +4,29 @@
   Private, family-only analytics with no external services
 -->
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { BarChart3, Eye, Heart, MessageCircle, Users } from 'lucide-svelte'
   import type { WidgetProps } from '$lib/types/widget'
   import { getUserRole } from '$lib/utils/roles'
+  import { trackWidgetRender } from '$lib/utils/performanceTracker'
 
   export let session: WidgetProps['session']
   export let profiles: WidgetProps['profiles'] 
   export let items: WidgetProps['items']
   export let interactions: WidgetProps['interactions']
+
+  // Track widget render performance
+  let endRenderTracking: (() => void) | null = null;
+
+  onMount(() => {
+    // Start tracking render time
+    endRenderTracking = trackWidgetRender('analytics');
+    
+    // End tracking when component is fully mounted
+    if (endRenderTracking) {
+      endRenderTracking();
+    }
+  });
 
   // Only show to parents and if analytics is enabled
   $: isParent = session?.user?.email ? 

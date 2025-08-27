@@ -6,6 +6,7 @@
 	import { getUserRole } from '$lib/utils/roles';
 	import dayjs from 'dayjs';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import PerformanceMetricsView from '$lib/../components/PerformanceMetricsView.svelte';
 	import { notificationStore } from '$lib/stores/notificationStore';
 
 	let loading = $state(true);
@@ -367,6 +368,9 @@
 						📊 Analytics are completely private and family-only. No data is shared with external services.
 					</div>
 				</div>
+
+				<!-- Performance Metrics Section (Parent-only debug panel) -->
+				<PerformanceMetricsView user={$user} />
 
 				<!-- Parent-only note -->
 				<div class="card">
