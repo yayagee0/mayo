@@ -3,55 +3,47 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 
 describe('Profile Picture Upload Fix - HTTP 406 Error', () => {
-  it('should include .select() in profile update queries to prevent HTTP 406 errors', () => {
+  it('should use profileStore.updateProfile() for profile updates to ensure proper handling', () => {
     // Read the profile page source code
     const profilePagePath = join(process.cwd(), 'src/routes/profile/+page.svelte')
     const profilePageContent = readFileSync(profilePagePath, 'utf-8')
     
-    // Verify the fix: profile update query includes .select()
-    expect(profilePageContent).toContain('.from(\'profiles\')')
-    expect(profilePageContent).toContain('.update(')
-    expect(profilePageContent).toContain('.eq(\'user_id\', $user!.id)')
-    expect(profilePageContent).toContain('.select()')
-    
-    // Verify proper error handling variables are used
-    expect(profilePageContent).toContain('error: updateError')
-    expect(profilePageContent).toContain('error: urlError')
+    // Verify the improved implementation: using profileStore instead of raw queries
+    expect(profilePageContent).toContain('await profileStore.updateProfile($user!.id, { avatar_url: path })')
     
     // Verify upsert option is enabled for storage upload
     expect(profilePageContent).toContain('upsert: true')
     
-    // Verify improved error messages
-    expect(profilePageContent).toContain('Upload failed. Please try a smaller image.')
+    // Verify error handling is present
+    expect(profilePageContent).toContain('} catch (error) {')
+    expect(profilePageContent).toContain('console.error')
   })
   
   it('should have proper error handling for all upload steps', () => {
     const profilePagePath = join(process.cwd(), 'src/routes/profile/+page.svelte')
     const profilePageContent = readFileSync(profilePagePath, 'utf-8')
     
-    // Check for specific error handling patterns
+    // Verify error handling is present
+    expect(profilePageContent).toContain('try {')
+    expect(profilePageContent).toContain('} catch (error) {')
+    
+    // Verify upload error handling
     expect(profilePageContent).toContain('if (uploadError) throw uploadError')
-    expect(profilePageContent).toContain('if (updateError) throw updateError')  
-    expect(profilePageContent).toContain('if (urlError) throw urlError')
     
-    // Check for user-friendly error messages
-    expect(profilePageContent).toContain('Upload failed. Please try a smaller image.')
-    expect(profilePageContent).toContain('Upload failed. Please check your connection and try again.')
-    
-    // Verify storage upload has upsert enabled
-    expect(profilePageContent).toContain('{ upsert: true }')
+    // Verify notification handling for user feedback
+    expect(profilePageContent).toContain('notificationStore.add')
+    expect(profilePageContent).toContain('Upload failed. Please try again.')
   })
   
-  it('should properly structure the database update query', () => {
+  it('should properly use profileStore for database operations', () => {
     const profilePagePath = join(process.cwd(), 'src/routes/profile/+page.svelte')
     const profilePageContent = readFileSync(profilePagePath, 'utf-8')
     
-    // Check that the profile update query follows the correct pattern:
-    // .from() -> .update() -> .eq() -> .select()
-    const updateQueryPattern = /\.from\(['"]profiles['"]\)[\s\S]*?\.update\(\s*\{\s*avatar_url:\s*data\.path\s*\}\s*\)[\s\S]*?\.eq\(['"]user_id['"],\s*\$user!?\.id\)[\s\S]*?\.select\(\)/
-    expect(profilePageContent).toMatch(updateQueryPattern)
+    // Verify we're using the profileStore which already handles proper error handling
+    expect(profilePageContent).toContain('import { profileStore')
+    expect(profilePageContent).toContain('profileStore.updateProfile')
     
-    // Verify the response is properly captured with error handling
-    expect(profilePageContent).toContain('{ data: updateData, error: updateError }')
+    // Verify storage upload has upsert enabled
+    expect(profilePageContent).toContain('{ upsert: true }')
   })
 })
