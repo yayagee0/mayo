@@ -5,6 +5,7 @@
 	import { supabase } from '$lib/supabase';
 	import type { Database } from '$lib/supabase';
 	import Loading from '$lib/../components/ui/Loading.svelte';
+	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { getUserRole, getRoleDisplayName, getSeededDisplayName, type AllowedEmail } from '$lib/utils/roles';
 	import { profileStore, resolveAvatar } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
@@ -127,6 +128,7 @@
 
 		try {
 			uploading = true;
+			// ✅ browser-image-compression dynamically imported to avoid SSR issues
 			const { default: imageCompression } = await import('browser-image-compression');
 			const compressedFile = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 800, useWebWorker: true });
 
@@ -250,56 +252,58 @@
 				<form onsubmit={async (e) => { e.preventDefault(); await saveProfile(); }} class="space-y-6">
 					<!-- Email -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-						<input type="email" value={$user?.email || ''} disabled class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500" />
+						<label for="profile-email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+						<input id="profile-email" type="email" value={$user?.email || ''} disabled class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500" />
 						<p class="text-xs text-gray-500 mt-1">Email cannot be changed</p>
 					</div>
 
 					<!-- Display Name -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
-						<input type="text" bind:value={displayName} placeholder="Enter your display name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+						<label for="profile-display-name" class="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
+						<input id="profile-display-name" type="text" bind:value={displayName} placeholder="Enter your display name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
 					</div>
 
 					<!-- Avatar -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
-						{#if avatarSignedUrl}
-							<div class="mb-4">
-								<img src={avatarSignedUrl} alt="profile picture" class="w-20 h-20 rounded-full object-cover border-2 border-gray-200" onerror={() => avatarSignedUrl = null} />
+						<label for="avatar-upload" class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+						<ComponentErrorBoundary componentName="Avatar Upload">
+							{#if avatarSignedUrl}
+								<div class="mb-4">
+									<img src={avatarSignedUrl} alt={displayName ? `${displayName}'s profile picture` : ""} class="w-20 h-20 rounded-full object-cover border-2 border-gray-200" onerror={() => avatarSignedUrl = null} />
+								</div>
+							{/if}
+							<div class="space-y-4">
+								<input type="file" bind:this={fileInput} onchange={handleFileSelect} accept="image/*" class="hidden" id="avatar-upload" />
+								<button type="button" onclick={() => fileInput.click()} disabled={uploading} class="btn btn-secondary flex items-center gap-2">
+									{#if uploading}
+										<div class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+										Uploading...
+									{:else} 📷 Upload Photo {/if}
+								</button>
+								
+								<!-- Avatar Bank Selector -->
+								<div class="border-t pt-4">
+									<AvatarSelector 
+										onSelection={handleAvatarSelection}
+										selectedAvatar={avatarPath} 
+									/>
+								</div>
 							</div>
-						{/if}
-						<div class="space-y-4">
-							<input type="file" bind:this={fileInput} onchange={handleFileSelect} accept="image/*" class="hidden" id="avatar-upload" />
-							<button type="button" onclick={() => fileInput.click()} disabled={uploading} class="btn btn-secondary flex items-center gap-2">
-								{#if uploading}
-									<div class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-									Uploading...
-								{:else} 📷 Upload Photo {/if}
-							</button>
-							
-							<!-- Avatar Bank Selector -->
-							<div class="border-t pt-4">
-								<AvatarSelector 
-									onSelection={handleAvatarSelection}
-									selectedAvatar={avatarPath} 
-								/>
-							</div>
-						</div>
+						</ComponentErrorBoundary>
 						<p class="text-xs text-gray-500 mt-2">Supported formats: JPG, PNG, GIF. Max size: 5MB.</p>
 					</div>
 
 					<!-- Role -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
-						<div class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">{roleDisplayName()}</div>
+						<label for="profile-role" class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+						<div id="profile-role" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700" tabindex="0" role="textbox" aria-readonly="true">{roleDisplayName()}</div>
 						<p class="text-xs text-gray-500 mt-1">Role is determined by your email and cannot be changed</p>
 					</div>
 
 					<!-- DOB -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-						<input type="date" bind:value={dob} disabled={isDobSet()} class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" class:bg-gray-50={isDobSet()} class:text-gray-500={isDobSet()} />
+						<label for="profile-dob" class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+						<input id="profile-dob" type="date" bind:value={dob} disabled={isDobSet()} class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" class:bg-gray-50={isDobSet()} class:text-gray-500={isDobSet()} />
 						{#if isDobSet()}
 							<p class="text-xs text-gray-500 mt-1">Date of birth is locked to prevent accidental changes</p>
 						{/if}

@@ -55,6 +55,8 @@
 				class:text-primary-600={currentPath === item.href}
 				class:text-gray-500={currentPath !== item.href}
 				class:bg-primary-50={currentPath === item.href}
+				class:font-semibold={currentPath === item.href}
+				class:shadow-sm={currentPath === item.href}
 				aria-label="{item.label} page"
 				aria-current={currentPath === item.href ? 'page' : undefined}
 			>
@@ -75,7 +77,10 @@
 						{/if}
 					{:else}
 						<!-- Show icon for other items -->
-						<IconComponent class="w-6 h-6 mb-1" aria-hidden="true" />
+						<IconComponent 
+							class="w-6 h-6 mb-1 {currentPath === item.href ? 'stroke-2' : 'stroke-1'}" 
+							aria-hidden="true" 
+						/>
 					{/if}
 					{#if item.unreadCount && item.unreadCount > 0}
 						<span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-5">

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import { supabase } from '$lib/supabase';
   import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
   import { HeartHandshake, User } from 'lucide-svelte';
@@ -9,6 +10,8 @@
   let secondaryMessage = "Loading...";
 
   async function fetchLatestPost() {
+    if (!browser) return; // Skip during SSR
+    
     try {
       const { data, error } = await supabase
         .from('items')
