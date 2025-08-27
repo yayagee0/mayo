@@ -185,25 +185,34 @@ export const currentUserProfile = derived(
 export async function resolveAvatar(profile: Profile | null): Promise<string | null> {
   if (!profile?.avatar_url) return null;
   
+  // Clean avatar_url to prevent duplicate paths
+  let avatarPath = profile.avatar_url.trim();
+  
+  // Remove any duplicate 'avatars/' prefix if present
+  if (avatarPath.startsWith('avatars/avatars/')) {
+    avatarPath = avatarPath.substring('avatars/'.length);
+    console.debug('Fixed duplicate avatar path:', { original: profile.avatar_url, fixed: avatarPath });
+  }
+  
   // If avatar_url starts with "/avatars/", it's from our local avatar bank
-  if (profile.avatar_url.startsWith('/avatars/')) {
-    return profile.avatar_url;
+  if (avatarPath.startsWith('/avatars/')) {
+    return avatarPath;
   }
   
   // Otherwise, it's a Supabase storage path - create signed URL
   try {
     const { data, error } = await supabase.storage
       .from('post-media')
-      .createSignedUrl(profile.avatar_url, 3600); // 1h
+      .createSignedUrl(avatarPath, 3600); // 1h
     
     if (error) {
       // Don't log as error for missing files, they may not have uploaded an avatar yet
-      console.debug('Avatar file not found for signed URL:', profile.avatar_url);
+      console.debug('Avatar file not found for signed URL:', { path: avatarPath, error: error.message });
       return null;
     }
     return data.signedUrl;
   } catch (err) {
-    console.debug('Error creating avatar signed URL:', err);
+    console.debug('Error creating avatar signed URL:', { path: avatarPath, error: err });
     return null;
   }
 }

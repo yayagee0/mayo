@@ -72,6 +72,7 @@
 	let quietWidgetsLoading = $state(false);
 	let quietWidgetsLoaded = $state(false);
 	let loadedQuietWidgets: { config: WidgetConfig, component: any }[] = $state([]);
+	let failedWidgets: string[] = $state([]); // Track failed widget loads
 	
 	// Group collapse states - default collapsed on mobile, expanded on desktop
 	let groupCollapseStates = $state({
@@ -124,6 +125,8 @@
 					};
 				} catch (error) {
 					console.error(`Failed to load quiet widget ${widget.id}:`, error);
+					// Track failed widgets for user notification
+					failedWidgets = [...failedWidgets, widget.id];
 					return null;
 				}
 			});
@@ -288,6 +291,16 @@
 							</div>
 						{/if}
 					{/each}
+					
+					<!-- Show failed widget notice if any widgets failed to load -->
+					{#if failedWidgets.length > 0}
+						<div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+							<p class="text-sm text-yellow-800">
+								<strong>Notice:</strong> Some widgets ({failedWidgets.length}) couldn't load due to technical issues. 
+								Please try refreshing the page or contact support if the issue persists.
+							</p>
+						</div>
+					{/if}
 				</div>
 			
 			<!-- Empty State -->

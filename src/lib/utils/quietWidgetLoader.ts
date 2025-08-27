@@ -33,7 +33,20 @@ export async function loadQuietWidget(widgetId: string) {
     const module = await loader();
     return module.default;
   } catch (error) {
-    console.error(`Failed to load quiet widget ${widgetId}:`, error);
+    // Enhanced error logging for debugging MIME type and import issues
+    if (error instanceof TypeError && error.message.includes('dynamically imported module')) {
+      console.error(`Failed to load quiet widget ${widgetId}: Dynamic import blocked. This may be due to MIME type configuration issues on the server.`, {
+        widgetId,
+        error: error.message,
+        suggestion: 'Check server MIME type configuration for .js files'
+      });
+    } else {
+      console.error(`Failed to load quiet widget ${widgetId}:`, {
+        widgetId,
+        error: error.message,
+        stack: error.stack
+      });
+    }
     throw error;
   }
 }

@@ -29,7 +29,7 @@ describe('Avatar Bucket Consistency Fix', () => {
       
       // Verify resolveAvatar function uses post-media bucket for createSignedUrl
       expect(profileStoreContent).toContain(".from('post-media')")
-      expect(profileStoreContent).toContain("createSignedUrl(profile.avatar_url, 3600)")
+      expect(profileStoreContent).toContain("createSignedUrl(avatarPath, 3600)")
     })
 
     it('should handle avatar errors gracefully with debug logging', () => {
