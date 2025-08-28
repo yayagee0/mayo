@@ -18,6 +18,7 @@ export const quietWidgetLoaders: QuietWidgetLoader = {
   islamicQA: () => import('../../components/cards/IslamicQACard.svelte'),
   islamicReflectionDigest: () => import('../../components/cards/IslamicReflectionDigestCard.svelte'),
   weeklyReflectionDigest: () => import('../../components/cards/WeeklyReflectionDigestCard.svelte'),
+  dreamBuilderPlayground: () => import('../../components/cards/DreamBuilderPlaygroundCard.svelte'),
 };
 
 /**

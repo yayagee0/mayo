@@ -20,6 +20,7 @@ const loadQuizCard = () => import('../components/cards/QuizCard.svelte');
 const loadIslamicQACard = () => import('../components/cards/IslamicQACard.svelte');
 const loadIslamicReflectionDigestCard = () => import('../components/cards/IslamicReflectionDigestCard.svelte');
 const loadAnalyticsCard = () => import('../components/cards/AnalyticsCard.svelte');
+const loadDreamBuilderPlaygroundCard = () => import('../components/cards/DreamBuilderPlaygroundCard.svelte');
 
 export const systemRegistry: WidgetRegistry = {
   // ANCHOR WIDGETS (High Priority) - Maximum 3-4 visible at first load
@@ -121,6 +122,13 @@ export const systemRegistry: WidgetRegistry = {
     name: 'Family Insights',
     component: loadAnalyticsCard,
     priority: 51,
+    enabled: true
+  },
+  dreamBuilderPlayground: {
+    id: 'dreamBuilderPlayground',
+    name: 'Dream Builder Playground',
+    component: loadDreamBuilderPlaygroundCard,
+    priority: 58,
     enabled: true
   },
 
