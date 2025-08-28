@@ -1,21 +1,33 @@
-- uses: actions/checkout@v4
+name: CI
 
-- name: Setup Node.js
-  uses: actions/setup-node@v4
-  with:
-    node-version: 20
-    cache: 'pnpm'
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-- name: Setup pnpm
-  uses: pnpm/action-setup@v2
-  with:
-    version: 9
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-- name: Install dependencies
-  run: pnpm install --frozen-lockfile
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
 
-- name: Build
-  run: pnpm build
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
 
-- name: Run tests
-  run: pnpm test:run
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run tests
+        run: pnpm test:run
