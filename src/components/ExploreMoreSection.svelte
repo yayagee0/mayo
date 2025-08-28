@@ -260,28 +260,27 @@
 								</button>
 
 								{#if groupCollapseStates[groupKey as keyof typeof groupCollapseStates]}
-									<!-- Widget Grid for this group -->
+									<!-- Widget Stack for this group -->
 									<div class="px-4 pb-4 border-t border-slate-100">
-										<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+										<div class="flex flex-col gap-6 mt-4">
 											{#each groupWidgets as { config: widget, component: Component } (widget.id)}
-												<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-all duration-200">
-													<div class="flex items-center gap-2 mb-3">
-														<h5 class="text-base font-medium text-slate-700">{widget.name}</h5>
-													</div>
+												<div class="w-full max-w-2xl mx-auto">
 													<button
 														type="button"
-														class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+														class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg transition-transform hover:scale-[1.02]"
 														onmouseenter={() => onWidgetView(widget.id)}
 														onclick={() => onWidgetInteraction(widget.id)}
 														aria-label="View {widget.name} widget"
 													>
-														<Component 
-															{session}
-															{profiles}
-															{items}
-															{interactions}
-															{widget}
-														/>
+														<div class="bg-gray-50 rounded-2xl shadow-lg border border-gray-200/50 py-4 px-6 sm:p-8">
+															<Component 
+																{session}
+																{profiles}
+																{items}
+																{interactions}
+																{widget}
+															/>
+														</div>
 													</button>
 												</div>
 											{/each}
