@@ -15,7 +15,8 @@
 		"test:run": "vitest run",
 		"analyze:before": "node scripts/analyze-bundle.js before",
 		"analyze:after": "node scripts/analyze-bundle.js after",
-		"analyze:compare": "node scripts/analyze-bundle.js compare"
+		"analyze:compare": "node scripts/analyze-bundle.js compare",
+		"check:media-proxy": "node scripts/check-media-proxy.js"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.0",

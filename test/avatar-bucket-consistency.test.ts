@@ -32,13 +32,14 @@ describe('Avatar Bucket Consistency Fix', () => {
       expect(profileStoreContent).toContain("createSignedUrl(avatarPath, 3600)")
     })
 
-    it('should handle avatar errors gracefully with debug logging', () => {
+    it('should use proxy URLs instead of signed URLs for avatars', () => {
       const profileStorePath = join(process.cwd(), 'src/lib/stores/profileStore.ts')
       const profileStoreContent = readFileSync(profileStorePath, 'utf-8')
       
-      // Should use console.debug instead of console.error for missing avatars
-      expect(profileStoreContent).toContain('console.debug')
-      expect(profileStoreContent).toContain('Avatar file not found for signed URL')
+      // Should use proxy URL approach instead of creating signed URLs
+      expect(profileStoreContent).toContain('resolveAvatar')
+      expect(profileStoreContent).toContain('/api/media/post-media/')
+      expect(profileStoreContent).not.toContain('createSignedUrl')
     })
   })
 
