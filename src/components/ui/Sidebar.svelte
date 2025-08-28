@@ -2,27 +2,22 @@
 	import { page } from '$app/stores';
 	import { notificationStore } from '$lib/stores/notificationStore';
 	import { openComposer } from '$lib/stores/composerStore';
-	import { currentUserAvatar } from '$lib/stores/avatarStore';
 	import { currentUserProfile } from '$lib/stores/profileStore';
 	import { Home, FileText, User, Plus, Bell } from 'lucide-svelte';
+	import AvatarDisplay from './AvatarDisplay.svelte';
 
 	let currentPath = $derived($page.url.pathname);
 	let unreadCount = $derived(notificationStore.getUnreadCount());
-	let avatarUrl = $derived($currentUserAvatar);
 	let profile = $derived($currentUserProfile);
 
-	// Props for handling composer action and avatar - kept for backward compatibility
+	// Props for backward compatibility
 	interface Props {
 		onComposerOpen?: () => void;
 		avatarUrl?: string | null;
 		profile?: { display_name?: string | null } | null;
 	}
 	
-	let { onComposerOpen, avatarUrl: propAvatarUrl, profile: propProfile }: Props = $props();
-
-	// Use store values as primary, props as fallback
-	let displayAvatarUrl = $derived(avatarUrl || propAvatarUrl);
-	let displayProfile = $derived(profile || propProfile);
+	let { onComposerOpen }: Props = $props();
 
 	let navItems = $derived([
 		{ href: '/dashboard', label: 'Dashboard', icon: Home, description: 'Smart widgets & overview' },
@@ -62,20 +57,11 @@
 		
 		<!-- Current user info -->
 		<div class="flex items-center justify-center">
-			{#if displayAvatarUrl}
-				<img 
-					src={displayAvatarUrl} 
-					alt="Profile avatar"
-					class="rounded-full w-10 h-10 object-cover border-2 border-gray-200 me-3"
-					onerror={() => displayAvatarUrl = null}
-				/>
-			{:else}
-				<div class="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 w-10 h-10 flex items-center justify-center text-white font-bold me-3" aria-label="User avatar">
-					{displayProfile?.display_name?.[0]?.toUpperCase() ?? "U"}
-				</div>
-			{/if}
+			<div class="me-3">
+				<AvatarDisplay {profile} size="md" />
+			</div>
 			<div>
-				<p class="text-sm font-medium text-gray-700">{displayProfile?.display_name || 'Family Member'}</p>
+				<p class="text-sm font-medium text-gray-700">{profile?.display_name || 'Family Member'}</p>
 			</div>
 		</div>
 	</div>

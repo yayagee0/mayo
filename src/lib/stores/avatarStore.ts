@@ -1,11 +1,11 @@
 // src/lib/stores/avatarStore.ts
 import { writable, derived, get } from 'svelte/store';
 import { currentUserProfile, resolveAvatar } from './profileStore';
-import { getDefaultAvatarForUser } from '$lib/avatarBank';
 
 /**
- * Store to manage the current user's avatar URL with proper fallback logic
+ * Store to manage the current user's avatar URL
  * This ensures consistent avatar display across all components
+ * Returns null if no avatar is set, allowing components to show initials fallback
  */
 export const avatarStore = writable<string | null>(null);
 
@@ -27,31 +27,17 @@ currentUserProfile.subscribe(async (profile) => {
     }
   }
   
-  // Fall back to default avatar bank if no resolved URL
-  if (!avatarUrl) {
-    const identifier = profile.email || profile.display_name || 'user';
-    avatarUrl = getDefaultAvatarForUser(identifier);
-  }
-  
+  // No fallback to avatar bank - let components handle initials
   avatarStore.set(avatarUrl);
 });
 
 /**
- * Derived store that provides a reactive avatar URL with fallback
+ * Derived store that provides a reactive avatar URL
+ * Returns null if no avatar is available, allowing components to show initials
  */
 export const currentUserAvatar = derived(
-  [avatarStore, currentUserProfile],
-  ([$avatarUrl, $profile]) => {
-    if ($avatarUrl) return $avatarUrl;
-    
-    // Final fallback if everything else fails
-    if ($profile) {
-      const identifier = $profile.email || $profile.display_name || 'user';
-      return getDefaultAvatarForUser(identifier);
-    }
-    
-    return null;
-  }
+  [avatarStore],
+  ([$avatarUrl]) => $avatarUrl
 );
 
 /**
@@ -73,11 +59,6 @@ export async function refreshAvatar() {
     }
   }
   
-  // Fall back to default avatar bank if no resolved URL
-  if (!avatarUrl) {
-    const identifier = profile.email || profile.display_name || 'user';
-    avatarUrl = getDefaultAvatarForUser(identifier);
-  }
-  
+  // No fallback to avatar bank - let components handle initials
   avatarStore.set(avatarUrl);
 }

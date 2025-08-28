@@ -10,16 +10,11 @@ export interface Profile {
 }
 
 /**
- * Gets avatar URL for a profile, with fallback to generated avatar
+ * Gets avatar URL for a profile, returns null if no avatar is set
+ * Components should handle initials fallback themselves
  */
-export function getAuthorAvatar(profile: Profile): string {
-  if (profile?.avatar_url) {
-    return profile.avatar_url;
-  }
-  
-  // Generate a fallback avatar using the profile email or display name
-  const seed = profile?.email ?? profile?.display_name ?? 'U';
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(seed)}`;
+export function getAuthorAvatar(profile: Profile): string | null {
+  return profile?.avatar_url || null;
 }
 
 /**

@@ -9,7 +9,7 @@
 	import { getUserRole, getRoleDisplayName, getSeededDisplayName, type AllowedEmail } from '$lib/utils/roles';
 	import { profileStore, resolveAvatar } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
-	import AvatarSelector from '$lib/../components/AvatarSelector.svelte';
+
 	import { ChevronDown, ChevronUp, Puzzle } from 'lucide-svelte';
 
 	let profile: Database['public']['Tables']['profiles']['Row'] | null = $state(null);
@@ -153,29 +153,7 @@
 		}
 	}
 
-	async function handleAvatarSelection(avatarPath: string) {
-		try {
-			avatarPath = avatarPath;
-			const tempProfile = { ...profile, avatar_url: avatarPath };
-			avatarSignedUrl = await resolveAvatar(tempProfile as any);
-			
-			// Save the profile with the new avatar
-			await saveProfile();
-			
-			notificationStore.add({ 
-				type: 'success', 
-				title: 'Avatar Updated', 
-				message: 'Your avatar has been updated successfully!' 
-			});
-		} catch (error) {
-			console.error('Error selecting avatar:', error);
-			notificationStore.add({ 
-				type: 'error', 
-				title: 'Update Failed', 
-				message: 'Failed to update avatar. Please try again.' 
-			});
-		}
-	}
+
 
 	async function signOut() {
 		await supabase.auth.signOut();
@@ -280,14 +258,6 @@
 										Uploading...
 									{:else} 📷 Upload Photo {/if}
 								</button>
-								
-								<!-- Avatar Bank Selector -->
-								<div class="border-t pt-4">
-									<AvatarSelector 
-										onSelection={handleAvatarSelection}
-										selectedAvatar={avatarPath} 
-									/>
-								</div>
 							</div>
 						</ComponentErrorBoundary>
 						<p class="text-xs text-gray-500 mt-2">Supported formats: JPG, PNG, GIF. Max size: 5MB.</p>
