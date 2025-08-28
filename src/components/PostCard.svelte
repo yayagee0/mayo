@@ -92,10 +92,35 @@
 		       url.includes('youtu.be/');
 	}
 	function isImageUrl(url: string): boolean {
-		return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
+		return /\.(jpg|jpeg|png|gif|webp|heic|bmp|tiff)(\?|$)/i.test(url);
 	}
 	function isVideoUrl(url: string): boolean {
-		return /\.(mp4|webm|mov|avi)(\?|$)/i.test(url);
+		return /\.(mp4|webm|mov|avi|m4v|3gp|mkv)(\?|$)/i.test(url);
+	}
+	
+	/**
+	 * Determines the content type for video rendering based on URL
+	 * Supports common formats and provides fallback
+	 */
+	function getVideoContentType(url: string): string {
+		const extension = url.toLowerCase().split('.').pop()?.split('?')[0];
+		switch (extension) {
+			case 'mp4':
+			case 'm4v':
+				return 'video/mp4';
+			case 'webm':
+				return 'video/webm';
+			case 'mov':
+				return 'video/quicktime';
+			case 'avi':
+				return 'video/avi';
+			case '3gp':
+				return 'video/3gpp';
+			case 'mkv':
+				return 'video/x-matroska';
+			default:
+				return 'video/mp4'; // Fallback for most common format
+		}
 	}
 	
 	async function toggleLike() {
@@ -246,7 +271,7 @@
 				{:else if isVideoUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
 						<video controls class="w-full h-auto">
-							<source src={mediaUrl} type="video/mp4" />
+							<source src={mediaUrl} type={getVideoContentType(mediaUrl)} />
 							<track kind="captions" srclang="en" src="/captions.vtt" default />
 						</video>
 					</div>
