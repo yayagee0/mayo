@@ -63,17 +63,38 @@
 		for (const file of files) {
 			let processedFile: File = file;
 
-			// ✅ Convert HEIC → JPEG (dynamic import to avoid SSR issues)
+			// ✅ Enhanced HEIC conversion with retry logic
 			if (file.type === "image/heic" || file.name.toLowerCase().endsWith(".heic")) {
-				try {
-					const { default: heic2any } = await import('heic2any');
-					const blob = await heic2any({ blob: file, toType: "image/jpeg" });
-					processedFile = new File([blob as BlobPart], file.name.replace(/\.heic$/i, ".jpg"), {
-						type: "image/jpeg"
-					});
-				} catch (err) {
-					console.error("HEIC conversion failed", err);
-					error = "Failed to convert HEIC image. Please try a different photo.";
+				let conversionSuccess = false;
+				let lastError: any = null;
+				
+				// Try conversion up to 2 times
+				for (let attempt = 1; attempt <= 2; attempt++) {
+					try {
+						const { default: heic2any } = await import('heic2any');
+						const blob = await heic2any({ 
+							blob: file, 
+							toType: "image/jpeg",
+							quality: 0.8 // Slightly lower quality for reliability
+						});
+						processedFile = new File([blob as BlobPart], file.name.replace(/\.heic$/i, ".jpg"), {
+							type: "image/jpeg"
+						});
+						conversionSuccess = true;
+						break;
+					} catch (err) {
+						lastError = err;
+						console.warn(`HEIC conversion attempt ${attempt} failed:`, err);
+						if (attempt < 2) {
+							// Wait briefly before retry
+							await new Promise(resolve => setTimeout(resolve, 500));
+						}
+					}
+				}
+				
+				if (!conversionSuccess) {
+					console.error("HEIC conversion failed after retries:", lastError);
+					error = "Failed to convert HEIC image. Please select a JPEG or PNG image instead.";
 					return;
 				}
 			}
@@ -122,6 +143,28 @@
 	}
 	
 	async function uploadMediaFiles(): Promise<string[]> {
+		// Validate session before starting upload
+		const currentSession = $session;
+		if (!currentSession) {
+			throw new Error('Please log in to upload files');
+		}
+		
+		// Check if session token is close to expiry (within 5 minutes)
+		const expiresAt = currentSession.expires_at;
+		if (expiresAt && (expiresAt * 1000 - Date.now()) < 5 * 60 * 1000) {
+			console.log('Session token is near expiry, refreshing...');
+			try {
+				const { data, error } = await supabase.auth.refreshSession();
+				if (error) {
+					console.warn('Failed to refresh session:', error);
+					throw new Error('Session expired. Please log in again.');
+				}
+			} catch (refreshError) {
+				console.error('Session refresh failed:', refreshError);
+				throw new Error('Session expired. Please log in again.');
+			}
+		}
+		
 		const urls: string[] = [];
 		for (let i = 0; i < selectedFiles.length; i++) {
 			const file = selectedFiles[i];
@@ -145,7 +188,19 @@
 				uploadProgress = { phase: 'uploading', progress: 90 + (i / selectedFiles.length) * 10, message: `File ${i + 1}/${selectedFiles.length} uploaded` };
 			} catch (err) {
 				console.error('Error uploading file:', err);
-				throw new Error(`Failed to upload ${file.name}`);
+				
+				// Enhanced error logging with context
+				console.log('Upload error details:', {
+					errorType: err?.constructor?.name,
+					message: err instanceof Error ? err.message : String(err),
+					fileSize: file.size,
+					fileName: file.name,
+					fileType: file.type,
+					uploadIndex: i,
+					totalFiles: selectedFiles.length
+				});
+				
+				throw new Error(`Failed to upload ${file.name}: ${err instanceof Error ? err.message : 'Unknown error'}`);
 			}
 		}
 		uploadProgress = { phase: 'done', progress: 100, message: 'All files uploaded successfully' };

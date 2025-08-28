@@ -15,6 +15,7 @@ export type CompressionCallback = (progress: CompressionProgress) => void;
 
 /**
  * Compresses an image file on the client side
+ * Enhanced for mobile compatibility with memory constraints and API detection
  */
 export async function compressImage(
 	file: File, 
@@ -26,11 +27,18 @@ export async function compressImage(
 		// Dynamic import to avoid SSR issues
 		const { default: imageCompression } = await import('browser-image-compression');
 		
+		// Detect mobile device and adjust compression settings
+		const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+		const maxSizeMB = isMobile ? 0.5 : 1; // Lower limit for mobile devices
+		
+		// Detect if Web Workers are supported
+		const useWebWorker = typeof Worker !== 'undefined' && !isMobile; // Disable on mobile for reliability
+		
 		const options = {
-			maxSizeMB: 1, // Maximum file size in MB
-			maxWidthOrHeight: 1920, // Maximum width or height
-			useWebWorker: true, // Use web worker for better performance
-			fileType: file.type.startsWith('image/') ? file.type : 'image/jpeg',
+			maxSizeMB,
+			maxWidthOrHeight: 1920,
+			useWebWorker,
+			fileType: file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg',
 			onProgress: (progress: number) => {
 				onProgress?.({ 
 					phase: 'compressing', 
@@ -51,11 +59,23 @@ export async function compressImage(
 		return compressedFile;
 	} catch (error) {
 		console.warn('Image compression failed, using original file:', error);
+		
+		// Log detailed error information for debugging
+		console.log('Compression error details:', {
+			errorType: error?.constructor?.name,
+			message: error instanceof Error ? error.message : String(error),
+			fileSize: file.size,
+			fileType: file.type,
+			fileName: file.name,
+			userAgent: navigator.userAgent
+		});
+		
 		onProgress?.({ 
 			phase: 'error', 
 			progress: 0, 
 			message: 'Compression failed, using original file'
 		});
+		
 		return file;
 	}
 }
@@ -110,28 +130,30 @@ export async function compressVideo(
 
 /**
  * Determines if a file is an image based on type and extension
+ * Enhanced for mobile compatibility with MIME type fallbacks
  */
 export function isImageFile(file: File): boolean {
-	// Check MIME type first
-	if (file.type.startsWith('image/')) {
+	// Check MIME type first if available and reliable
+	if (file.type && file.type !== 'application/octet-stream' && file.type.startsWith('image/')) {
 		return true;
 	}
 	
-	// Fallback to file extension for mobile compatibility
-	const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|tiff)$/i;
+	// Fallback to file extension for mobile compatibility and unreliable MIME types
+	const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|tiff|heic)$/i;
 	return imageExtensions.test(file.name);
 }
 
 /**
  * Determines if a file is a video based on type and extension
+ * Enhanced for mobile compatibility with MIME type fallbacks
  */
 export function isVideoFile(file: File): boolean {
-	// Check MIME type first
-	if (file.type.startsWith('video/')) {
+	// Check MIME type first if available and reliable
+	if (file.type && file.type !== 'application/octet-stream' && file.type.startsWith('video/')) {
 		return true;
 	}
 	
-	// Fallback to file extension for mobile compatibility
+	// Fallback to file extension for mobile compatibility and unreliable MIME types
 	const videoExtensions = /\.(mp4|webm|mov|avi|m4v|3gp|mkv)$/i;
 	return videoExtensions.test(file.name);
 }
@@ -140,12 +162,13 @@ export function isVideoFile(file: File): boolean {
  * Validates file size and type for upload
  */
 export function validateMediaFile(file: File): { valid: boolean; error?: string } {
-	const maxSize = 100 * 1024 * 1024; // 100MB max
-	const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+	const maxSize = 100 * 1024 * 1024; // 100MB max (Supabase limit)
+	const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/heic'];
 	const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/avi', 'video/quicktime'];
 	
+	// Pre-check file size against Supabase limit
 	if (file.size > maxSize) {
-		return { valid: false, error: 'File size too large (max 100MB)' };
+		return { valid: false, error: `File size too large (${Math.round(file.size / 1024 / 1024)}MB). Maximum allowed is 100MB.` };
 	}
 	
 	// Check if it's an image or video
@@ -153,21 +176,39 @@ export function validateMediaFile(file: File): { valid: boolean; error?: string 
 		return { valid: false, error: 'File must be an image or video' };
 	}
 	
-	// For images, validate MIME type if available
-	if (isImageFile(file) && file.type && !allowedImageTypes.includes(file.type)) {
-		// If MIME type is not in our list but file extension suggests it's an image, allow it
-		const imageExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
-		if (!imageExtensions.test(file.name)) {
-			return { valid: false, error: 'Unsupported image format' };
+	// Enhanced MIME type validation with mobile fallbacks
+	if (isImageFile(file)) {
+		// Handle missing or unreliable MIME types from mobile browsers
+		if (!file.type || file.type === 'application/octet-stream') {
+			// Use extension as authoritative source for mobile compatibility
+			const imageExtensions = /\.(jpg|jpeg|png|gif|webp|heic)$/i;
+			if (!imageExtensions.test(file.name)) {
+				return { valid: false, error: 'Unsupported image format. Please use JPG, PNG, GIF, WebP, or HEIC.' };
+			}
+		} else if (!allowedImageTypes.includes(file.type)) {
+			// MIME type provided but not in our list - check extension as fallback
+			const imageExtensions = /\.(jpg|jpeg|png|gif|webp|heic)$/i;
+			if (!imageExtensions.test(file.name)) {
+				return { valid: false, error: 'Unsupported image format. Please use JPG, PNG, GIF, WebP, or HEIC.' };
+			}
 		}
 	}
 	
-	// For videos, validate MIME type if available  
-	if (isVideoFile(file) && file.type && !allowedVideoTypes.includes(file.type)) {
-		// If MIME type is not in our list but file extension suggests it's a video, allow it
-		const videoExtensions = /\.(mp4|webm|mov|avi)$/i;
-		if (!videoExtensions.test(file.name)) {
-			return { valid: false, error: 'Unsupported video format' };
+	// Enhanced video validation with mobile fallbacks
+	if (isVideoFile(file)) {
+		// Handle missing or unreliable MIME types from mobile browsers
+		if (!file.type || file.type === 'application/octet-stream') {
+			// Use extension as authoritative source for mobile compatibility
+			const videoExtensions = /\.(mp4|webm|mov|avi|m4v|3gp)$/i;
+			if (!videoExtensions.test(file.name)) {
+				return { valid: false, error: 'Unsupported video format. Please use MP4, WebM, MOV, or AVI.' };
+			}
+		} else if (!allowedVideoTypes.includes(file.type)) {
+			// MIME type provided but not in our list - check extension as fallback
+			const videoExtensions = /\.(mp4|webm|mov|avi|m4v|3gp)$/i;
+			if (!videoExtensions.test(file.name)) {
+				return { valid: false, error: 'Unsupported video format. Please use MP4, WebM, MOV, or AVI.' };
+			}
 		}
 	}
 	
@@ -175,7 +216,34 @@ export function validateMediaFile(file: File): { valid: boolean; error?: string 
 }
 
 /**
+ * Detects if the current environment supports compression APIs
+ */
+function detectCompressionSupport(): { canCompress: boolean; reason?: string } {
+	// Check for Canvas API
+	if (typeof HTMLCanvasElement === 'undefined') {
+		return { canCompress: false, reason: 'Canvas API not supported' };
+	}
+	
+	// Check for FileReader API
+	if (typeof FileReader === 'undefined') {
+		return { canCompress: false, reason: 'FileReader API not supported' };
+	}
+	
+	// Check available memory (rough heuristic)
+	if (typeof navigator !== 'undefined' && 'deviceMemory' in navigator) {
+		// @ts-ignore - deviceMemory is experimental
+		const deviceMemory: number = (navigator as any).deviceMemory;
+		if (deviceMemory && deviceMemory < 2) { // Less than 2GB RAM
+			return { canCompress: false, reason: 'Insufficient device memory' };
+		}
+	}
+	
+	return { canCompress: true };
+}
+
+/**
  * Compresses a media file based on its type
+ * Enhanced with compression capability detection and fallbacks
  */
 export async function compressMediaFile(
 	file: File,
@@ -186,7 +254,19 @@ export async function compressMediaFile(
 		throw new Error(validation.error);
 	}
 	
+	// Check if compression is supported/advisable
+	const compressionSupport = detectCompressionSupport();
+	
 	if (isImageFile(file)) {
+		if (!compressionSupport.canCompress) {
+			console.warn(`Skipping compression: ${compressionSupport.reason}`);
+			onProgress?.({ 
+				phase: 'compressing', 
+				progress: 80, 
+				message: 'Skipping compression for compatibility'
+			});
+			return file;
+		}
 		return compressImage(file, onProgress);
 	} else if (isVideoFile(file)) {
 		return compressVideo(file, onProgress);
