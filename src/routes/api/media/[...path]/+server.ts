@@ -34,7 +34,14 @@ export const GET: RequestHandler = async ({ params, request, url }) => {
 		}
 
 		const bucket = pathParts[0]; // e.g., "post-media"
-		const filePath = pathParts.slice(1).join('/'); // e.g., "avatars/user-avatar.jpg"
+		let filePath = pathParts.slice(1).join('/'); // e.g., "avatars/user-avatar.jpg"
+		
+		// Fix: Strip bucket prefix from filePath if present (prevents double bucket prefix)
+		// This handles cases where Supabase upload returns data.path with bucket prefix included
+		if (filePath.startsWith(bucket + '/')) {
+			filePath = filePath.substring(bucket.length + 1);
+			console.debug('Stripped duplicate bucket prefix from file path:', { original: pathParts.slice(1).join('/'), corrected: filePath });
+		}
 
 		// Validate bucket name (security measure)
 		const allowedBuckets = ['post-media'];
