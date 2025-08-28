@@ -89,21 +89,21 @@ describe('Media Compression Utility', () => {
 			
 			const result = validateMediaFile(file)
 			expect(result.valid).toBe(false)
-			expect(result.error).toBe('File size too large (max 100MB)')
+			expect(result.error).toBe('File size too large (101MB). Maximum allowed is 100MB.')
 		})
 
 		it('should reject unsupported image formats', () => {
 			const file = new File(['test'], 'test.bmp', { type: 'image/bmp' })
 			const result = validateMediaFile(file)
 			expect(result.valid).toBe(false)
-			expect(result.error).toBe('Unsupported image format')
+			expect(result.error).toBe('Unsupported image format. Please use JPG, PNG, GIF, WebP, or HEIC.')
 		})
 
 		it('should reject unsupported video formats', () => {
 			const file = new File(['test'], 'test.wmv', { type: 'video/wmv' })
 			const result = validateMediaFile(file)
 			expect(result.valid).toBe(false)
-			expect(result.error).toBe('Unsupported video format')
+			expect(result.error).toBe('Unsupported video format. Please use MP4, WebM, MOV, or AVI.')
 		})
 
 		it('should reject non-media files', () => {

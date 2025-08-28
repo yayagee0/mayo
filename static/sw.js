@@ -48,13 +48,18 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // Skip service worker for non-GET requests and external APIs
+  // Enhanced Supabase bypass for mobile reliability
   if (request.method !== 'GET' || 
       url.hostname.includes('supabase') || 
-      url.pathname.startsWith('/api/')) {
-    return; // Let browser handle normally
+      url.hostname.endsWith('supabase.co') ||
+      url.hostname.endsWith('supabase.in') ||
+      url.pathname.startsWith('/api/') ||
+      url.pathname.includes('/storage/') ||
+      url.pathname.includes('/auth/')) {
+    return; // Let browser handle normally without service worker interference
   }
 
-  // Network-first strategy for ALL requests
+  // Network-first strategy for ALL other requests
   event.respondWith(
     fetch(request)
       .then((response) => {

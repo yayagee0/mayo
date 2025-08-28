@@ -415,9 +415,30 @@ function createSupabaseClient() {
     return import('./supabase.mock').then(mod => mod.mockSupabaseClient)
   }
   
-  // Production - use real Supabase client
+  // Production - use real Supabase client with mobile-optimized config
   console.log('[Supabase] Using real client')
-  return Promise.resolve(createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY))
+  const client = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    },
+    global: {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    },
+    db: {
+      schema: 'public'
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
+    }
+  })
+  return Promise.resolve(client)
 }
 
 // Export async client getter for environments that support it
@@ -426,4 +447,24 @@ export async function getSupabaseClient() {
 }
 
 // Export synchronous client for compatibility (will be real client in production)
-export const supabase = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
+export const supabase = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  },
+  db: {
+    schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
+  }
+})
