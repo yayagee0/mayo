@@ -10,32 +10,29 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [20.x] # keep it simple, latest LTS is enough
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Use Node.js 20.19.0
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.19.0'
-        cache: 'pnpm'
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm' # ✅ enables dependency caching for faster installs
 
-    - name: Install pnpm
-      run: npm install -g pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9 # ✅ explicit, avoids npm install -g flakiness
 
-    - name: Validate Node.js version
-      run: node -v
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    - name: Validate pnpm installation
-      run: pnpm -v
+      - name: Build
+        run: pnpm build
 
-    - name: Approve trusted builds
-      run: pnpm approve-builds --global @tailwindcss/oxide esbuild
-
-    - name: Install dependencies
-      run: pnpm install
-
-    - name: Build
-      run: pnpm build
-
-    - name: Run tests
-      run: pnpm test:run
+      - name: Run tests
+        run: pnpm test:run
