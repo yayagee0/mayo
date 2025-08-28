@@ -57,7 +57,7 @@ describe('Bundle Improvements - Lazy Loading', () => {
       const expectedQuietWidgets = [
         'wall', 'agePlayground', 'professionCard', 'analytics', 
         'scenarioDigest', 'profileQuiz', 'islamicQA', 
-        'islamicReflectionDigest', 'weeklyReflectionDigest'
+        'islamicReflectionDigest', 'weeklyReflectionDigest', 'dreamBuilderPlayground'
       ];
 
       expectedQuietWidgets.forEach(widget => {

@@ -41,6 +41,7 @@ describe('Widget Restructure Tests', () => {
 				'scenarioDigest',            // Scenario Reflection Digest → Parents only
 				'professionCard',            // Family Professions → All users
 				'agePlayground',             // Age Playground → All users
+				'dreamBuilderPlayground',    // Dream Builder Playground → All users
 				'profileQuiz'                // Legacy - merged into unified QuizCard
 			];
 
