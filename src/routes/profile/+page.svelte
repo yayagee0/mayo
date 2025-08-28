@@ -184,7 +184,7 @@
 					quiz_questions (*)
 				`)
 				.eq('user_id', $user.id)
-				.order('created_at', { ascending: false });
+				.order('locked_at', { ascending: false });
 			
 			if (error) throw error;
 			
@@ -199,9 +199,6 @@
 	function toggleQuizAnswers() {
 		showAllQuizAnswers = !showAllQuizAnswers;
 	}
-
-	// Get summary answers (first 2-3)
-	let summaryAnswers = $derived(() => quizAnswers.slice(0, 3));
 	
 	// Get option text from question options array
 	function getOptionText(question: any, answerIndex: number): string {
@@ -317,7 +314,7 @@
 				{:else}
 					<!-- Summary view (first 2-3 answers) -->
 					<div class="space-y-3 mb-4">
-						{#each summaryAnswers as answer (answer.id)}
+						{#each quizAnswers.slice(0, 3) as answer (answer.id)}
 							{#if answer.quiz_questions}
 								<div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
 									<div class="text-sm">
@@ -366,7 +363,11 @@
 												{getOptionText(answer.quiz_questions, answer.answer_index)}
 											</p>
 											<p class="text-xs text-gray-400 mt-2">
-												Answered {new Date(answer.created_at).toLocaleDateString()}
+												{#if answer.locked_at}
+													Answered {new Date(answer.locked_at).toLocaleDateString()}
+												{:else}
+													Recently answered
+												{/if}
 											</p>
 										</div>
 									{/if}
