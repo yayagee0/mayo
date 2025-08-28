@@ -128,7 +128,7 @@ export const systemRegistry: WidgetRegistry = {
     id: 'dreamBuilderPlayground',
     name: 'Dream Builder Playground',
     component: loadDreamBuilderPlaygroundCard,
-    priority: 58,
+    priority: 59,
     enabled: true
   },
 
