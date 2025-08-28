@@ -47,7 +47,7 @@
 		interactive: {
 			title: 'Interactive & Games',
 			icon: Gamepad2,
-			widgets: ['quiz', 'agePlayground', 'professionCard'],
+			widgets: ['quiz', 'agePlayground', 'dreamBuilderPlayground', 'professionCard'],
 			description: 'Interactive activities and family games',
 			roleRestriction: null // Show to all users
 		},

@@ -24,7 +24,7 @@ describe('Bundle Improvements - Lazy Loading', () => {
       const quietWidgets = [
         'wall', 'scenarioDigest', 'profileQuiz', 'agePlayground', 
         'professionCard', 'islamicQA', 'islamicReflectionDigest', 
-        'weeklyReflectionDigest', 'analytics'
+        'weeklyReflectionDigest', 'analytics', 'dreamBuilderPlayground'
       ];
       
       quietWidgets.forEach(widget => {
@@ -38,7 +38,7 @@ describe('Bundle Improvements - Lazy Loading', () => {
       const quietWidgets = [
         'wall', 'scenarioDigest', 'profileQuiz', 'agePlayground', 
         'professionCard', 'islamicQA', 'islamicReflectionDigest', 
-        'weeklyReflectionDigest', 'analytics'
+        'weeklyReflectionDigest', 'analytics', 'dreamBuilderPlayground'
       ];
       
       // No widget should be both anchor and quiet
