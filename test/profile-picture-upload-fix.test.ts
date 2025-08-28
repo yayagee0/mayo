@@ -44,6 +44,6 @@ describe('Profile Picture Upload Fix - HTTP 406 Error', () => {
     expect(profilePageContent).toContain('profileStore.updateProfile')
     
     // Verify storage upload has upsert enabled
-    expect(profilePageContent).toContain('{ upsert: true }')
+    expect(profilePageContent).toContain('upsert: true')
   })
 })

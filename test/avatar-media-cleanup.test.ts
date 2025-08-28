@@ -15,7 +15,7 @@ describe('Avatar Upload and Media Cleanup Features', () => {
       expect(profilePageContent).not.toContain('${Date.now()}-avatar')
       
       // Should still use upsert for overwriting
-      expect(profilePageContent).toContain('{ upsert: true }')
+      expect(profilePageContent).toContain('upsert: true')
     })
 
     it('should use notification system instead of alerts for better UX', () => {

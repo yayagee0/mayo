@@ -35,17 +35,30 @@ describe('Media Proxy Implementation', () => {
       const proxyRoutePath = join(process.cwd(), 'src/routes/api/media/[...path]/+server.ts');
       const proxyRouteContent = readFileSync(proxyRoutePath, 'utf-8');
       
+      // Should import mime detection utility
+      expect(proxyRouteContent).toContain("import { detectMimeByExt } from '$lib/media/mime'");
+      
+      // Should use mime detection
+      expect(proxyRouteContent).toContain('detectMimeByExt');
+      
+      // Should handle fallbacks
+      expect(proxyRouteContent).toContain('serveFallback');
+      
+      // Check that the mime module exists and has the required content
+      const mimePath = join(process.cwd(), 'src/lib/media/mime.ts');
+      const mimeContent = readFileSync(mimePath, 'utf-8');
+      
       // Should detect image types
-      expect(proxyRouteContent).toContain('image/jpeg');
-      expect(proxyRouteContent).toContain('image/png');
-      expect(proxyRouteContent).toContain('image/webp');
+      expect(mimeContent).toContain('image/jpeg');
+      expect(mimeContent).toContain('image/png');
+      expect(mimeContent).toContain('image/webp');
       
       // Should detect video types
-      expect(proxyRouteContent).toContain('video/mp4');
-      expect(proxyRouteContent).toContain('video/webm');
+      expect(mimeContent).toContain('video/mp4');
+      expect(mimeContent).toContain('video/webm');
       
       // Should have fallback
-      expect(proxyRouteContent).toContain('application/octet-stream');
+      expect(mimeContent).toContain('application/octet-stream');
     });
   });
 

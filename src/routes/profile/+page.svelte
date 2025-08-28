@@ -10,6 +10,7 @@
 	import { profileStore, resolveAvatar } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
 	import { getValidatedMimeType } from '$lib/utils/mediaCompression';
+	import { validatedUploadMime } from '$lib/media/mime';
 
 	import { ChevronDown, ChevronUp, Puzzle } from 'lucide-svelte';
 
@@ -134,7 +135,7 @@
 			const compressedFile = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 800, useWebWorker: true });
 
 			const path = `avatars/${$user?.id}-avatar.png`;
-			const contentType = getValidatedMimeType(compressedFile);
+			const contentType = validatedUploadMime(compressedFile);
 			
 			// Runtime logging before upload
 			console.debug('[Profile Avatar Upload]', {
@@ -144,8 +145,12 @@
 				fileSizeKB: Math.round(compressedFile.size / 1024)
 			});
 			
-			// Explicit upload options for test detection: { upsert: true }
-			const uploadOptions = { upsert: true, contentType };
+			// Explicit upload options with caching headers
+			const uploadOptions = { 
+				upsert: true, 
+				contentType,
+				cacheControl: 'public, max-age=31536000, immutable' // 1 year cache
+			};
 			const { error: uploadError } = await supabase.storage.from('post-media').upload(path, compressedFile, uploadOptions);
 			if (uploadError) throw uploadError;
 

@@ -4,6 +4,7 @@ import { supabase } from '../supabase'
 import type { Database } from '../supabase'
 import { session } from './sessionStore'
 import { getValidatedMimeType } from '../utils/mediaCompression'
+import { validatedUploadMime } from '../media/mime'
 
 export interface Profile {
   user_id: string
@@ -144,7 +145,7 @@ class ProfileStore {
 
       const ext = processedFile.name.split('.').pop() || 'jpg'
       const fileName = `avatars/${userId}-avatar.${ext}`
-      const contentType = getValidatedMimeType(processedFile)
+      const contentType = validatedUploadMime(processedFile)
 
       // Runtime logging before upload
       console.debug('[ProfileStore Avatar Upload]', {
@@ -154,8 +155,12 @@ class ProfileStore {
         fileSizeKB: Math.round(processedFile.size / 1024)
       })
 
-      // Explicit upload options for test detection: { upsert: true }
-      const uploadOptions = { upsert: true, contentType }
+      // Explicit upload options with caching headers
+      const uploadOptions = { 
+        upsert: true, 
+        contentType,
+        cacheControl: 'public, max-age=31536000, immutable' // 1 year cache
+      }
       const { error: uploadError } = await supabase.storage
         .from('post-media')
         .upload(fileName, processedFile, uploadOptions)

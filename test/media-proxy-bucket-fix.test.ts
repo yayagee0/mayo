@@ -9,10 +9,9 @@ describe('Media Proxy Bucket Prefix Fix', () => {
       const proxyRouteContent = readFileSync(proxyRoutePath, 'utf-8')
       
       // Should contain the fix for stripping bucket prefix
-      expect(proxyRouteContent).toContain('Strip bucket prefix from filePath if present')
-      expect(proxyRouteContent).toContain('prevents double bucket prefix')
+      expect(proxyRouteContent).toContain('Handle duplicate bucket prefix')
       expect(proxyRouteContent).toContain('filePath.startsWith(bucket + \'/\')')
-      expect(proxyRouteContent).toContain('filePath.substring(bucket.length + 1)')
+      expect(proxyRouteContent).toContain('filePath.slice(bucket.length + 1)')
     })
 
     it('should log when duplicate prefix is detected and fixed', () => {
@@ -21,9 +20,8 @@ describe('Media Proxy Bucket Prefix Fix', () => {
       
       // Should log debug information when fixing paths
       expect(proxyRouteContent).toContain('console.debug')
-      expect(proxyRouteContent).toContain('Stripped duplicate bucket prefix')
-      expect(proxyRouteContent).toContain('original:')
-      expect(proxyRouteContent).toContain('corrected:')
+      expect(proxyRouteContent).toContain('stripped duplicate prefix')
+      expect(proxyRouteContent).toContain('Proxying media')
     })
 
     it('should handle normal paths without modification', () => {
@@ -41,31 +39,31 @@ describe('Media Proxy Bucket Prefix Fix', () => {
       const proxyRoutePath = join(process.cwd(), 'src/routes/api/media/[...path]/+server.ts')
       const proxyRouteContent = readFileSync(proxyRoutePath, 'utf-8')
       
-      // Original logic should remain intact
-      expect(proxyRouteContent).toContain('const pathParts = mediaPath.split(\'/\')')
-      expect(proxyRouteContent).toContain('const bucket = pathParts[0]')
-      expect(proxyRouteContent).toContain('pathParts.slice(1).join(\'/\')')
+      // Path parsing logic (updated for new structure)
+      expect(proxyRouteContent).toContain('params.path.split(\'/\').filter(Boolean)')
+      expect(proxyRouteContent).toContain('const bucket = parts.shift()')
+      expect(proxyRouteContent).toContain('let filePath = parts.join(\'/\')')
       
       // Validation should still be present
-      expect(proxyRouteContent).toContain('if (pathParts.length < 2)')
-      expect(proxyRouteContent).toContain('Invalid media path format')
+      expect(proxyRouteContent).toContain('if (!bucket)')
+      expect(proxyRouteContent).toContain('Missing bucket')
     })
   })
 
   describe('Path handling scenarios', () => {
     // Simulate the path parsing logic to test different scenarios
     function simulatePathParsing(mediaPath: string) {
-      const pathParts = mediaPath.split('/')
-      if (pathParts.length < 2) {
-        return { error: 'Invalid media path format' }
+      const parts = mediaPath.split('/').filter(Boolean)
+      const bucket = parts.shift() || ''
+      if (!bucket) {
+        return { error: 'Missing bucket' }
       }
 
-      const bucket = pathParts[0]
-      let filePath = pathParts.slice(1).join('/')
+      let filePath = parts.join('/')
       
       // Apply the fix logic
       if (filePath.startsWith(bucket + '/')) {
-        filePath = filePath.substring(bucket.length + 1)
+        filePath = filePath.slice(bucket.length + 1)
       }
       
       return { bucket, filePath }
