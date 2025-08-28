@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Woman (mid-30s) - soft teal theme -->
+  <circle cx="60" cy="60" r="60" fill="#E0F2F1"/>
+  
+  <!-- Face -->
+  <circle cx="60" cy="55" r="28" fill="#FFDBCB"/>
+  
+  <!-- Hair - bob cut black hair -->
+  <path d="M35 35C35 20 45 10 60 10C75 10 85 20 85 35C85 40 85 45 85 50C85 58 82 62 75 65C68 68 52 68 45 65C38 62 35 58 35 50C35 45 35 40 35 35Z" fill="#1A1A1A"/>
+  
+  <!-- Hair highlights -->
+  <path d="M40 45C45 42 55 42 60 42C65 42 75 42 80 45" stroke="#333" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="52" cy="52" rx="3" ry="2.5" fill="#333"/>
+  <ellipse cx="68" cy="52" rx="3" ry="2.5" fill="#333"/>
+  <circle cx="53" cy="51" r="0.8" fill="#FFF"/>
+  <circle cx="69" cy="51" r="0.8" fill="#FFF"/>
+  
+  <!-- Eyebrows - well groomed -->
+  <path d="M49 47L55 48" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M65 48L71 47" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Nose -->
+  <path d="M59 58L61 58L60 61Z" fill="#FFB6A3"/>
+  
+  <!-- Subtle smile -->
+  <path d="M57 66C57 67 58.5 68 60 68C61.5 68 63 67 63 66" stroke="#333" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Dimples -->
+  <circle cx="55" cy="67" r="0.5" fill="#FFB6A3"/>
+  <circle cx="65" cy="67" r="0.5" fill="#FFB6A3"/>
+  
+  <!-- Top -->
+  <path d="M38 87C38 82 48 77 60 77C72 77 82 82 82 87L82 120L38 120Z" fill="#26A69A"/>
+  
+  <!-- Top design -->
+  <path d="M45 90L75 90" stroke="#00695C" stroke-width="2"/>
+  <path d="M45 100L75 100" stroke="#00695C" stroke-width="2"/>
+  
+  <!-- Simple necklace -->
+  <circle cx="60" cy="80" r="1.5" fill="#FFD700"/>
+</svg>

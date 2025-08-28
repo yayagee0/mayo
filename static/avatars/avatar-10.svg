@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Woman (mid-30s) - elegant purple theme -->
+  <circle cx="60" cy="60" r="60" fill="#F3E5F5"/>
+  
+  <!-- Face -->
+  <circle cx="60" cy="55" r="30" fill="#FFDBCB"/>
+  
+  <!-- Hair - long black hair -->
+  <path d="M30 40C30 25 42 15 60 15C78 15 90 25 90 40C90 35 88 30 85 28C95 45 95 65 90 75C85 80 75 85 60 85C45 85 35 80 30 75C25 65 25 45 35 28C32 30 30 35 30 40Z" fill="#1A1A1A"/>
+  
+  <!-- Eyes with makeup -->
+  <ellipse cx="52" cy="50" rx="4" ry="3" fill="#333"/>
+  <ellipse cx="68" cy="50" rx="4" ry="3" fill="#333"/>
+  <circle cx="53" cy="49" r="1" fill="#FFF"/>
+  <circle cx="69" cy="49" r="1" fill="#FFF"/>
+  
+  <!-- Eyeliner -->
+  <path d="M48 48C52 47 52 47 56 48" stroke="#333" stroke-width="1" fill="none"/>
+  <path d="M64 48C68 47 68 47 72 48" stroke="#333" stroke-width="1" fill="none"/>
+  
+  <!-- Eyebrows -->
+  <path d="M48 44L56 45" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M64 45L72 44" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Nose -->
+  <path d="M59 56L61 56L60 59Z" fill="#FFB6A3"/>
+  
+  <!-- Lips -->
+  <ellipse cx="60" cy="65" rx="4" ry="2" fill="#E91E63"/>
+  
+  <!-- Earrings -->
+  <circle cx="38" cy="52" r="2" fill="#9C27B0"/>
+  <circle cx="82" cy="52" r="2" fill="#9C27B0"/>
+  
+  <!-- Blouse -->
+  <path d="M35 85C35 80 45 75 60 75C75 75 85 80 85 85L85 120L35 120Z" fill="#9C27B0"/>
+  
+  <!-- Necklace -->
+  <ellipse cx="60" cy="85" rx="15" ry="3" fill="none" stroke="#FFD700" stroke-width="2"/>
+  <circle cx="60" cy="88" r="3" fill="#FFD700"/>
+</svg>

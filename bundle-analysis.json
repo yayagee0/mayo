@@ -1,0 +1,122 @@
+{
+  "before": {
+    "timestamp": "2025-08-25T11:04:32.707Z",
+    "totalSize": 1964752,
+    "chunkCount": 72,
+    "largestChunks": [
+      {
+        "name": "chunks/CN_uKvff.js",
+        "size": 1352602,
+        "sizeKB": 1320.9
+      },
+      {
+        "name": "chunks/beygFpQl.js",
+        "size": 122855,
+        "sizeKB": 119.98
+      },
+      {
+        "name": "chunks/5Xiw9QKB.js",
+        "size": 53167,
+        "sizeKB": 51.92
+      },
+      {
+        "name": "chunks/C8Np1xkb.js",
+        "size": 31070,
+        "sizeKB": 30.34
+      },
+      {
+        "name": "chunks/DWqCNNwY.js",
+        "size": 29398,
+        "sizeKB": 28.71
+      },
+      {
+        "name": "chunks/XSMVKTQK.js",
+        "size": 26977,
+        "sizeKB": 26.34
+      },
+      {
+        "name": "nodes/4.DZ2SwCXY.js",
+        "size": 25304,
+        "sizeKB": 24.71
+      },
+      {
+        "name": "chunks/jdt2r5Bx.js",
+        "size": 18235,
+        "sizeKB": 17.81
+      },
+      {
+        "name": "nodes/0.CAjJNN49.js",
+        "size": 17133,
+        "sizeKB": 16.73
+      },
+      {
+        "name": "chunks/DIHFxd7D.js",
+        "size": 16707,
+        "sizeKB": 16.32
+      }
+    ],
+    "totalGzipSize": 0,
+    "totalSizeKB": 1918.7,
+    "totalSizeMB": 1.87
+  },
+  "after": {
+    "timestamp": "2025-08-25T11:11:53.114Z",
+    "totalSize": 1967301,
+    "chunkCount": 72,
+    "largestChunks": [
+      {
+        "name": "chunks/CN_uKvff.js",
+        "size": 1352602,
+        "sizeKB": 1320.9
+      },
+      {
+        "name": "chunks/beygFpQl.js",
+        "size": 122855,
+        "sizeKB": 119.98
+      },
+      {
+        "name": "chunks/5Xiw9QKB.js",
+        "size": 53167,
+        "sizeKB": 51.92
+      },
+      {
+        "name": "chunks/DFh0TPT_.js",
+        "size": 31070,
+        "sizeKB": 30.34
+      },
+      {
+        "name": "chunks/CpVWFzby.js",
+        "size": 29398,
+        "sizeKB": 28.71
+      },
+      {
+        "name": "nodes/4.DsmCpee-.js",
+        "size": 27854,
+        "sizeKB": 27.2
+      },
+      {
+        "name": "chunks/Bi0BAnIw.js",
+        "size": 26977,
+        "sizeKB": 26.34
+      },
+      {
+        "name": "chunks/C1cEjqcm.js",
+        "size": 18235,
+        "sizeKB": 17.81
+      },
+      {
+        "name": "nodes/0.OA8--k9k.js",
+        "size": 17133,
+        "sizeKB": 16.73
+      },
+      {
+        "name": "chunks/BA9v9USt.js",
+        "size": 16707,
+        "sizeKB": 16.32
+      }
+    ],
+    "totalGzipSize": 0,
+    "totalSizeKB": 1921.19,
+    "totalSizeMB": 1.88
+  }
+}
