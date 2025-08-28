@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public'
 
 export type Json =
@@ -394,36 +394,52 @@ export interface Database {
   }
 }
 
-// Environment-based client creation
-function createSupabaseClient() {
+// Singleton client cache for memoization
+let clientCache: SupabaseClient<Database> | null = null
+
+// Reusable Supabase client creation with memoization (singleton pattern)
+export function createSupabaseClient(): SupabaseClient<Database> {
+  // Return cached client if available (singleton pattern)
+  if (clientCache) {
+    return clientCache
+  }
+
   // Check for test environment first
   const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
   const isVitestEnv = typeof import.meta !== 'undefined' && import.meta.env?.VITEST
   
   // Always use mocks in test environments
   if (isTest || isVitestEnv) {
-    console.warn('[Supabase] Using mock client in test environment')
-    // Dynamic import to avoid issues in production build
-    return import('./supabase.mock').then(mod => mod.mockSupabaseClient)
+    // For test environments, we need to handle mocking differently
+    // The actual mock client will be injected via test setup
+    const client = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
+    clientCache = client
+    return client
   }
   
   // Check for development mock flag
   const useMocks = typeof import.meta !== 'undefined' && import.meta.env?.VITE_USE_MOCKS === 'true'
   
   if (useMocks) {
-    console.warn('[Supabase] Using mock client (VITE_USE_MOCKS=true)')
-    return import('./supabase.mock').then(mod => mod.mockSupabaseClient)
+    // For development with mocks, create a standard client (mocking handled elsewhere)
+    const client = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
+    clientCache = client
+    return client
   }
   
-  // Production - use real Supabase client
-  console.log('[Supabase] Using real client')
-  return Promise.resolve(createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY))
+  // Production - create real Supabase client
+  const client = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
+  clientCache = client
+  return client
 }
 
 // Export async client getter for environments that support it
-export async function getSupabaseClient() {
-  return await createSupabaseClient()
+export async function getSupabaseClient(): Promise<SupabaseClient<Database>> {
+  return createSupabaseClient()
 }
 
+// Default convenience client export
+export const db = createSupabaseClient()
+
 // Export synchronous client for compatibility (will be real client in production)
-export const supabase = createClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)
+export const supabase = createSupabaseClient()
