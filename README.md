@@ -109,6 +109,21 @@ To enable PWA features, set `PUBLIC_ENABLE_PWA=true` in your environment variabl
 
 Recent fixes implemented:
 
+### ✅ Mobile Upload Reliability (Latest)
+- **MIME Type Handling**: Enhanced to accept files with empty or `application/octet-stream` MIME types, using file extension as fallback for mobile compatibility
+- **HEIC Conversion**: Added retry logic (2 attempts) with graceful fallback messaging when conversion fails on memory-constrained mobile browsers
+- **Compression Failures**: Implemented mobile device detection, memory constraint checking, and automatic compression skipping when APIs unavailable
+- **File Size Pre-checks**: Added validation against Supabase 100MB limit before processing with detailed user feedback
+- **Auth Token Management**: Enhanced session validation with automatic token refresh before uploads to prevent mid-upload expiration
+- **Service Worker Bypass**: Strengthened Supabase request bypass to prevent mobile network interference
+
+**Supported Formats**: 
+- **Images**: JPG, JPEG, PNG, GIF, WebP, HEIC (auto-converted to JPG)
+- **Videos**: MP4, WebM, MOV, AVI, M4V, 3GP
+- **Max Size**: 100MB (enforced before upload begins)
+
+**Error Handling**: Clear user messages with technical logging for debugging mobile-specific issues.
+
 ### ✅ Bundle Size Optimization
 - **Lazy Loading**: Implemented for non-critical widgets (40% reduction in initial load)
 - **Progressive Enhancement**: Core widgets load immediately, optional widgets on-demand
