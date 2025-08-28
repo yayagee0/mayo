@@ -1,38 +1,21 @@
-name: CI
+- uses: actions/checkout@v4
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+- name: Setup Node.js
+  uses: actions/setup-node@v4
+  with:
+    node-version: 20
+    cache: 'pnpm'
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+- name: Setup pnpm
+  uses: pnpm/action-setup@v2
+  with:
+    version: 9
 
-    strategy:
-      matrix:
-        node-version: [20.x] # keep it simple, latest LTS is enough
+- name: Install dependencies
+  run: pnpm install --frozen-lockfile
 
-    steps:
-      - uses: actions/checkout@v4
+- name: Build
+  run: pnpm build
 
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm' # ✅ enables dependency caching for faster installs
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9 # ✅ explicit, avoids npm install -g flakiness
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
-
-      - name: Run tests
-        run: pnpm test:run
+- name: Run tests
+  run: pnpm test:run
