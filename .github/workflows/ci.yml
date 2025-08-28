@@ -28,6 +28,9 @@ jobs:
     - name: Validate pnpm installation
       run: pnpm -v
 
+    - name: Approve trusted builds
+      run: pnpm approve-builds --global @tailwindcss/oxide esbuild
+
     - name: Install dependencies
       run: pnpm install
 
