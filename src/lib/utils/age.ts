@@ -64,6 +64,39 @@ export function calculateFamilyAges(
 }
 
 /**
+ * Calculate family ages with support for negative ages (for Age Playground toggle feature)
+ * When showExactOffsets is true, returns negative ages instead of clamping to 0
+ */
+export function calculateFamilyAgesWithNegatives(
+  profiles: Profile[],
+  baseMemberEmail: string,
+  targetAge: number
+): { [email: string]: number } {
+  const result: { [email: string]: number } = {};
+  
+  // Find the base member's profile
+  const baseMember = profiles.find(p => p.email === baseMemberEmail);
+  if (!baseMember?.dob) {
+    return result;
+  }
+
+  // Calculate what the base member's current age actually is
+  const currentAge = calculateAge(baseMember.dob);
+  const ageDifference = targetAge - currentAge;
+
+  // Apply the age difference to all family members (allow negative ages)
+  profiles.forEach(profile => {
+    if (profile.dob) {
+      const currentMemberAge = calculateAge(profile.dob);
+      const adjustedAge = currentMemberAge + ageDifference;
+      result[profile.email] = adjustedAge; // Allow negative ages
+    }
+  });
+
+  return result;
+}
+
+/**
  * Get family member display names for the playground
  */
 export function getFamilyMemberDisplayNames(profiles: Profile[]): { [email: string]: string } {
@@ -99,4 +132,11 @@ export function getChildrenProfiles(profiles: Profile[]): Profile[] {
     const age = calculateAge(profile.dob);
     return age < 18;
   });
+}
+
+/**
+ * Get all family profiles that have DOB (for Age Playground)
+ */
+export function getAllFamilyProfiles(profiles: Profile[]): Profile[] {
+  return profiles.filter(profile => profile.dob);
 }

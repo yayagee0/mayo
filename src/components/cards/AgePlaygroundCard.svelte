@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { WidgetProps } from '$lib/types/widget';
-	import { Gamepad2, Users, ArrowRight, Clock } from 'lucide-svelte';
+	import { Gamepad2, Users, ArrowRight, Clock, Plus, Minus } from 'lucide-svelte';
 	import ComponentErrorBoundary from '$lib/../components/ui/ComponentErrorBoundary.svelte';
 	import { profileStore } from '$lib/stores/profileStore';
 	import { 
-		calculateFamilyAges, 
+		calculateFamilyAgesWithNegatives, 
 		getFamilyMemberDisplayNames, 
 		hasRequiredDobs, 
-		getChildrenProfiles 
+		getAllFamilyProfiles 
 	} from '$lib/utils/age';
 
 	interface Props extends WidgetProps {}
@@ -17,8 +17,8 @@
 	// Subscribe to profileStore
 	let profiles = $derived($profileStore);
 	
-	// Get children profiles for the base selector
-	let childrenProfiles = $derived(getChildrenProfiles(profiles));
+	// Get all family profiles for the selector (not just children)
+	let familyProfiles = $derived(getAllFamilyProfiles(profiles));
 	
 	// Check if we have enough DOB data
 	let hasEnoughData = $derived(hasRequiredDobs(profiles));
@@ -27,14 +27,15 @@
 	let displayNames = $derived(getFamilyMemberDisplayNames(profiles));
 	
 	// State for the playground
-	let selectedBaseChild = $state('');
+	let selectedBaseMember = $state('');
 	let targetAge = $state(10);
 	let familyAges = $state<{ [email: string]: number }>({});
+	let showExactOffsets = $state(false); // Toggle for showing negative ages vs "Not born yet"
 
 	// Calculate family ages when inputs change
 	$effect(() => {
-		if (selectedBaseChild && targetAge && profiles.length > 0) {
-			familyAges = calculateFamilyAges(profiles, selectedBaseChild, targetAge);
+		if (selectedBaseMember && targetAge && profiles.length > 0) {
+			familyAges = calculateFamilyAgesWithNegatives(profiles, selectedBaseMember, targetAge);
 		} else {
 			familyAges = {};
 		}
@@ -53,12 +54,42 @@
 		return maxAge() === 70 ? '70 years' : '18 years';
 	});
 
-	// Auto-select first child if none selected
+	// Auto-select first family member if none selected
 	$effect(() => {
-		if (childrenProfiles.length > 0 && !selectedBaseChild) {
-			selectedBaseChild = childrenProfiles[0].email;
+		if (familyProfiles.length > 0 && !selectedBaseMember) {
+			selectedBaseMember = familyProfiles[0].email;
 		}
 	});
+
+	// Handlers for age controls
+	function incrementAge() {
+		if (targetAge < maxAge()) {
+			targetAge++;
+		}
+	}
+
+	function decrementAge() {
+		if (targetAge > 1) {
+			targetAge--;
+		}
+	}
+
+	function handleAgeInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const value = parseInt(target.value);
+		if (!isNaN(value) && value >= 1 && value <= maxAge()) {
+			targetAge = value;
+		}
+	}
+
+	// Format age display based on toggle state
+	function formatAge(age: number): string {
+		if (age < 1) {
+			if (age === 0) return 'Not born yet'; // 0 is always "not born yet"
+			return showExactOffsets ? `–${Math.abs(age)} years old` : 'Not born yet';
+		}
+		return `${age} years old`;
+	}
 </script>
 
 <ComponentErrorBoundary componentName="AgePlaygroundCard">
@@ -83,51 +114,109 @@
 				<ArrowRight class="w-4 h-4" aria-hidden="true" />
 			</a>
 		</div>
-	{:else if childrenProfiles.length === 0}
+	{:else if familyProfiles.length === 0}
 		<div class="text-center py-8">
 			<Users class="w-12 h-12 text-gray-300 mx-auto mb-3" aria-hidden="true" />
 			<p class="text-gray-500 text-sm">
-				No children profiles found to use as base age.
+				No family member profiles found with birthdays.
 			</p>
 		</div>
 	{:else}
 		<div class="space-y-6">
-			<!-- Base Child Selector -->
+			<!-- Family Member Selector -->
 			<div>
-				<label for="base-child" class="block text-sm font-medium text-gray-700 mb-2">
+				<label for="base-member" class="block text-sm font-medium text-gray-700 mb-2">
 					Set age for:
 				</label>
 				<select
-					id="base-child"
-					bind:value={selectedBaseChild}
+					id="base-member"
+					bind:value={selectedBaseMember}
 					class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
 				>
-					{#each childrenProfiles as child (child.email)}
-						<option value={child.email}>
-							{displayNames[child.email]}
+					{#each familyProfiles as member (member.email)}
+						<option value={member.email}>
+							{displayNames[member.email]}
 						</option>
 					{/each}
 				</select>
 			</div>
 
-			<!-- Age Slider -->
+			<!-- Age Input Controls -->
 			<div>
-				<label for="target-age" class="block text-sm font-medium text-gray-700 mb-2">
+				<label for="target-age-input" class="block text-sm font-medium text-gray-700 mb-2">
 					Target age: <span class="font-semibold text-primary-600">{targetAge} years old</span>
 				</label>
-				<input
-					id="target-age"
-					type="range"
-					min="1"
-					max="{maxAge()}"
-					step="1"
-					bind:value={targetAge}
-					class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-				/>
+				
+				<!-- Numeric Input -->
+				<div class="mb-3">
+					<input
+						id="target-age-input"
+						type="number"
+						min="1"
+						max="{maxAge()}"
+						bind:value={targetAge}
+						oninput={handleAgeInput}
+						class="w-20 text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 p-2"
+						aria-label="Target age in years"
+					/>
+				</div>
+
+				<!-- Slider with +/- buttons -->
+				<div class="flex items-center gap-2">
+					<button
+						type="button"
+						onclick={decrementAge}
+						disabled={targetAge <= 1}
+						class="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-primary-500"
+						aria-label="Decrease age by 1 year"
+					>
+						<Minus class="w-4 h-4" aria-hidden="true" />
+					</button>
+					
+					<input
+						id="target-age-slider"
+						type="range"
+						min="1"
+						max="{maxAge()}"
+						step="1"
+						bind:value={targetAge}
+						class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+						aria-label="Target age slider"
+					/>
+					
+					<button
+						type="button"
+						onclick={incrementAge}
+						disabled={targetAge >= maxAge()}
+						class="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-primary-500"
+						aria-label="Increase age by 1 year"
+					>
+						<Plus class="w-4 h-4" aria-hidden="true" />
+					</button>
+				</div>
+				
 				<div class="flex justify-between text-xs text-gray-500 mt-1">
 					<span>1 year</span>
 					<span>{maxAgeLabel()}</span>
 				</div>
+			</div>
+
+			<!-- Toggle for negative ages -->
+			<div class="flex items-center gap-3">
+				<button
+					type="button"
+					onclick={() => showExactOffsets = !showExactOffsets}
+					class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-primary-500"
+					aria-pressed={showExactOffsets}
+					aria-label="Toggle between showing 'Not born yet' and exact negative ages"
+				>
+					<div class="w-4 h-4 rounded border border-gray-400 flex items-center justify-center {showExactOffsets ? 'bg-primary-600 border-primary-600' : 'bg-white'}">
+						{#if showExactOffsets}
+							<div class="w-2 h-2 bg-white rounded-sm"></div>
+						{/if}
+					</div>
+					Show exact offsets
+				</button>
 			</div>
 
 			<!-- Family Ages Display -->
@@ -145,7 +234,7 @@
 									{displayNames[email] || email.split('@')[0]}
 								</span>
 								<span class="text-sm font-semibold text-blue-900">
-									{age} years old
+									{formatAge(age)}
 								</span>
 							</div>
 						{/each}

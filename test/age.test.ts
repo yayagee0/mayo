@@ -5,8 +5,10 @@ import {
 	calculateDobForAge, 
 	calculateAgeDifference, 
 	calculateFamilyAges,
+	calculateFamilyAgesWithNegatives,
 	hasRequiredDobs,
-	getChildrenProfiles 
+	getChildrenProfiles,
+	getAllFamilyProfiles 
 } from '../src/lib/utils/age';
 
 // Mock profiles for testing
@@ -176,6 +178,60 @@ describe('Age Utilities', () => {
 			children.forEach(child => {
 				expect(child.dob).toBeTruthy();
 			});
+		});
+	});
+
+	describe('calculateFamilyAgesWithNegatives', () => {
+		it('should calculate all family ages based on base member target age including negatives', () => {
+			// Set Baba (oldest) to be 1, which should cause negative ages for others since he's the oldest
+			const familyAges = calculateFamilyAgesWithNegatives(mockProfiles, 'baba@example.com', 1);
+			
+			expect(familyAges['baba@example.com']).toBe(1);
+			// Others should have negative ages since Baba is older than everyone and is being set to 1
+			// Mama is ~2 years younger than Baba, so she should be negative
+			// Children are much younger, so they should definitely be negative
+			expect(familyAges['mama@example.com']).toBeLessThan(0); // Should be negative
+			expect(familyAges['yahya@example.com']).toBeLessThan(0); // Should be negative
+			expect(familyAges['yazid@example.com']).toBeLessThan(0); // Should be negative
+		});
+
+		it('should allow positive ages when realistic', () => {
+			// Set Ghassan (Baba) to be 45, others should be positive
+			const familyAges = calculateFamilyAgesWithNegatives(mockProfiles, 'baba@example.com', 45);
+			
+			expect(familyAges['baba@example.com']).toBe(45);
+			expect(familyAges['mama@example.com']).toBeGreaterThan(0);
+			expect(familyAges['yahya@example.com']).toBeGreaterThan(0);
+			expect(familyAges['yazid@example.com']).toBeGreaterThan(0);
+		});
+
+		it('should handle missing base member', () => {
+			const familyAges = calculateFamilyAgesWithNegatives(mockProfiles, 'nonexistent@example.com', 12);
+			expect(Object.keys(familyAges)).toHaveLength(0);
+		});
+
+		it('should not include profiles without DOB', () => {
+			const familyAges = calculateFamilyAgesWithNegatives(mockProfiles, 'yahya@example.com', 12);
+			expect(familyAges['nodob@example.com']).toBeUndefined();
+		});
+	});
+
+	describe('getAllFamilyProfiles', () => {
+		it('should return all profiles with DOB', () => {
+			const familyProfiles = getAllFamilyProfiles(mockProfiles);
+			expect(familyProfiles).toHaveLength(4); // All except the one without DOB
+			expect(familyProfiles.every(p => p.dob)).toBe(true);
+		});
+
+		it('should not include profiles without DOB', () => {
+			const familyProfiles = getAllFamilyProfiles(mockProfiles);
+			expect(familyProfiles.find(p => p.email === 'nodob@example.com')).toBeUndefined();
+		});
+
+		it('should return empty array for profiles without DOB', () => {
+			const profilesWithoutDob = [mockProfiles[4]]; // Only the one without DOB
+			const familyProfiles = getAllFamilyProfiles(profilesWithoutDob);
+			expect(familyProfiles).toHaveLength(0);
 		});
 	});
 });
