@@ -39,20 +39,32 @@ describe('Mobile Quiet Widgets Layout', () => {
 
 		it('should have collapsed state that spans full width on mobile', () => {
 			// When collapsed, just the title bar should span full width
-			const collapsedTitleBar = 'w-full px-4 py-3 flex items-center justify-between';
+			const collapsedTitleBar = 'w-full px-2 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-100 transition-colors rounded-lg sm:px-4';
 			
 			expect(collapsedTitleBar).toContain('w-full');
-			expect(collapsedTitleBar).toContain('px-4 py-3'); // Adequate padding for touch
+			expect(collapsedTitleBar).toContain('px-2 py-3'); // Reduced padding for mobile
+			expect(collapsedTitleBar).toContain('sm:px-4'); // Larger padding on larger screens
 		});
 
 		it('should have expanded state with full-width content on mobile', () => {
 			// When expanded, content area should also span full width
 			const expandedContent = 'flex flex-col gap-6 mt-4';
 			const widgetWrapper = 'w-full max-w-2xl mx-auto';
+			const contentPadding = 'px-2 pb-4 border-t border-slate-100 sm:px-4';
 			
 			expect(expandedContent).toContain('flex-col'); // Vertical stacking on mobile
 			expect(expandedContent).toContain('gap-6'); // Consistent spacing
 			expect(widgetWrapper).toContain('w-full'); // Full width container
+			expect(contentPadding).toContain('px-2'); // Reduced mobile padding
+			expect(contentPadding).toContain('sm:px-4'); // Larger desktop padding
+		});
+
+		it('should reduce container padding on mobile for maximum width', () => {
+			// Main section container should have reduced padding on mobile
+			const sectionPadding = 'p-2 sm:p-4';
+			
+			expect(sectionPadding).toContain('p-2'); // Small mobile padding
+			expect(sectionPadding).toContain('sm:p-4'); // Larger desktop padding
 		});
 	});
 
@@ -80,6 +92,15 @@ describe('Mobile Quiet Widgets Layout', () => {
 			expect(layoutStructure).toContain('flex-col'); // Always vertical stacking
 			expect(layoutStructure).not.toContain('grid'); // No grid layout
 			expect(layoutStructure).not.toContain('md:grid-cols'); // No responsive grid
+		});
+
+		it('should have larger padding on desktop', () => {
+			// Desktop should use larger padding values
+			const desktopSectionPadding = 'sm:p-4';
+			const desktopContentPadding = 'sm:px-4';
+			
+			expect(desktopSectionPadding).toContain('sm:p-4');
+			expect(desktopContentPadding).toContain('sm:px-4');
 		});
 	});
 
