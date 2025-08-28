@@ -12,7 +12,6 @@
 	import { handleServiceWorker } from '$lib/pwa';
 	import { env } from '$env/dynamic/public';
 	import { currentUserProfile, resolveAvatar } from '$lib/stores/profileStore';
-	import { getDefaultAvatarForUser } from '$lib/avatarBank';
 	import { composerStore, closeComposer } from '$lib/stores/composerStore';
 	import { currentUserAvatar } from '$lib/stores/avatarStore';
 

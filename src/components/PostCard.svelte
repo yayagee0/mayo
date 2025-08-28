@@ -5,7 +5,7 @@
 	import { profileStore } from '$lib/stores/profileStore';
 	import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '$lib/utils/youtubeParser';
 	import LiteYouTubeEmbed from './LiteYouTubeEmbed.svelte';
-	import { getAuthorAvatar } from '$lib/utils/avatar';
+	import AvatarDisplay from './ui/AvatarDisplay.svelte';
 	import SafeText from './ui/SafeText.svelte';
 	import type { Database, PollData } from '$lib/supabase';
 	import dayjs from 'dayjs';
@@ -44,10 +44,9 @@
 	// Get author info
 	let authorProfile = $derived(() => {
 		const profile = profiles.find(p => p.email === post.author_email);
-		return profile || { email: post.author_email, display_name: null } as const;
+		return profile || { email: post.author_email, display_name: null, avatar_url: null, user_id: '', role: null, dob: null, created_at: null, updated_at: null };
 	});
 	let authorName = $derived(authorProfile().display_name || post.author_email.split('@')[0]);
-	let authorAvatar = $derived(getAuthorAvatar(authorProfile()));
 	
 	// Interaction counts and status
 	let likeCount = $derived(interactions.filter(i => i.item_id === post.id && i.type === 'like').length);
@@ -200,7 +199,7 @@
 <div class="bg-white rounded-lg border border-gray-200 p-4" style="margin-left: {level * 1.5}rem">
 	<!-- Author info -->
 	<div class="flex items-center gap-3 mb-3">
-		<img src={authorAvatar} alt="{authorName}'s profile picture" loading="lazy" class="w-8 h-8 rounded-full object-cover" />
+		<AvatarDisplay profile={authorProfile()} size="sm" />
 		<div>
 			<p class="font-medium text-gray-900">{authorName}</p>
 			<p class="text-sm text-gray-500">{dayjs(post.created_at).fromNow()}</p>
