@@ -23,13 +23,14 @@ describe('Avatar Bucket Consistency Fix', () => {
       expect(profileStoreContent).toContain('avatars/${userId}-avatar.${ext}')
     })
 
-    it('should use post-media bucket for signed URL generation', () => {
+    it('should use proxy URLs instead of signed URLs for resolveAvatar', () => {
       const profileStorePath = join(process.cwd(), 'src/lib/stores/profileStore.ts')
       const profileStoreContent = readFileSync(profileStorePath, 'utf-8')
       
-      // Verify resolveAvatar function uses post-media bucket for createSignedUrl
-      expect(profileStoreContent).toContain(".from('post-media')")
-      expect(profileStoreContent).toContain("createSignedUrl(avatarPath, 3600)")
+      // Verify resolveAvatar function uses proxy URLs instead of createSignedUrl
+      expect(profileStoreContent).toContain('resolveAvatar')
+      expect(profileStoreContent).toContain('/api/media/post-media/')
+      expect(profileStoreContent).not.toContain('createSignedUrl(avatarPath, 3600)')
     })
 
     it('should use proxy URLs instead of signed URLs for avatars', () => {
