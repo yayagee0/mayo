@@ -193,11 +193,11 @@
 					.from('post-media')
 					.upload(fileName, compressedFile, uploadOptions);
 				if (uploadError) throw uploadError;
-				const { data: signedUrlData } = await supabase.storage
-					.from('post-media')
-					.createSignedUrl(data.path, 60 * 60 * 24 * 365);
-				if (signedUrlData?.signedUrl) {
-					urls.push(signedUrlData.signedUrl);
+				
+				// Store the storage path instead of signed URL to use with proxy
+				// This prevents OpaqueResponseBlocking issues
+				if (data?.path) {
+					urls.push(data.path);
 				}
 				uploadProgress = { phase: 'uploading', progress: 90 + (i / selectedFiles.length) * 10, message: `File ${i + 1}/${selectedFiles.length} uploaded` };
 			} catch (err) {

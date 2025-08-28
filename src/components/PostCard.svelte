@@ -4,6 +4,7 @@
 	import { session } from '$lib/stores/sessionStore';
 	import { profileStore } from '$lib/stores/profileStore';
 	import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '$lib/utils/youtubeParser';
+	import { getProxiedMediaUrl } from '$lib/utils/mediaProxy';
 	import LiteYouTubeEmbed from './LiteYouTubeEmbed.svelte';
 	import AvatarDisplay from './ui/AvatarDisplay.svelte';
 	import SafeText from './ui/SafeText.svelte';
@@ -266,12 +267,12 @@
 					{/if}
 				{:else if isImageUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
-						<img src={mediaUrl} alt="" loading="lazy" class="w-full h-auto object-cover" />
+						<img src={getProxiedMediaUrl(mediaUrl) || mediaUrl} alt="" loading="lazy" class="w-full h-auto object-cover" />
 					</div>
 				{:else if isVideoUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
 						<video controls class="w-full h-auto">
-							<source src={mediaUrl} type={getVideoContentType(mediaUrl)} />
+							<source src={getProxiedMediaUrl(mediaUrl) || mediaUrl} type={getVideoContentType(mediaUrl)} />
 							<track kind="captions" srclang="en" src="/captions.vtt" default />
 						</video>
 					</div>

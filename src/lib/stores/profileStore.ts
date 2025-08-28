@@ -193,7 +193,7 @@ export const currentUserProfile = derived(
   }
 )
 
-// ✅ New helper: resolve signed URL
+// ✅ New helper: resolve avatar URL using proxy
 export async function resolveAvatar(profile: Profile | null): Promise<string | null> {
   if (!profile?.avatar_url) return null;
   
@@ -211,22 +211,8 @@ export async function resolveAvatar(profile: Profile | null): Promise<string | n
     return avatarPath;
   }
   
-  // Otherwise, it's a Supabase storage path - create signed URL
-  try {
-    const { data, error } = await supabase.storage
-      .from('post-media')
-      .createSignedUrl(avatarPath, 3600); // 1h
-    
-    if (error) {
-      // Don't log as error for missing files, they may not have uploaded an avatar yet
-      console.debug('Avatar file not found for signed URL:', { path: avatarPath, error: error.message });
-      return null;
-    }
-    return data.signedUrl;
-  } catch (err) {
-    console.debug('Error creating avatar signed URL:', { path: avatarPath, error: err });
-    return null;
-  }
+  // Use proxy URL instead of creating signed URLs to prevent OpaqueResponseBlocking
+  return `/api/media/post-media/${avatarPath}`;
 }
 
 export const parentProfiles = derived(profileStore, ($profiles) => $profiles.filter(p => p.role === 'parent'))
