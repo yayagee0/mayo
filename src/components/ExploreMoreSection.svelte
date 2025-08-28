@@ -192,7 +192,7 @@
 </script>
 
 <!-- Explore More Section -->
-<div class="w-full max-w-4xl mx-auto">
+<div class="w-full mx-0 px-0 sm:px-4 sm:max-w-3xl sm:mx-auto">
 	<div class="bg-slate-50 rounded-2xl shadow-inner mt-6 p-2 sm:p-4">
 		
 		<!-- Sticky Header -->
@@ -201,7 +201,7 @@
 				type="button"
 				onclick={toggleSection}
 				onkeydown={(e) => handleKeydown(e, toggleSection)}
-				class="w-full px-2 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-100 transition-colors rounded-lg sm:px-4"
+				class="w-full px-0 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-100 transition-colors rounded-lg sm:px-4"
 				aria-expanded={isExpanded}
 				style="min-height: 44px;"
 			>
@@ -237,12 +237,12 @@
 						{@const IconComponent = group.icon}
 						{#if shouldShowGroup(group) && groupWidgets.length > 0}
 							<!-- Group Accordion -->
-							<div class="bg-white rounded-xl shadow-sm border border-slate-200">
+							<div class="w-full bg-white rounded-xl shadow-sm border border-slate-200">
 								<button
 									type="button"
 									onclick={() => toggleGroup(groupKey as keyof typeof groupCollapseStates)}
 									onkeydown={(e) => handleKeydown(e, () => toggleGroup(groupKey as keyof typeof groupCollapseStates))}
-									class="w-full px-2 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-50 transition-colors rounded-t-xl sm:px-4"
+									class="w-full px-0 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-50 transition-colors rounded-t-xl sm:px-4"
 									aria-expanded={groupCollapseStates[groupKey as keyof typeof groupCollapseStates]}
 									style="min-height: 44px;"
 								>
@@ -261,10 +261,10 @@
 
 								{#if groupCollapseStates[groupKey as keyof typeof groupCollapseStates]}
 									<!-- Widget Stack for this group -->
-									<div class="px-2 pb-4 border-t border-slate-100 sm:px-4">
+									<div class="px-0 pb-4 border-t border-slate-100 sm:px-4">
 										<div class="flex flex-col gap-6 mt-4">
 											{#each groupWidgets as { config: widget, component: Component } (widget.id)}
-												<div class="w-full max-w-2xl mx-auto">
+												<div class="w-full">
 													<button
 														type="button"
 														class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg transition-transform hover:scale-[1.02]"
@@ -272,7 +272,7 @@
 														onclick={() => onWidgetInteraction(widget.id)}
 														aria-label="View {widget.name} widget"
 													>
-														<div class="bg-gray-50 rounded-2xl shadow-lg border border-gray-200/50 py-4 px-6 sm:p-8">
+														<div class="bg-white rounded-2xl shadow p-4 w-full">
 															<Component 
 																{session}
 																{profiles}
