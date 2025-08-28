@@ -5,6 +5,7 @@
 	import { profileStore } from '$lib/stores/profileStore';
 	import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '$lib/utils/youtubeParser';
 	import { getProxiedMediaUrl } from '$lib/utils/mediaProxy';
+	import { detectMimeByExt } from '$lib/media/mime';
 	import LiteYouTubeEmbed from './LiteYouTubeEmbed.svelte';
 	import AvatarDisplay from './ui/AvatarDisplay.svelte';
 	import SafeText from './ui/SafeText.svelte';
@@ -100,28 +101,10 @@
 	}
 	
 	/**
-	 * Determines the content type for video rendering based on URL
-	 * Supports common formats and provides fallback
+	 * Gets media content type using centralized MIME detection
 	 */
-	function getVideoContentType(url: string): string {
-		const extension = url.toLowerCase().split('.').pop()?.split('?')[0];
-		switch (extension) {
-			case 'mp4':
-			case 'm4v':
-				return 'video/mp4';
-			case 'webm':
-				return 'video/webm';
-			case 'mov':
-				return 'video/quicktime';
-			case 'avi':
-				return 'video/avi';
-			case '3gp':
-				return 'video/3gpp';
-			case 'mkv':
-				return 'video/x-matroska';
-			default:
-				return 'video/mp4'; // Fallback for most common format
-		}
+	function getMediaContentType(url: string): string {
+		return detectMimeByExt(url, 'video/mp4');
 	}
 	
 	async function toggleLike() {
@@ -267,13 +250,29 @@
 					{/if}
 				{:else if isImageUrl(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
-						<img src={getProxiedMediaUrl(mediaUrl) || mediaUrl} alt="" loading="lazy" class="w-full h-auto object-cover" />
+						<img 
+							src={getProxiedMediaUrl(mediaUrl) || mediaUrl} 
+							alt="" 
+							loading="lazy" 
+							class="w-full h-auto object-cover max-w-full"
+							onerror={(e) => (e.currentTarget.src = '/default-avatar.png')}
+						/>
 					</div>
 				{:else if isVideoUrl(mediaUrl)}
+					{@const contentType = getMediaContentType(mediaUrl)}
 					<div class="rounded-lg overflow-hidden">
-						<video controls class="w-full h-auto">
-							<source src={getProxiedMediaUrl(mediaUrl) || mediaUrl} type={getVideoContentType(mediaUrl)} />
+						<video 
+							controls 
+							preload="metadata" 
+							playsinline 
+							class="w-full h-auto max-w-full"
+						>
+							<source 
+								src={getProxiedMediaUrl(mediaUrl) || mediaUrl} 
+								type={contentType.startsWith('video/') ? contentType : undefined} 
+							/>
 							<track kind="captions" srclang="en" src="/captions.vtt" default />
+							Your browser does not support the video tag.
 						</video>
 					</div>
 				{:else}
