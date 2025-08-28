@@ -3,6 +3,7 @@ import { writable, derived } from 'svelte/store'
 import { supabase } from '../supabase'
 import type { Database } from '../supabase'
 import { session } from './sessionStore'
+import { getValidatedMimeType } from '../utils/mediaCompression'
 
 export interface Profile {
   user_id: string
@@ -143,10 +144,11 @@ class ProfileStore {
 
       const ext = processedFile.name.split('.').pop() || 'jpg'
       const fileName = `avatars/${userId}-avatar.${ext}`
+      const contentType = getValidatedMimeType(processedFile)
 
       const { error: uploadError } = await supabase.storage
         .from('post-media')
-        .upload(fileName, processedFile, { upsert: true })
+        .upload(fileName, processedFile, { upsert: true, contentType })
 
       if (uploadError) throw uploadError
 

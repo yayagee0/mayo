@@ -109,7 +109,15 @@ To enable PWA features, set `PUBLIC_ENABLE_PWA=true` in your environment variabl
 
 Recent fixes implemented:
 
-### ✅ Mobile Upload Reliability (Latest)
+### ✅ End-to-End Media Upload & Rendering Reliability (Latest)
+- **Explicit contentType Enforcement**: All uploads now include validated MIME types to prevent `application/octet-stream` storage issues
+- **Dynamic Video Type Detection**: Removed hard-coded `type="video/mp4"` from video rendering, now dynamically detects correct MIME type based on file extension
+- **Enhanced Format Support**: Added support for HEIC→JPEG, M4V, 3GP, MKV formats in both detection and rendering
+- **MIME Type Validation Utility**: New `getValidatedMimeType()` function ensures reliable content type detection across all devices
+- **Cross-Device Consistency**: Upload and playback reliability improved for iOS Safari, Android Chrome, and desktop browsers
+- **Regression Prevention**: Comprehensive tests prevent future `application/octet-stream` storage and ensure correct video source types
+
+### ✅ Mobile Upload Reliability (Previous)
 - **MIME Type Handling**: Enhanced to accept files with empty or `application/octet-stream` MIME types, using file extension as fallback for mobile compatibility
 - **HEIC Conversion**: Added retry logic (2 attempts) with graceful fallback messaging when conversion fails on memory-constrained mobile browsers
 - **Compression Failures**: Implemented mobile device detection, memory constraint checking, and automatic compression skipping when APIs unavailable
@@ -118,8 +126,8 @@ Recent fixes implemented:
 - **Service Worker Bypass**: Strengthened Supabase request bypass to prevent mobile network interference
 
 **Supported Formats**: 
-- **Images**: JPG, JPEG, PNG, GIF, WebP, HEIC (auto-converted to JPG)
-- **Videos**: MP4, WebM, MOV, AVI, M4V, 3GP
+- **Images**: JPG, JPEG, PNG, GIF, WebP, HEIC (auto-converted to JPG), BMP, TIFF
+- **Videos**: MP4, WebM, MOV, AVI, M4V, 3GP, MKV
 - **Max Size**: 100MB (enforced before upload begins)
 
 **Error Handling**: Clear user messages with technical logging for debugging mobile-specific issues.

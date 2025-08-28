@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Camera, BarChart3, Link2, Send, X, Plus, Minus } from 'lucide-svelte';
-	import { compressMediaFile, type CompressionProgress, validateMediaFile } from '$lib/utils/mediaCompression';
+	import { compressMediaFile, type CompressionProgress, validateMediaFile, getValidatedMimeType } from '$lib/utils/mediaCompression';
 	import { parseYouTubeUrl, isValidYouTubeUrl } from '$lib/utils/youtubeParser';
 	import { supabase } from '$lib/supabase';
 	import { session } from '$lib/stores/sessionStore';
@@ -175,9 +175,10 @@
 				});
 				uploadProgress = { phase: 'uploading', progress: 80, message: `Uploading file ${i + 1}/${selectedFiles.length}...` };
 				const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}-${compressedFile.name}`;
+				const contentType = getValidatedMimeType(compressedFile);
 				const { data, error: uploadError } = await supabase.storage
 					.from('post-media')
-					.upload(fileName, compressedFile);
+					.upload(fileName, compressedFile, { contentType });
 				if (uploadError) throw uploadError;
 				const { data: signedUrlData } = await supabase.storage
 					.from('post-media')

@@ -274,3 +274,78 @@ export async function compressMediaFile(
 	
 	return file;
 }
+
+/**
+ * Determines the validated MIME type for a file based on validation logic
+ * Used to ensure correct contentType during upload to prevent application/octet-stream
+ */
+export function getValidatedMimeType(file: File): string {
+	// For images
+	if (isImageFile(file)) {
+		// If we have a reliable MIME type and it's not generic, use it
+		if (file.type && file.type !== 'application/octet-stream' && file.type.startsWith('image/')) {
+			// Check if it's a standard, well-known MIME type
+			const knownTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/bmp', 'image/tiff'];
+			if (knownTypes.includes(file.type)) {
+				return file.type;
+			}
+		}
+		
+		// Fallback based on file extension
+		const extension = file.name.toLowerCase().split('.').pop();
+		switch (extension) {
+			case 'jpg':
+			case 'jpeg':
+				return 'image/jpeg';
+			case 'png':
+				return 'image/png';
+			case 'gif':
+				return 'image/gif';
+			case 'webp':
+				return 'image/webp';
+			case 'heic':
+				return 'image/heic';
+			case 'bmp':
+				return 'image/bmp';
+			case 'tiff':
+				return 'image/tiff';
+			default:
+				return 'image/jpeg'; // Safe fallback for images
+		}
+	}
+	
+	// For videos
+	if (isVideoFile(file)) {
+		// If we have a reliable MIME type and it's not generic, use it
+		if (file.type && file.type !== 'application/octet-stream' && file.type.startsWith('video/')) {
+			// Check if it's a standard, well-known MIME type
+			const knownTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/avi', 'video/3gpp', 'video/x-matroska'];
+			if (knownTypes.includes(file.type)) {
+				return file.type;
+			}
+		}
+		
+		// Fallback based on file extension
+		const extension = file.name.toLowerCase().split('.').pop();
+		switch (extension) {
+			case 'mp4':
+			case 'm4v':
+				return 'video/mp4';
+			case 'webm':
+				return 'video/webm';
+			case 'mov':
+				return 'video/quicktime';
+			case 'avi':
+				return 'video/avi';
+			case '3gp':
+				return 'video/3gpp';
+			case 'mkv':
+				return 'video/x-matroska';
+			default:
+				return 'video/mp4'; // Safe fallback for videos
+		}
+	}
+	
+	// Fallback for unknown files (should not happen after validation)
+	return 'application/octet-stream';
+}
