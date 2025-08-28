@@ -346,6 +346,7 @@ export function getValidatedMimeType(file: File): string {
 		}
 	}
 	
-	// Fallback for unknown files (should not happen after validation)
-	return 'application/octet-stream';
+	// Safe fallback - never return application/octet-stream
+	// Default to image/jpeg for maximum compatibility
+	return 'image/jpeg';
 }

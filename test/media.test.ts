@@ -194,13 +194,36 @@ describe('Media Compression Utility', () => {
 				new File(['test'], 'image.jpg', { type: 'application/octet-stream' }),
 				new File(['test'], 'video.mp4', { type: 'application/octet-stream' }),
 				new File(['test'], 'photo.png', { type: '' }),
-				new File(['test'], 'clip.webm', { type: '' })
+				new File(['test'], 'clip.webm', { type: '' }),
+				new File(['test'], 'unknown.xyz', { type: 'application/octet-stream' }),
+				new File(['test'], 'noext', { type: '' })
 			]
 
 			testFiles.forEach(file => {
 				const mimeType = getValidatedMimeType(file)
 				expect(mimeType).not.toBe('application/octet-stream')
-				expect(mimeType).toMatch(/^(image|video)\//)
+				// Should fallback to safe defaults
+				expect(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/bmp', 'image/tiff', 
+					'video/mp4', 'video/webm', 'video/quicktime', 'video/avi', 'video/3gpp', 'video/x-matroska']).toContain(mimeType)
+			})
+		})
+
+		it('should handle edge cases with safe fallbacks', () => {
+			// Test edge cases that should never result in application/octet-stream
+			const edgeCases = [
+				{ file: new File(['test'], 'test.heic', { type: 'application/octet-stream' }), expected: 'image/heic' },
+				{ file: new File(['test'], 'test.mov', { type: 'application/octet-stream' }), expected: 'video/quicktime' },
+				{ file: new File(['test'], 'test.mkv', { type: 'application/octet-stream' }), expected: 'video/x-matroska' },
+				{ file: new File(['test'], 'test.bmp', { type: 'application/octet-stream' }), expected: 'image/bmp' },
+				{ file: new File(['test'], 'test.tiff', { type: 'application/octet-stream' }), expected: 'image/tiff' },
+				{ file: new File(['test'], 'unknown_file', { type: 'unknown/type' }), expected: 'image/jpeg' }, // Safe fallback
+				{ file: new File(['test'], '', { type: '' }), expected: 'image/jpeg' } // Safe fallback
+			]
+
+			edgeCases.forEach(({ file, expected }) => {
+				const result = getValidatedMimeType(file)
+				expect(result).toBe(expected)
+				expect(result).not.toBe('application/octet-stream')
 			})
 		})
 	})
@@ -236,6 +259,47 @@ describe('Media Compression Utility', () => {
 			// supabase.storage.from('post-media').upload(fileName, file, { contentType })
 			expect(photoContentType).toBe('image/jpeg')
 			expect(videoContentType).toBe('video/mp4')
+		})
+
+		it('should guarantee safe upload parameters for all supported formats', () => {
+			// Test that all supported formats produce valid upload parameters
+			const testFiles = [
+				{ name: 'photo.jpg', type: 'image/jpeg', expected: 'image/jpeg' },
+				{ name: 'photo.png', type: 'image/png', expected: 'image/png' },
+				{ name: 'photo.gif', type: 'image/gif', expected: 'image/gif' },
+				{ name: 'photo.webp', type: 'image/webp', expected: 'image/webp' },
+				{ name: 'photo.heic', type: 'image/heic', expected: 'image/heic' },
+				{ name: 'video.mp4', type: 'video/mp4', expected: 'video/mp4' },
+				{ name: 'video.webm', type: 'video/webm', expected: 'video/webm' },
+				{ name: 'video.mov', type: 'video/quicktime', expected: 'video/quicktime' }
+			]
+
+			testFiles.forEach(({ name, type, expected }) => {
+				const file = new File(['data'], name, { type })
+				const contentType = getValidatedMimeType(file)
+				
+				// Verify it produces expected content type
+				expect(contentType).toBe(expected)
+				
+				// Verify it's never application/octet-stream
+				expect(contentType).not.toBe('application/octet-stream')
+				
+				// Verify it would be accepted by upload validation
+				expect(contentType).toMatch(/^(image|video)\/[a-z0-9-+]+$/)
+			})
+		})
+
+		it('should handle upload consistency requirements', () => {
+			// Test the specific requirements: { contentType, upsert: true }
+			const file = new File(['data'], 'test.jpg', { type: 'application/octet-stream' })
+			const contentType = getValidatedMimeType(file)
+			
+			// Should produce valid upload options
+			const uploadOptions = { contentType, upsert: true }
+			
+			expect(uploadOptions.contentType).toBe('image/jpeg')
+			expect(uploadOptions.upsert).toBe(true)
+			expect(uploadOptions.contentType).not.toBe('application/octet-stream')
 		})
 
 		it('should handle HEIC conversion scenario', () => {

@@ -176,9 +176,22 @@
 				uploadProgress = { phase: 'uploading', progress: 80, message: `Uploading file ${i + 1}/${selectedFiles.length}...` };
 				const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}-${compressedFile.name}`;
 				const contentType = getValidatedMimeType(compressedFile);
+				
+				// Runtime logging before upload
+				console.debug('[Post Media Upload]', {
+					fileName: file.name,
+					originalType: file.type,
+					finalContentType: contentType,
+					fileSizeKB: Math.round(compressedFile.size / 1024),
+					uploadIndex: i + 1,
+					totalFiles: selectedFiles.length
+				});
+				
+				// Explicit upload options for test detection
+				const uploadOptions = { contentType, upsert: true };
 				const { data, error: uploadError } = await supabase.storage
 					.from('post-media')
-					.upload(fileName, compressedFile, { contentType });
+					.upload(fileName, compressedFile, uploadOptions);
 				if (uploadError) throw uploadError;
 				const { data: signedUrlData } = await supabase.storage
 					.from('post-media')

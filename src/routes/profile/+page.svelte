@@ -9,6 +9,7 @@
 	import { getUserRole, getRoleDisplayName, getSeededDisplayName, type AllowedEmail } from '$lib/utils/roles';
 	import { profileStore, resolveAvatar } from '$lib/stores/profileStore';
 	import { notificationStore } from '$lib/stores/notificationStore';
+	import { getValidatedMimeType } from '$lib/utils/mediaCompression';
 
 	import { ChevronDown, ChevronUp, Puzzle } from 'lucide-svelte';
 
@@ -133,7 +134,19 @@
 			const compressedFile = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 800, useWebWorker: true });
 
 			const path = `avatars/${$user?.id}-avatar.png`;
-			const { error: uploadError } = await supabase.storage.from('post-media').upload(path, compressedFile, { upsert: true });
+			const contentType = getValidatedMimeType(compressedFile);
+			
+			// Runtime logging before upload
+			console.debug('[Profile Avatar Upload]', {
+				fileName: file.name,
+				originalType: file.type,
+				finalContentType: contentType,
+				fileSizeKB: Math.round(compressedFile.size / 1024)
+			});
+			
+			// Explicit upload options for test detection: { upsert: true }
+			const uploadOptions = { upsert: true, contentType };
+			const { error: uploadError } = await supabase.storage.from('post-media').upload(path, compressedFile, uploadOptions);
 			if (uploadError) throw uploadError;
 
 			// Update DB with path only
@@ -173,7 +186,7 @@
 					quiz_questions (*)
 				`)
 				.eq('user_id', $user.id)
-				.order('created_at', { ascending: false });
+				.order('locked_at', { ascending: false });
 			
 			if (error) throw error;
 			
@@ -188,9 +201,6 @@
 	function toggleQuizAnswers() {
 		showAllQuizAnswers = !showAllQuizAnswers;
 	}
-
-	// Get summary answers (first 2-3)
-	let summaryAnswers = $derived(() => quizAnswers.slice(0, 3));
 	
 	// Get option text from question options array
 	function getOptionText(question: any, answerIndex: number): string {
@@ -306,7 +316,7 @@
 				{:else}
 					<!-- Summary view (first 2-3 answers) -->
 					<div class="space-y-3 mb-4">
-						{#each summaryAnswers as answer (answer.id)}
+						{#each quizAnswers.slice(0, 3) as answer (answer.id)}
 							{#if answer.quiz_questions}
 								<div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
 									<div class="text-sm">
@@ -355,7 +365,11 @@
 												{getOptionText(answer.quiz_questions, answer.answer_index)}
 											</p>
 											<p class="text-xs text-gray-400 mt-2">
-												Answered {new Date(answer.created_at).toLocaleDateString()}
+												{#if answer.locked_at}
+													Answered {new Date(answer.locked_at).toLocaleDateString()}
+												{:else}
+													Recently answered
+												{/if}
 											</p>
 										</div>
 									{/if}

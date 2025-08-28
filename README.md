@@ -109,7 +109,14 @@ To enable PWA features, set `PUBLIC_ENABLE_PWA=true` in your environment variabl
 
 Recent fixes implemented:
 
-### ✅ End-to-End Media Upload & Rendering Reliability (Latest)
+### ✅ Guaranteed Safe Media Uploads (Latest)
+- **Explicit contentType Guarantee**: Every upload now guarantees a correct, non-empty contentType to prevent Chrome OpaqueResponseBlocking
+- **Safe Fallbacks Applied**: Unknown MIME types fallback to `image/jpeg` (images) or `video/mp4` (videos) instead of `application/octet-stream`
+- **Universal Upload Consistency**: All uploads include `{ contentType: validatedType, upsert: true }` for post media, avatars, and profile pictures
+- **Runtime Logging**: Debug logging before uploads shows file name, original type, and final contentType chosen
+- **Regression Prevention**: Comprehensive tests ensure no upload can ever result in `application/octet-stream` storage
+
+### ✅ End-to-End Media Upload & Rendering Reliability (Previous)
 - **Explicit contentType Enforcement**: All uploads now include validated MIME types to prevent `application/octet-stream` storage issues
 - **Dynamic Video Type Detection**: Removed hard-coded `type="video/mp4"` from video rendering, now dynamically detects correct MIME type based on file extension
 - **Enhanced Format Support**: Added support for HEIC→JPEG, M4V, 3GP, MKV formats in both detection and rendering

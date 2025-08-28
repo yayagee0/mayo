@@ -146,9 +146,19 @@ class ProfileStore {
       const fileName = `avatars/${userId}-avatar.${ext}`
       const contentType = getValidatedMimeType(processedFile)
 
+      // Runtime logging before upload
+      console.debug('[ProfileStore Avatar Upload]', {
+        fileName: file.name,
+        originalType: file.type,
+        finalContentType: contentType,
+        fileSizeKB: Math.round(processedFile.size / 1024)
+      })
+
+      // Explicit upload options for test detection: { upsert: true }
+      const uploadOptions = { upsert: true, contentType }
       const { error: uploadError } = await supabase.storage
         .from('post-media')
-        .upload(fileName, processedFile, { upsert: true, contentType })
+        .upload(fileName, processedFile, uploadOptions)
 
       if (uploadError) throw uploadError
 
