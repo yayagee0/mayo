@@ -193,7 +193,7 @@
 
 <!-- Explore More Section -->
 <div class="w-full max-w-4xl mx-auto">
-	<div class="bg-slate-50 rounded-2xl shadow-inner mt-6 p-4">
+	<div class="bg-slate-50 rounded-2xl shadow-inner mt-6 p-2 sm:p-4">
 		
 		<!-- Sticky Header -->
 		<div class="sticky top-0 z-10 bg-slate-50 py-2 border-b border-slate-200 mb-4 rounded-t-2xl">
@@ -201,7 +201,7 @@
 				type="button"
 				onclick={toggleSection}
 				onkeydown={(e) => handleKeydown(e, toggleSection)}
-				class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-100 transition-colors rounded-lg"
+				class="w-full px-2 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-100 transition-colors rounded-lg sm:px-4"
 				aria-expanded={isExpanded}
 				style="min-height: 44px;"
 			>
@@ -242,7 +242,7 @@
 									type="button"
 									onclick={() => toggleGroup(groupKey as keyof typeof groupCollapseStates)}
 									onkeydown={(e) => handleKeydown(e, () => toggleGroup(groupKey as keyof typeof groupCollapseStates))}
-									class="w-full px-4 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-50 transition-colors rounded-t-xl"
+									class="w-full px-2 py-3 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-primary-500 hover:bg-slate-50 transition-colors rounded-t-xl sm:px-4"
 									aria-expanded={groupCollapseStates[groupKey as keyof typeof groupCollapseStates]}
 									style="min-height: 44px;"
 								>
@@ -261,7 +261,7 @@
 
 								{#if groupCollapseStates[groupKey as keyof typeof groupCollapseStates]}
 									<!-- Widget Stack for this group -->
-									<div class="px-4 pb-4 border-t border-slate-100">
+									<div class="px-2 pb-4 border-t border-slate-100 sm:px-4">
 										<div class="flex flex-col gap-6 mt-4">
 											{#each groupWidgets as { config: widget, component: Component } (widget.id)}
 												<div class="w-full max-w-2xl mx-auto">
