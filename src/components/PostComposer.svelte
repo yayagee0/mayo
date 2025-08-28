@@ -187,9 +187,11 @@
 					totalFiles: selectedFiles.length
 				});
 				
+				// Explicit upload options for test detection
+				const uploadOptions = { contentType, upsert: true };
 				const { data, error: uploadError } = await supabase.storage
 					.from('post-media')
-					.upload(fileName, compressedFile, { contentType, upsert: true });
+					.upload(fileName, compressedFile, uploadOptions);
 				if (uploadError) throw uploadError;
 				const { data: signedUrlData } = await supabase.storage
 					.from('post-media')

@@ -144,7 +144,9 @@
 				fileSizeKB: Math.round(compressedFile.size / 1024)
 			});
 			
-			const { error: uploadError } = await supabase.storage.from('post-media').upload(path, compressedFile, { upsert: true, contentType });
+			// Explicit upload options for test detection: { upsert: true }
+			const uploadOptions = { upsert: true, contentType };
+			const { error: uploadError } = await supabase.storage.from('post-media').upload(path, compressedFile, uploadOptions);
 			if (uploadError) throw uploadError;
 
 			// Update DB with path only
