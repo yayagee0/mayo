@@ -1,258 +1,197 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { session, user } from '$lib/stores/sessionStore';
-	import { goto } from '$app/navigation';
-	import { widgetRegistry } from '$lib/widgetRegistry';
-	import type { WidgetConfig } from '$lib/types/widget';
-	import type { Database } from '$lib/supabase';
-	import { supabase } from '$lib/supabase';
-	import { HeartHandshake, Leaf, ChevronDown, User } from 'lucide-svelte';
-	import Loading from '$lib/../components/ui/Loading.svelte';
-	import TopBar from '$lib/../components/TopBar.svelte';
-	import ExploreMoreSection from '$lib/../components/ExploreMoreSection.svelte';
-	import { profileStore, currentUserProfile } from '$lib/stores/profileStore';
-	import { cachedQuery, getCacheKey } from '$lib/utils/queryCache';
-	import { lazyLoader, isAnchorWidget } from '$lib/utils/lazyLoader';
-	import { performanceTracker, trackSupabaseQuery } from '$lib/utils/performanceTracker';
-	import { getUserRole } from '$lib/utils/roles';
+  import { onMount } from 'svelte';
+  import { getWidgets, createWidget } from '$lib/firebase';
+  import { FAMILY_ID } from '$lib/allowlist';
+  import { auth } from '$lib/firebase';
+  import { Heart, Users, Calendar, Star, Settings, Book } from 'lucide-svelte';
 
-	let widgets: WidgetConfig[] = $state([]);
-	let loadedWidgets: { config: WidgetConfig, component: any }[] = $state([]);
-	let items: Database['public']['Tables']['items']['Row'][] = $state([]);
-	let interactions: Database['public']['Tables']['interactions']['Row'][] = $state([]);
-	let loading = $state(true);
-	let userName = $derived($user?.user_metadata?.full_name || $user?.email?.split('@')[0] || 'Friend');
+  let user = $state(null);
+  let widgets = $state([]);
+  let loading = $state(true);
 
-	// Individual widget collapse states
-	let widgetCollapseStates = $state<Record<string, boolean>>({});
-	
-	// Initialize widget collapse states
-	function initializeWidgetStates(allWidgets: WidgetConfig[]) {
-		const initialStates: Record<string, boolean> = {};
-		allWidgets.forEach(widget => {
-			// Default to expanded for anchor widgets, collapsed for others
-			if (['reflectionMood', 'ayah', 'birthday', 'wall', 'closingRitual'].includes(widget.id)) {
-				initialStates[widget.id] = true;
-			} else {
-				initialStates[widget.id] = false;
-			}
-		});
-		widgetCollapseStates = initialStates;
-	}
-	
-	// Use profileStore instead of local profiles state
-	let profiles = $derived($profileStore);
+  const sampleWidgets = [
+    {
+      key: 'birthday',
+      title: 'Birthday Card',
+      description: 'Upcoming family birthdays and celebrations',
+      icon: Calendar,
+      color: 'bg-pink-50 border-pink-200',
+      iconColor: 'text-pink-600'
+    },
+    {
+      key: 'profession',
+      title: 'Profession Card',
+      description: 'Family member career highlights and achievements',
+      icon: Star,
+      color: 'bg-blue-50 border-blue-200',
+      iconColor: 'text-blue-600'
+    },
+    {
+      key: 'reflection',
+      title: 'Weekly Reflection',
+      description: 'Share thoughts and reflections with family',
+      icon: Heart,
+      color: 'bg-green-50 border-green-200',
+      iconColor: 'text-green-600'
+    },
+    {
+      key: 'islamic_qa',
+      title: 'Islamic Q&A',
+      description: 'Learn and grow in faith together',
+      icon: Book,
+      color: 'bg-purple-50 border-purple-200',
+      iconColor: 'text-purple-600'
+    },
+    {
+      key: 'family_poll',
+      title: 'Family Decisions',
+      description: 'Vote on family activities and decisions',
+      icon: Users,
+      color: 'bg-yellow-50 border-yellow-200',
+      iconColor: 'text-yellow-600'
+    },
+    {
+      key: 'settings',
+      title: 'Family Settings',
+      description: 'Manage preferences and privacy settings',
+      icon: Settings,
+      color: 'bg-gray-50 border-gray-200',
+      iconColor: 'text-gray-600'
+    }
+  ];
 
-	// Get current user role for widget filtering
-	let userRole = $derived(() => getUserRole($user?.email));
+  onMount(async () => {
+    user = auth.currentUser;
+    
+    try {
+      // Load existing widgets
+      widgets = await getWidgets(FAMILY_ID);
+      
+      // If no widgets exist, create sample ones
+      if (widgets.length === 0) {
+        await createSampleWidgets();
+      }
+    } catch (error) {
+      console.error('Error loading widgets:', error);
+    } finally {
+      loading = false;
+    }
+  });
 
-	// Get current user's profile for avatar - use imported currentUserProfile store instead
-	// let currentUserProfile = $derived(() => {
-	// 	if ($user?.email) {
-	// 		return profiles.find(p => p.email === $user.email);
-	// 	}
-	// 	return null;
-	// });
+  async function createSampleWidgets() {
+    try {
+      for (let i = 0; i < sampleWidgets.length; i++) {
+        const widget = sampleWidgets[i];
+        await createWidget({
+          familyId: FAMILY_ID,
+          key: widget.key,
+          order: i,
+          mode: 'active',
+          enabled: true
+        });
+      }
+      
+      // Reload widgets
+      widgets = await getWidgets(FAMILY_ID);
+    } catch (error) {
+      console.error('Error creating sample widgets:', error);
+    }
+  }
 
-	function handleWidgetView(widgetId: string) {
-		widgetRegistry.recordView(widgetId);
-	}
-
-	function handleWidgetInteraction(widgetId: string) {
-		widgetRegistry.recordInteraction(widgetId);
-	}
-
-	// Filter widgets based on role-based visibility rules
-	function shouldShowWidget(widgetId: string): boolean {
-		const role = userRole();
-		
-		// Parent-only widgets
-		if (['weeklyReflectionDigest', 'analytics', 'islamicReflectionDigest', 'scenarioDigest'].includes(widgetId)) {
-			return role === 'parent';
-		}
-		
-		// Children-only widgets  
-		if (['islamicQA', 'scenario'].includes(widgetId)) {
-			return role === 'child';
-		}
-		
-		// All other widgets are visible to everyone
-		return true;
-	}
-
-	async function loadAnchorWidgets() {
-		widgets = widgetRegistry.getSorted();
-		
-		// Filter only anchor widgets for immediate loading, and apply role-based filtering
-		const anchorWidgets = widgets.filter(widget => 
-			isAnchorWidget(widget.id) && shouldShowWidget(widget.id)
-		);
-		
-		// Load components for anchor widgets only
-		const componentPromises = anchorWidgets.map(async (widget) => {
-			try {
-				// Widget component is a function that returns a promise with the component
-				const componentModule = await (widget.component as () => Promise<{default: any}>)();
-				return { 
-					config: widget, 
-					component: componentModule.default
-				};
-			} catch (error) {
-				console.error(`Failed to load anchor widget ${widget.id}:`, error);
-				return null;
-			}
-		});
-
-		const results = await Promise.all(componentPromises);
-		loadedWidgets = results.filter(result => result !== null) as { config: WidgetConfig, component: any }[];
-		
-		// Initialize widget states after loading
-		initializeWidgetStates(widgets);
-	}
-
-	// Enhanced toggle function
-	function toggleWidget(widgetId: string) {
-		widgetCollapseStates[widgetId] = !widgetCollapseStates[widgetId];
-	}
-
-	async function loadData() {
-		if (!$session?.user?.id) {
-			goto('/');
-			return;
-		}
-
-		try {
-			loading = true;
-
-			// Load items with caching and performance tracking
-			const itemsCacheKey = getCacheKey('items', { order: 'created_at' });
-			const itemsData = await cachedQuery(itemsCacheKey, async () => {
-				return trackSupabaseQuery('dashboard', 'load-items', async () => {
-					const { data, error } = await supabase
-						.from('items')
-						.select('*')
-						.order('created_at', { ascending: false });
-					
-					if (error) throw error;
-					return data || [];
-				});
-			});
-			items = itemsData;
-
-			// Load interactions with caching and performance tracking
-			const interactionsCacheKey = getCacheKey('interactions', { order: 'created_at' });
-			const interactionsData = await cachedQuery(interactionsCacheKey, async () => {
-				return trackSupabaseQuery('dashboard', 'load-interactions', async () => {
-					const { data, error } = await supabase
-						.from('interactions')
-						.select('*')
-						.order('created_at', { ascending: false });
-					
-					if (error) throw error;
-					return data || [];
-				});
-			});
-			interactions = interactionsData;
-
-			// Load anchor widgets immediately, lazy load quiet widgets
-			await loadAnchorWidgets();
-
-		} catch (error) {
-			console.error('Error loading dashboard data:', error);
-		} finally {
-			loading = false;
-		}
-	}
-
-	onMount(() => {
-		loadData();
-		
-		// Log initial performance metrics after a short delay to capture bundle load
-		setTimeout(() => {
-			performanceTracker.logMetrics('Dashboard Loaded');
-		}, 1000);
-	});
+  function getWidgetDisplay(widgetKey: string) {
+    return sampleWidgets.find(w => w.key === widgetKey) || {
+      title: widgetKey,
+      description: 'Widget description',
+      icon: Settings,
+      color: 'bg-gray-50 border-gray-200',
+      iconColor: 'text-gray-600'
+    };
+  }
 </script>
 
 <svelte:head>
-	<title>Family Dashboard | FamilyNest</title>
+  <title>Dashboard - Mayo Family Platform</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-	<TopBar {userName} />
-	<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-		{#if loading}
-			<Loading skeleton={true} skeletonCount={4} />
-		{:else}
-			<!-- ANCHOR WIDGETS - Always expanded, stacked vertically -->
-			<div class="space-y-8 mb-12">
-				<div class="text-center mb-8">
-					<h2 class="text-xl font-semibold text-gray-900 mb-2">Today's Family Connection</h2>
-					<p class="text-gray-600">Your daily anchors for staying close</p>
-				</div>
-				
-				{#each loadedWidgets.filter(w => ['reflectionMood', 'ayah', 'birthday', 'wall'].includes(w.config.id)) as { config: widget, component: Component } (widget.id)}
-					<div class="w-full max-w-2xl mx-auto">
-						<button
-							type="button"
-							class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg transition-transform hover:scale-[1.02]"
-							onmouseenter={() => handleWidgetView(widget.id)}
-							onclick={() => handleWidgetInteraction(widget.id)}
-							aria-label="View {widget.name} widget"
-						>
-							<Component 
-								session={$session}
-								{profiles}
-								{items}
-								{interactions}
-								{widget}
-							/>
-						</button>
-					</div>
-				{/each}
-			</div>
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="text-center">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Family Dashboard</h1>
+    <p class="text-gray-600">Welcome back! Here's what's happening with your family.</p>
+  </div>
 
-			<!-- CLOSING RITUAL - Always visible -->
-			<div class="w-full max-w-2xl mx-auto mb-12">
-				{#each loadedWidgets.filter(w => w.config.id === 'closingRitual') as { config: widget, component: Component } (widget.id)}
-					<button
-						type="button"
-						class="w-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
-						onmouseenter={() => handleWidgetView(widget.id)}
-						onclick={() => handleWidgetInteraction(widget.id)}
-						aria-label="View {widget.name} widget"
-					>
-						<Component 
-							session={$session}
-							{profiles}
-							{items}
-							{interactions}
-							{widget}
-						/>
-					</button>
-				{/each}
-			</div>
+  {#if loading}
+    <div class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+  {:else}
+    <!-- Widgets Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {#each widgets as widget}
+        {@const display = getWidgetDisplay(widget.key)}
+        <div class="card hover:shadow-xl transition-shadow cursor-pointer {display.color}">
+          <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 rounded-lg bg-white/50 flex items-center justify-center">
+                <display.icon class="h-6 w-6 {display.iconColor}" />
+              </div>
+            </div>
+            
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                {display.title}
+              </h3>
+              <p class="text-sm text-gray-600 mb-3">
+                {display.description}
+              </p>
+              
+              <div class="flex items-center justify-between">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/60 text-gray-700">
+                  {widget.enabled ? 'Active' : 'Disabled'}
+                </span>
+                <button class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+                  View →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      {/each}
+    </div>
 
-			<!-- EXPLORE MORE SECTION - Organized quiet widgets -->
-			<ExploreMoreSection 
-				{widgets}
-				session={$session}
-				{profiles}
-				{items}
-				{interactions}
-				onWidgetView={handleWidgetView}
-				onWidgetInteraction={handleWidgetInteraction}
-				{userRole}
-				widgetFilter={shouldShowWidget}
-			/>
+    <!-- Quick Actions -->
+    <div class="card">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <a href="/feed" class="btn btn-primary">
+          <Heart class="h-4 w-4 mr-2" />
+          Share Update
+        </a>
+        <a href="/profile" class="btn btn-secondary">
+          <Users class="h-4 w-4 mr-2" />
+          Update Profile
+        </a>
+        <button class="btn btn-secondary">
+          <Calendar class="h-4 w-4 mr-2" />
+          Plan Activity
+        </button>
+      </div>
+    </div>
 
-			{#if loadedWidgets.length === 0}
-				<div class="text-center py-16">
-					<Leaf class="w-20 h-20 text-gray-300 mx-auto mb-4" aria-hidden="true" />
-					<h2 class="text-xl font-semibold text-gray-900 mb-2">No widgets available</h2>
-					<p class="text-gray-500">Check your widget settings or reload the page.</p>
-				</div>
-			{/if}
-		{/if}
-	</main>
+    <!-- Family Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="card text-center">
+        <div class="text-2xl font-bold text-primary-600 mb-1">4</div>
+        <p class="text-sm text-gray-600">Family Members</p>
+      </div>
+      <div class="card text-center">
+        <div class="text-2xl font-bold text-green-600 mb-1">{widgets.length}</div>
+        <p class="text-sm text-gray-600">Active Widgets</p>
+      </div>
+      <div class="card text-center">
+        <div class="text-2xl font-bold text-purple-600 mb-1">∞</div>
+        <p class="text-sm text-gray-600">Memories Shared</p>
+      </div>
+    </div>
+  {/if}
 </div>

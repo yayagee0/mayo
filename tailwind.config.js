@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
@@ -21,18 +20,11 @@ export default {
           900: '#0c4a6e'
         }
       },
-      animation: {
-        'fade-in': 'fadeIn 0.6s ease-out forwards'
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' }
-        }
+      borderRadius: {
+        '2xl': '1rem',
+        'xl': '0.75rem'
       }
     }
   },
-  plugins: [
-    require('@tailwindcss/forms')
-  ]
+  plugins: []
 }
