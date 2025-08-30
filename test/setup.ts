@@ -1,18 +1,19 @@
 // Test setup for Mayo app
 import { vi } from 'vitest'
 
-// Mock environment variables for tests
-vi.mock('$env/static/public', () => ({
-	PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
-	PUBLIC_SUPABASE_ANON_KEY: 'test-key'
-}))
-
-// Mock environment for tests - ensure mocks are used
+// Mock Firebase environment variables for tests
 Object.defineProperty(import.meta, 'env', {
 	value: {
 		VITEST: true,
 		VITE_USE_MOCKS: 'true',
-		NODE_ENV: 'test'
+		NODE_ENV: 'test',
+		VITE_FB_API_KEY: 'test-firebase-api-key',
+		VITE_FB_AUTH_DOMAIN: 'test-project.firebaseapp.com',
+		VITE_FB_PROJECT_ID: 'test-project-id',
+		VITE_FB_STORAGE_BUCKET: 'test-project.appspot.com',
+		VITE_FB_APP_ID: 'test-firebase-app-id',
+		VITE_FAMILY_ID: 'ghassan-family',
+		VITE_ALLOWED_EMAILS: 'nilezat@gmail.com,abdessamia.mariem@gmail.com,yazidgeemail@gmail.com,yahyageemail@gmail.com'
 	},
 	writable: true,
 })

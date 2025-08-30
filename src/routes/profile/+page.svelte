@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { auth, createOrUpdateUser, getUser, uploadFile } from '$lib/firebase';
   import { FAMILY_ID } from '$lib/allowlist';
-  import imageCompression from 'browser-image-compression';
+  // ✅ browser-image-compression dynamically imported to avoid SSR issues  
   import { Camera, User } from 'lucide-svelte';
 
   let user = $state(null);
@@ -58,6 +58,8 @@
     };
 
     try {
+      // ✅ Dynamic import to avoid SSR issues
+      const { default: imageCompression } = await import('browser-image-compression');
       return await imageCompression(file, options);
     } catch (error) {
       console.warn('Image compression failed, using original file:', error);

@@ -10,7 +10,8 @@ const ALLOWED_EMAILS = [
 export const FAMILY_ID = import.meta.env.VITE_FAMILY_ID || 'ghassan-family';
 
 // Check if an email is in the allowlist
-export function isEmailAllowed(email: string): boolean {
+export function isEmailAllowed(email: string | null | undefined): boolean {
+  if (!email) return false;
   return ALLOWED_EMAILS.includes(email.toLowerCase());
 }
 

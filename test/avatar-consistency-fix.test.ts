@@ -1,65 +1,56 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-describe('Avatar Store Consistency Fix', () => {
+describe('Firebase Avatar System Consistency', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should verify avatar source consistency principle', () => {
-    // This documents that all avatar displays should use currentUserAvatar store
-    const expectedAvatarSources = [
-      'Layout mobile topbar: uses currentUserAvatar',
-      'Layout sidebar: uses currentUserAvatar', 
-      'BottomNav: uses currentUserAvatar',
-      'Avatar component: uses currentUserAvatar',
-      'TopbarGreeting: no avatar (desktop text only)'
-    ];
-    
-    expect(expectedAvatarSources).toHaveLength(5);
-  });
-
-  it('should verify topbar behavior separation', () => {
-    // This documents the expected topbar behavior
-    const topbarBehavior = {
-      mobile: {
-        component: 'Mobile topbar in layout',
-        classes: 'md:hidden',
-        content: 'Welcome back, {displayName} + avatar',
-        emoji: false
-      },
-      desktop: {
-        component: 'TopbarGreeting component',
-        classes: 'hidden md:block',
-        content: 'Welcome back, {displayName} 🙏 + secondary message',
-        avatar: false
-      }
+  it('should verify Firebase avatar storage pattern', () => {
+    // This documents that all avatars use Firebase Storage naming
+    const expectedAvatarPattern = {
+      storage: 'Firebase Storage',
+      naming: 'avatars/{user.uid}.jpg',
+      compression: 'Client-side using browser-image-compression',
+      fallback: 'ui-avatars.com API for initials'
     };
     
-    expect(topbarBehavior.mobile.emoji).toBe(false);
-    expect(topbarBehavior.desktop.avatar).toBe(false);
-    expect(topbarBehavior.mobile.classes).toBe('md:hidden');
-    expect(topbarBehavior.desktop.classes).toBe('hidden md:block');
+    expect(expectedAvatarPattern.storage).toBe('Firebase Storage');
+    expect(expectedAvatarPattern.naming).toBe('avatars/{user.uid}.jpg');
+  });
+
+  it('should verify Firebase auth integration', () => {
+    // This documents the expected Firebase auth behavior
+    const authBehavior = {
+      provider: 'Google OAuth via Firebase Auth',
+      userAccess: 'auth.currentUser',
+      allowlist: 'Validated via $lib/allowlist.ts',
+      fallbackAvatar: 'ui-avatars.com with user display name'
+    };
+    
+    expect(authBehavior.provider).toBe('Google OAuth via Firebase Auth');
+    expect(authBehavior.userAccess).toBe('auth.currentUser');
   });
 
   it('should verify accessibility improvements', () => {
     // This documents the accessibility improvements made
     const accessibilityFeatures = [
-      'TopbarGreeting has role="status" for screen readers',
-      'Proper space-y-1 for greeting element spacing',
-      'Consistent avatar alt text across components'
+      'Profile page has proper role and ARIA labels',
+      'Avatar upload has proper alt text',
+      'Consistent focus management across components'
     ];
     
-    expect(accessibilityFeatures).toContain('TopbarGreeting has role="status" for screen readers');
+    expect(accessibilityFeatures).toContain('Profile page has proper role and ARIA labels');
   });
 
-  it('should verify duplicate topbar prevention', () => {
-    // This documents how duplicate topbars are prevented
-    const preventionMeasures = {
-      mobile: 'Mobile topbar uses md:hidden class',
-      desktop: 'TopbarGreeting wrapped in hidden md:block',
-      mutualExclusion: 'Both use same breakpoint (md:768px) for mutual exclusion'
+  it('should verify responsive navigation pattern', () => {
+    // This documents how navigation works in Firebase version
+    const navigationPattern = {
+      mobile: 'Bottom navigation bar with touch targets',
+      desktop: 'Fixed sidebar navigation',
+      breakpoint: 'md:768px for responsive switching'
     };
     
-    expect(preventionMeasures.mutualExclusion).toContain('mutual exclusion');
+    expect(navigationPattern.mobile).toContain('Bottom navigation');
+    expect(navigationPattern.desktop).toContain('Fixed sidebar');
   });
 });

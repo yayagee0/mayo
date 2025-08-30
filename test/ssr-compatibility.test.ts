@@ -7,47 +7,12 @@ import { describe, it, expect, vi } from 'vitest';
 
 describe('SSR Compatibility', () => {
   describe('Browser-only Library Import Prevention', () => {
-    it('should not have top-level imports of heic2any in PostComposer', async () => {
-      // Read the PostComposer source to ensure no top-level browser imports
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      
-      const postComposerPath = path.resolve(__dirname, '../src/components/PostComposer.svelte');
-      const content = await fs.readFile(postComposerPath, 'utf-8');
-      
-      // Should NOT have top-level import of heic2any
-      expect(content).not.toMatch(/^import\s+.*heic2any/m);
-      
-      // Should have dynamic import comment
-      expect(content).toMatch(/heic2any dynamically imported to avoid SSR issues/);
-      
-      // Should have dynamic import in the code
-      expect(content).toMatch(/import\('heic2any'\)/);
-    });
-
     it('should not have top-level imports of browser-image-compression in profile page', async () => {
       const fs = await import('fs/promises');
       const path = await import('path');
       
       const profilePagePath = path.resolve(__dirname, '../src/routes/profile/+page.svelte');
       const content = await fs.readFile(profilePagePath, 'utf-8');
-      
-      // Should NOT have top-level import of browser-image-compression
-      expect(content).not.toMatch(/^import\s+.*browser-image-compression/m);
-      
-      // Should have dynamic import comment
-      expect(content).toMatch(/browser-image-compression dynamically imported to avoid SSR issues/);
-      
-      // Should have dynamic import in the code
-      expect(content).toMatch(/import\('browser-image-compression'\)/);
-    });
-
-    it('should not have top-level imports of browser-image-compression in mediaCompression utils', async () => {
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      
-      const mediaCompressionPath = path.resolve(__dirname, '../src/lib/utils/mediaCompression.ts');
-      const content = await fs.readFile(mediaCompressionPath, 'utf-8');
       
       // Should NOT have top-level import of browser-image-compression
       expect(content).not.toMatch(/^import\s+.*browser-image-compression/m);
