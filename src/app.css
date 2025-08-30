@@ -8,7 +8,7 @@ body {
 
 /* Focus-visible styles for accessibility */
 *:focus-visible {
-  @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
 }
 
 /* Ensure buttons and interactive elements have adequate touch targets (44px minimum) */
@@ -44,7 +44,7 @@ select {
 }
 
 .btn-primary {
-  @apply bg-primary-600 text-white hover:bg-primary-700 hover:shadow-lg focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  @apply bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
 }
 
 .btn-secondary {

@@ -122,7 +122,7 @@
 
   {#if loading}
     <div class="flex justify-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
   {:else}
     <!-- Widgets Grid -->
@@ -149,7 +149,7 @@
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/60 text-gray-700">
                   {widget.enabled ? 'Active' : 'Disabled'}
                 </span>
-                <button class="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+                <button class="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
                   View →
                 </button>
               </div>
@@ -181,7 +181,7 @@
     <!-- Family Stats -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="card text-center">
-        <div class="text-2xl font-bold text-primary-600 mb-1">4</div>
+        <div class="text-2xl font-bold text-blue-600 mb-1">4</div>
         <p class="text-sm text-gray-600">Family Members</p>
       </div>
       <div class="card text-center">

@@ -6,11 +6,11 @@
 
   let { user = $bindable() } = $props();
   
-  let postText = '';
-  let youtubeUrl = '';
-  let selectedFile: File | null = null;
-  let uploading = false;
-  let postType: 'text' | 'youtube' | 'photo' | 'video' = 'text';
+  let postText = $state('');
+  let youtubeUrl = $state('');
+  let selectedFile = $state(null);
+  let uploading = $state(false);
+  let postType = $state('text');
 
   function handleFileSelect(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -43,7 +43,8 @@
     }
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(event: Event) {
+    event.preventDefault();
     if (!user || uploading) return;
 
     if (postType === 'text' && !postText.trim()) return;
@@ -132,8 +133,8 @@
     <button
       type="button"
       class="flex items-center px-3 py-2 text-sm rounded-md transition-colors
-             {postType === 'text' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
-      on:click={() => postType = 'text'}
+             {postType === 'text' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+      onclick={() => postType = 'text'}
     >
       <Type class="h-4 w-4 mr-2" />
       Text
@@ -141,8 +142,8 @@
     <button
       type="button"
       class="flex items-center px-3 py-2 text-sm rounded-md transition-colors
-             {postType === 'youtube' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
-      on:click={() => postType = 'youtube'}
+             {postType === 'youtube' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+      onclick={() => postType = 'youtube'}
     >
       <Youtube class="h-4 w-4 mr-2" />
       YouTube
@@ -150,8 +151,8 @@
     <button
       type="button"
       class="flex items-center px-3 py-2 text-sm rounded-md transition-colors
-             {postType === 'photo' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
-      on:click={() => postType = 'photo'}
+             {postType === 'photo' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+      onclick={() => postType = 'photo'}
     >
       <Image class="h-4 w-4 mr-2" />
       Photo
@@ -159,21 +160,21 @@
     <button
       type="button"
       class="flex items-center px-3 py-2 text-sm rounded-md transition-colors
-             {postType === 'video' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
-      on:click={() => postType = 'video'}
+             {postType === 'video' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+      onclick={() => postType = 'video'}
     >
       <Video class="h-4 w-4 mr-2" />
       Video
     </button>
   </div>
 
-  <form on:submit|preventDefault={handleSubmit} class="space-y-4">
+  <form onsubmit={handleSubmit} class="space-y-4">
     <!-- Text Input (always shown) -->
     <div>
       <textarea
         bind:value={postText}
         placeholder={postType === 'text' ? 'What\'s on your mind?' : 'Add a caption...'}
-        class="w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        class="w-full p-3 border border-gray-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         rows="3"
         required={postType === 'text'}
       ></textarea>
@@ -186,7 +187,7 @@
           type="url"
           bind:value={youtubeUrl}
           placeholder="https://youtube.com/watch?v=..."
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           required
         />
       </div>
@@ -209,7 +210,7 @@
             type="file"
             class="hidden"
             accept={postType === 'photo' ? 'image/*' : 'video/*'}
-            on:change={handleFileSelect}
+            onchange={handleFileSelect}
             required
           />
         </label>
@@ -220,7 +221,7 @@
     <div class="flex justify-end space-x-3">
       <button
         type="button"
-        on:click={resetForm}
+        onclick={resetForm}
         class="btn btn-secondary"
         disabled={uploading}
       >

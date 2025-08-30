@@ -119,8 +119,15 @@
                 </div>
                 
                 <div class="flex items-center space-x-2">
-                  {@const Icon = getPostTypeIcon(post.kind)}
-                  <Icon class="h-5 w-5 {getPostTypeColor(post.kind)}" />
+                  {#if post.kind === 'youtube'}
+                    <Youtube class="h-5 w-5 text-red-600" />
+                  {:else if post.kind === 'photo'}
+                    <ImageIcon class="h-5 w-5 text-green-600" />
+                  {:else if post.kind === 'video'}
+                    <Video class="h-5 w-5 text-purple-600" />
+                  {:else}
+                    <MessageCircle class="h-5 w-5 text-blue-600" />
+                  {/if}
                   <span class="text-sm text-gray-600 capitalize">{post.kind}</span>
                 </div>
               </div>
@@ -150,7 +157,7 @@
                   <div class="rounded-lg overflow-hidden">
                     <img
                       src={post.imagePath}
-                      alt="Posted image"
+                      alt="Family photo"
                       class="w-full h-auto max-h-96 object-cover"
                       loading="lazy"
                     />
@@ -166,6 +173,7 @@
                       class="w-full h-auto max-h-96"
                       preload="metadata"
                     >
+                      <track kind="captions" src="" label="English captions" />
                       Your browser does not support the video tag.
                     </video>
                   </div>

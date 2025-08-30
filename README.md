@@ -1,20 +1,284 @@
-# 🏠 Mayo — Family Engagement Platform (Phase 2)
+# 🏠 Mayo — Family Engagement Platform (Firebase Edition)
 
-Mayo is a private **SvelteKit-based family engagement app** with a Supabase backend, featuring **smart cards, Islamic Q&A, and family-driven bonding widgets**.  
-It is designed for one household only — **bonding before scrolling**.  
+Mayo is a private **SvelteKit-based family engagement app** with a Firebase backend, featuring **responsive navigation, feed sharing, and family member profiles**.  
+It is designed for one household only — **bonding before scrolling**.
 
 ---
 
 ## 🔧 Stack
 
 - **Framework:** SvelteKit 2 + TypeScript  
-- **Styling:** Tailwind CSS + @tailwindcss/forms  
+- **Styling:** TailwindCSS v4 + @tailwindcss/vite  
 - **Icons:** lucide-svelte  
-- **State:** Svelte stores  
+- **State:** Svelte 5 $state() stores  
 - **Validation:** Zod v4  
 - **Dates:** Day.js  
-- **Auth:** Supabase (Google OAuth only)  
-- **Package Manager:** pnpm  
+- **Auth:** Firebase Auth (Google OAuth only)  
+- **Database:** Cloud Firestore  
+- **Storage:** Firebase Storage  
+- **Image Processing:** browser-image-compression  
+- **Package Manager:** npm  
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+  
+- Firebase project with Auth, Firestore, and Storage enabled  
+
+### Installation
+```bash
+npm install
+npm run dev
+npm run build
+```
+
+### Environment Setup
+
+Copy `.env.example` to `.env` and configure your Firebase credentials:
+
+```bash
+# Firebase Configuration
+VITE_FB_API_KEY=your-firebase-api-key-here
+VITE_FB_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FB_PROJECT_ID=your-project-id
+VITE_FB_STORAGE_BUCKET=your-project.appspot.com
+VITE_FB_APP_ID=your-firebase-app-id
+VITE_FB_RETURN_URL=http://localhost:5173/dashboard
+
+# Family Configuration
+VITE_FAMILY_ID=ghassan-family
+VITE_ALLOWED_EMAILS=nilezat@gmail.com,abdessamia.mariem@gmail.com,yazidgeemail@gmail.com,yahyageemail@gmail.com
+```
+
+### Development Commands
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run check        # Run TypeScript checks
+npm run check:watch  # Watch mode TypeScript checks
+```
+
+---
+
+## 🔒 Security & Access
+
+- **4-person allowlist** → only specific family emails may log in (Google OAuth only).
+- **Firebase Auth** controls authentication with email allowlist validation.
+- **Firestore Security Rules** enforce family ID restrictions and email allowlist.
+- **Firebase Storage Rules** restrict file access to authenticated family members only.
+- Security enforced at **client + Firebase rules layer**.
+
+---
+
+## 📦 Data Structure
+
+### Firestore Collections
+
+**users**: User profiles and family membership
+```typescript
+{
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  familyId: string;
+}
+```
+
+**widgets**: Dashboard widget configuration
+```typescript
+{
+  familyId: string;
+  key: string;
+  order: number;
+  mode: string;
+  enabled: boolean;
+}
+```
+
+**posts**: Family feed posts with media
+```typescript
+{
+  familyId: string;
+  authorUid: string;
+  createdAt: string;
+  kind: 'text' | 'youtube' | 'photo' | 'video';
+  text?: string;
+  youtubeId?: string;
+  imagePath?: string;
+  videoPath?: string;
+}
+```
+
+---
+
+## 🎨 Features
+
+### Navigation
+- **Desktop**: Fixed sidebar with navigation menu
+- **Mobile**: Bottom navigation bar with accessible touch targets
+- **Responsive**: Adapts seamlessly between desktop and mobile layouts
+
+### Authentication
+- **Google OAuth**: One-click sign-in with Google accounts
+- **Email Allowlist**: Restricted to 4 family email addresses
+- **Auto-redirect**: Seamless flow from login to dashboard
+
+### Dashboard
+- **Widget Grid**: Sample family widgets with different categories
+- **Quick Actions**: Fast access to create posts and update profile
+- **Family Stats**: Overview of family members and activity
+
+### Profile Management
+- **Avatar Upload**: Compressed image upload (≤2MB, max 400px)
+- **Display Name**: Customizable family member names
+- **Account Info**: View creation date and last sign-in
+
+### Family Feed
+- **Multi-format Posts**: Text, YouTube videos, photos, and raw videos
+- **Image Compression**: Automatic compression for photos (≤2MB, max 1920px)
+- **Video Support**: Raw video upload without compression
+- **YouTube Integration**: Automatic embed with URL parsing
+
+---
+
+## 🔧 Firebase Setup
+
+### 1. Create Firebase Project
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project
+3. Enable Google Analytics (optional)
+
+### 2. Enable Services
+```bash
+# Enable Authentication
+- Go to Authentication → Sign-in method
+- Enable Google provider
+- Add your domain to authorized domains
+
+# Enable Firestore
+- Go to Firestore Database
+- Create database in production mode
+- Deploy security rules (see below)
+
+# Enable Storage
+- Go to Storage
+- Create bucket with Firebase rules
+```
+
+### 3. Security Rules
+
+**Firestore Rules** (`firestore.rules`):
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check allowed emails
+    function isAllowedEmail() {
+      return request.auth != null && 
+        (request.auth.token.email == 'nilezat@gmail.com' ||
+         request.auth.token.email == 'abdessamia.mariem@gmail.com' ||
+         request.auth.token.email == 'yazidgeemail@gmail.com' ||
+         request.auth.token.email == 'yahyageemail@gmail.com');
+    }
+    
+    // Helper function to check family ID
+    function isFamilyMember() {
+      return resource.data.familyId == 'ghassan-family';
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if isAllowedEmail() && 
+        request.auth.uid == userId && 
+        resource.data.familyId == 'ghassan-family';
+    }
+    
+    // Widgets collection
+    match /widgets/{widgetId} {
+      allow read, write: if isAllowedEmail() && isFamilyMember();
+    }
+    
+    // Posts collection
+    match /posts/{postId} {
+      allow read, write: if isAllowedEmail() && isFamilyMember();
+    }
+  }
+}
+```
+
+**Storage Rules** (`storage.rules`):
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null &&
+        (request.auth.token.email == 'nilezat@gmail.com' ||
+         request.auth.token.email == 'abdessamia.mariem@gmail.com' ||
+         request.auth.token.email == 'yazidgeemail@gmail.com' ||
+         request.auth.token.email == 'yahyageemail@gmail.com');
+    }
+  }
+}
+```
+
+---
+
+## 🧱 Architecture Principles
+
+- **Firebase-First** → Leverage Firebase services for auth, data, and storage.  
+- **Mobile-First UX** → Responsive design optimized for mobile devices.  
+- **Single-Family Privacy** → Data scoped to one household only.  
+- **Client-Side Optimization** → Image compression and efficient uploads.  
+- **Accessible Design** → Proper focus management and touch targets.  
+
+---
+
+## 📱 Responsive Design
+
+- **Desktop (≥768px)**: Fixed sidebar navigation with main content area
+- **Mobile (<768px)**: Bottom navigation bar with full-screen content
+- **Touch Targets**: Minimum 44px touch targets for accessibility
+- **Safe Areas**: Proper handling of notched devices and safe areas
+
+---
+
+## 🔄 Migration Notes
+
+This project has been completely migrated from Supabase to Firebase:
+
+### Removed Dependencies
+- `@supabase/supabase-js`
+- `@supabase/auth-ui-svelte`
+- `@supabase/auth-ui-shared`
+- `heic2any` (replaced with browser-image-compression)
+
+### Added Dependencies
+- `firebase` (Auth, Firestore, Storage)
+- Enhanced `browser-image-compression` usage
+
+### Key Changes
+- Auth flow now uses Firebase Auth with Google OAuth
+- Data storage moved from PostgreSQL to Firestore
+- File storage moved from Supabase Storage to Firebase Storage
+- Simplified data model: users, widgets, posts collections
+- TailwindCSS v4 with proper @tailwindcss/vite integration
+
+---
+
+## 🎯 Future Enhancements
+
+- **Real-time Updates**: Firestore real-time listeners for live feed updates
+- **Push Notifications**: Firebase Cloud Messaging for family notifications
+- **Offline Support**: Progressive Web App with offline capabilities
+- **Advanced Widgets**: More interactive family engagement features
+
+---
+
+*Mayo - Bringing families together, one post at a time.*  
 
 ---
 

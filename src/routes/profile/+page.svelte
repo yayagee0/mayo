@@ -97,7 +97,8 @@
     }
   }
 
-  async function handleSaveProfile() {
+  async function handleSaveProfile(event: Event) {
+    event.preventDefault();
     if (!user || saving) return;
 
     try {
@@ -146,7 +147,7 @@
 
   {#if loading}
     <div class="flex justify-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
   {:else}
     <!-- Avatar Section -->
@@ -158,13 +159,13 @@
           class="w-32 h-32 rounded-full object-cover mx-auto border-4 border-white shadow-lg"
         />
         
-        <label class="absolute bottom-0 right-0 bg-primary-600 text-white p-2 rounded-full cursor-pointer hover:bg-primary-700 transition-colors shadow-lg">
+        <label class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors shadow-lg">
           <Camera class="h-5 w-5" />
           <input
             type="file"
             accept="image/*"
             class="hidden"
-            on:change={handleFileSelect}
+            onchange={handleFileSelect}
             disabled={uploading}
           />
         </label>
@@ -182,7 +183,7 @@
     </div>
 
     <!-- Profile Form -->
-    <form on:submit|preventDefault={handleSaveProfile} class="card space-y-6">
+    <form onsubmit={handleSaveProfile} class="card space-y-6">
       <h2 class="text-lg font-semibold text-gray-900">Profile Information</h2>
       
       <div>
@@ -208,16 +209,17 @@
           id="displayName"
           bind:value={displayName}
           placeholder="Enter your display name"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           required
         />
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="familyId" class="block text-sm font-medium text-gray-700 mb-2">
           Family ID
         </label>
         <input
+          id="familyId"
           type="text"
           value={FAMILY_ID}
           disabled

@@ -54,7 +54,7 @@
 <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
   <div class="sm:mx-auto sm:w-full sm:max-w-md">
     <div class="text-center">
-      <h1 class="text-4xl font-bold text-primary-600 mb-2">Mayo</h1>
+      <h1 class="text-4xl font-bold text-blue-600 mb-2">Mayo</h1>
       <h2 class="text-2xl font-semibold text-gray-900 mb-2">Family Platform</h2>
       <p class="text-gray-600">Private family engagement space</p>
     </div>
@@ -74,7 +74,7 @@
       {/if}
 
       <button
-        on:click={handleGoogleSignIn}
+        onclick={handleGoogleSignIn}
         disabled={loading}
         class="w-full flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >

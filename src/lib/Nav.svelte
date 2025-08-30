@@ -21,7 +21,7 @@
 <!-- Desktop Sidebar -->
 <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 bg-white border-r border-gray-200">
   <div class="flex-1 flex flex-col min-h-0">
-    <div class="flex items-center h-16 px-4 bg-primary-600">
+    <div class="flex items-center h-16 px-4 bg-blue-600">
       <h1 class="text-xl font-bold text-white">Mayo</h1>
     </div>
     
@@ -31,7 +31,7 @@
           href={item.href}
           class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
                  {$page.url.pathname === item.href 
-                   ? 'bg-primary-100 text-primary-900' 
+                   ? 'bg-blue-100 text-blue-900' 
                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}"
         >
           <item.icon class="mr-3 h-5 w-5 flex-shrink-0" />
@@ -55,7 +55,7 @@
           </div>
         </div>
         <button
-          on:click={handleSignOut}
+          onclick={handleSignOut}
           class="ml-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
           title="Sign out"
         >
@@ -74,7 +74,7 @@
         href={item.href}
         class="flex-1 flex flex-col items-center py-2 px-1 text-xs font-medium transition-colors
                {$page.url.pathname === item.href 
-                 ? 'text-primary-600' 
+                 ? 'text-blue-600' 
                  : 'text-gray-500 hover:text-gray-700'}"
       >
         <item.icon class="h-6 w-6 mb-1" />
@@ -82,7 +82,7 @@
       </a>
     {/each}
     <button
-      on:click={handleSignOut}
+      onclick={handleSignOut}
       class="flex-1 flex flex-col items-center py-2 px-1 text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
     >
       <LogOut class="h-6 w-6 mb-1" />
