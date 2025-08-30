@@ -1,143 +1,66 @@
 <script lang="ts">
-	import '../app.css';
-	import { session, user } from '$lib/stores/sessionStore';
-	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
-	import { afterNavigate } from '$app/navigation';
-	import { supabase } from '$lib/supabase';
-	import BottomNav from '$lib/../components/ui/BottomNav.svelte';
-	import Sidebar from '$lib/../components/ui/Sidebar.svelte';
-	import PostComposer from '$lib/../components/PostComposer.svelte';
-	import PWAInstallPrompt from '$lib/../components/ui/PWAInstallPrompt.svelte';
-	import { handleServiceWorker } from '$lib/pwa';
-	import { env } from '$env/dynamic/public';
-	import { currentUserProfile, resolveAvatar } from '$lib/stores/profileStore';
-	import { composerStore, closeComposer } from '$lib/stores/composerStore';
-	import { currentUserAvatar } from '$lib/stores/avatarStore';
+  import '../app.css';
+  import { onMount } from 'svelte';
+  import { page } from '$app/stores';
+  import { goto } from '$app/navigation';
+  import { auth } from '$lib/firebase';
+  import { onAuthStateChanged } from 'firebase/auth';
+  import { validateUserAccess } from '$lib/allowlist';
+  import Nav from '$lib/Nav.svelte';
 
-	let { children } = $props();
+  let { children } = $props();
+  
+  let user = $state(null);
+  let loading = $state(true);
+  let isAuthenticated = $derived(!!user);
+  let isAllowedUser = $derived(user ? validateUserAccess(user) : false);
+  let showNav = $derived(isAuthenticated && isAllowedUser && 
+    !$page.url.pathname.includes('/login') && 
+    !$page.url.pathname.includes('/access-denied'));
 
-	// Allowed emails for access control
-	const ALLOWED_EMAILS = [
-		'nilezat@gmail.com',
-		'abdessamia.mariem@gmail.com',
-		'yazidgeemail@gmail.com',
-		'yahyageemail@gmail.com'
-	];
+  onMount(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      user = firebaseUser;
+      loading = false;
 
-	let isAuthenticated = $derived($session !== null);
-	let userEmail = $derived($user?.email);
-	let isAllowedUser = $derived(userEmail && ALLOWED_EMAILS.includes(userEmail));
-	let showBottomNav = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
-	let showSidebar = $derived(isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied'));
+      // Handle authentication and authorization
+      if (!firebaseUser && $page.url.pathname !== '/login') {
+        goto('/login');
+      } else if (firebaseUser && !validateUserAccess(firebaseUser) && 
+                 $page.url.pathname !== '/access-denied') {
+        goto('/access-denied');
+      } else if (firebaseUser && validateUserAccess(firebaseUser) && 
+                 $page.url.pathname === '/login') {
+        goto('/dashboard');
+      }
+    });
 
-	// PostComposer modal state using store
-	let showComposer = $derived($composerStore);
-
-	// Avatar state with reactive store
-	let avatarUrl = $derived($currentUserAvatar);
-
-	function handleComposerOpen() {
-		composerStore.set(true);
-	}
-
-	function handleComposerClose() {
-		closeComposer();
-	}
-
-	// Auto-close composer on navigation
-	afterNavigate(() => {
-		closeComposer();
-	});
-
-	onMount(() => {
-		// Handle service worker registration/unregistration based on PWA flag
-		handleServiceWorker(env.PUBLIC_ENABLE_PWA === 'true');
-		
-		// Check if user is authenticated but not allowed
-		if (isAuthenticated && userEmail && !isAllowedUser) {
-			window.location.href = '/access-denied';
-		}
-	});
+    return unsubscribe;
+  });
 </script>
 
 <svelte:head>
-	<title>Family - Family Engagement App</title>
-	<meta name="description" content="A family engagement platform for sharing, connecting, and growing together." />
-	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>Mayo - Family Engagement Platform</title>
+  <meta name="description" content="Private family engagement platform" />
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
-	<!-- Persistent Navigation -->
-	{#if showSidebar}
-		<!-- Desktop/Tablet Sidebar -->
-		<div class="hidden md:block">
-			<Sidebar onComposerOpen={handleComposerOpen} avatarUrl={avatarUrl} profile={$currentUserProfile} />
-		</div>
-	{/if}
-	
-	<!-- Mobile Topbar -->
-	{#if isAuthenticated && isAllowedUser && !$page.url.pathname.includes('access-denied')}
-		<div class="md:hidden bg-white border-b border-gray-200 px-4 py-3">
-			<div class="flex items-center justify-between">
-				<div class="space-y-1">
-					<h1 class="text-lg font-semibold text-gray-900">
-						Welcome back, {$currentUserProfile?.display_name || $currentUserProfile?.email?.split('@')[0] || 'User'}
-					</h1>
-				</div>
-				<div class="flex-shrink-0">
-					{#if avatarUrl}
-						<img 
-							src={avatarUrl} 
-							alt="Profile avatar"
-							class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-500 ring-offset-2 shadow-sm"
-						/>
-					{:else}
-						<div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold ring-2 ring-primary-500 ring-offset-2 shadow-sm">
-							{$currentUserProfile?.display_name?.[0]?.toUpperCase() || $currentUserProfile?.email?.[0]?.toUpperCase() || "U"}
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-	{/if}
-	
-	<!-- Main Content Area -->
-	<div class="transition-all duration-300 ease-in-out"
-		class:md:ml-64={showSidebar}
-		class:pb-20={showBottomNav}
-	>
-		{@render children?.()}
-	</div>
-	
-	<!-- Mobile Bottom Navigation -->
-	{#if showBottomNav}
-		<div class="md:hidden">
-			<BottomNav onComposerOpen={handleComposerOpen} avatarUrl={avatarUrl} profile={$currentUserProfile} />
-		</div>
-	{/if}
-	
-	<!-- PostComposer Modal -->
-	{#if showComposer}
-		<div class="fixed inset-0 bg-primary/80 backdrop-blur-sm z-40"></div>
-		<div class="fixed inset-0 z-50 flex items-center justify-center p-4"
-			class:md:ml-64={showSidebar}
-		>
-			<div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-xl animate-fade-in">
-				<PostComposer 
-					onPostCreated={handleComposerClose}
-					onCancel={handleComposerClose}
-					placeholder="What's on your mind? Share something meaningful..."
-				/>
-			</div>
-		</div>
-	{/if}
-	
-	<!-- PWA Install Prompt (only if PWA is enabled) -->
-	{#if env.PUBLIC_ENABLE_PWA === 'true'}
-		<PWAInstallPrompt />
-	{/if}
-</div>
+{#if loading}
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+{:else}
+  <div class="min-h-screen bg-gray-50">
+    {#if showNav}
+      <Nav bind:user />
+      <main class="md:ml-64 pb-16 md:pb-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {@render children()}
+        </div>
+      </main>
+    {:else}
+      <main>
+        {@render children()}
+      </main>
+    {/if}
+  </div>
+{/if}

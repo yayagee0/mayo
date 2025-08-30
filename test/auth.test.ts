@@ -1,167 +1,87 @@
-import { describe, it, expect } from 'vitest'
-import { 
-	allowedEmailSchema, 
-	userRoleSchema, 
-	profileSchema, 
-	profileUpdateSchema,
-	type AllowedEmail,
-	type UserRole 
-} from '../src/lib/schema/auth'
+import { describe, it, expect, vi } from 'vitest'
+import { isEmailAllowed, validateUserAccess, getAllowedEmails } from '../src/lib/allowlist'
 
-describe('Auth Schema Validation', () => {
-	describe('allowedEmailSchema', () => {
-		it('should accept valid family emails', () => {
-			const validEmails = [
-				'nilezat@gmail.com',
-				'abdessamia.mariem@gmail.com',
-				'yazidgeemail@gmail.com',
-				'yahyageemail@gmail.com'
-			]
+// Mock Firebase auth for testing
+vi.mock('../src/lib/firebase', () => ({
+  auth: {
+    currentUser: null
+  },
+  signInWithGoogle: vi.fn(),
+  signOutUser: vi.fn(),
+  createOrUpdateUser: vi.fn(),
+  getUser: vi.fn()
+}))
 
-			validEmails.forEach(email => {
-				const result = allowedEmailSchema.safeParse(email)
-				expect(result.success).toBe(true)
-				if (result.success) {
-					expect(result.data).toBe(email)
-				}
-			})
-		})
+describe('Firebase Auth Integration', () => {
+  describe('Email Allowlist Validation', () => {
+    it('should validate allowed family emails', () => {
+      const allowedEmails = [
+        'nilezat@gmail.com',
+        'abdessamia.mariem@gmail.com',
+        'yazidgeemail@gmail.com',
+        'yahyageemail@gmail.com'
+      ]
 
-		it('should reject invalid emails', () => {
-			const invalidEmails = [
-				'invalid@example.com',
-				'test@gmail.com',
-				'',
-				null,
-				undefined,
-				'not-an-email'
-			]
+      allowedEmails.forEach(email => {
+        expect(isEmailAllowed(email)).toBe(true)
+      })
+    })
 
-			invalidEmails.forEach(email => {
-				const result = allowedEmailSchema.safeParse(email)
-				expect(result.success).toBe(false)
-			})
-		})
+    it('should reject non-family emails', () => {
+      const rejectedEmails = [
+        'invalid@example.com',
+        'test@gmail.com',
+        'hacker@evil.com',
+        '',
+        null,
+        undefined
+      ]
 
-		it('should provide correct TypeScript types', () => {
-			const email: AllowedEmail = 'nilezat@gmail.com'
-			expect(allowedEmailSchema.parse(email)).toBe(email)
-		})
-	})
+      rejectedEmails.forEach(email => {
+        expect(isEmailAllowed(email as any)).toBe(false)
+      })
+    })
 
-	describe('userRoleSchema', () => {
-		it('should accept valid user roles', () => {
-			const validRoles = ['parent', 'child', 'member']
+    it('should handle case-insensitive validation', () => {
+      expect(isEmailAllowed('NILEZAT@GMAIL.COM')).toBe(true)
+      expect(isEmailAllowed('Nilezat@Gmail.Com')).toBe(true)
+    })
+  })
 
-			validRoles.forEach(role => {
-				const result = userRoleSchema.safeParse(role)
-				expect(result.success).toBe(true)
-				if (result.success) {
-					expect(result.data).toBe(role)
-				}
-			})
-		})
+  describe('User Access Validation', () => {
+    it('should validate user with allowed email', () => {
+      const validUser = { email: 'nilezat@gmail.com' }
+      expect(validateUserAccess(validUser)).toBe(true)
+    })
 
-		it('should reject invalid roles', () => {
-			const invalidRoles = ['admin', 'guest', '', null, undefined, 123]
+    it('should reject user with invalid email', () => {
+      const invalidUser = { email: 'invalid@example.com' }
+      expect(validateUserAccess(invalidUser)).toBe(false)
+    })
 
-			invalidRoles.forEach(role => {
-				const result = userRoleSchema.safeParse(role)
-				expect(result.success).toBe(false)
-			})
-		})
+    it('should reject user without email', () => {
+      expect(validateUserAccess({})).toBe(false)
+      expect(validateUserAccess({ email: null })).toBe(false)
+    })
+  })
 
-		it('should provide correct TypeScript types', () => {
-			const role: UserRole = 'parent'
-			expect(userRoleSchema.parse(role)).toBe(role)
-		})
-	})
+  describe('Allowlist Configuration', () => {
+    it('should return exactly 4 allowed emails', () => {
+      const emails = getAllowedEmails()
+      expect(emails).toHaveLength(4)
+      expect(emails).toContain('nilezat@gmail.com')
+      expect(emails).toContain('abdessamia.mariem@gmail.com')
+      expect(emails).toContain('yazidgeemail@gmail.com')
+      expect(emails).toContain('yahyageemail@gmail.com')
+    })
 
-	describe('profileSchema', () => {
-		const validProfile = {
-			user_id: '123e4567-e89b-12d3-a456-426614174000',
-			email: 'nilezat@gmail.com' as AllowedEmail,
-			display_name: 'Test User',
-			avatar_url: 'https://example.com/avatar.jpg',
-			role: 'parent' as UserRole,
-			dob: '1990-01-01',
-			created_at: '2023-01-01T00:00:00Z',
-			updated_at: '2023-01-01T00:00:00Z'
-		}
-
-		it('should accept valid profile data', () => {
-			const result = profileSchema.safeParse(validProfile)
-			expect(result.success).toBe(true)
-			if (result.success) {
-				expect(result.data.email).toBe(validProfile.email)
-				expect(result.data.user_id).toBe(validProfile.user_id)
-			}
-		})
-
-		it('should accept profile with null optional fields', () => {
-			const profileWithNulls = {
-				user_id: '123e4567-e89b-12d3-a456-426614174000',
-				email: 'nilezat@gmail.com' as AllowedEmail,
-				display_name: null,
-				avatar_url: null,
-				role: null,
-				dob: null
-			}
-
-			const result = profileSchema.safeParse(profileWithNulls)
-			expect(result.success).toBe(true)
-		})
-
-		it('should reject invalid UUID', () => {
-			const invalidProfile = {
-				...validProfile,
-				user_id: 'invalid-uuid'
-			}
-
-			const result = profileSchema.safeParse(invalidProfile)
-			expect(result.success).toBe(false)
-		})
-
-		it('should reject invalid email', () => {
-			const invalidProfile = {
-				...validProfile,
-				email: 'invalid@example.com'
-			}
-
-			const result = profileSchema.safeParse(invalidProfile)
-			expect(result.success).toBe(false)
-		})
-
-		it('should reject invalid date format', () => {
-			const invalidProfile = {
-				...validProfile,
-				dob: '01/01/1990' // Invalid format
-			}
-
-			const result = profileSchema.safeParse(invalidProfile)
-			expect(result.success).toBe(false)
-		})
-	})
-
-	describe('profileUpdateSchema', () => {
-		it('should require user_id and email', () => {
-			const updateData = {
-				display_name: 'Updated Name'
-			}
-
-			const result = profileUpdateSchema.safeParse(updateData)
-			expect(result.success).toBe(false)
-		})
-
-		it('should accept partial updates with required fields', () => {
-			const updateData = {
-				user_id: '123e4567-e89b-12d3-a456-426614174000',
-				email: 'nilezat@gmail.com' as AllowedEmail,
-				display_name: 'Updated Name'
-			}
-
-			const result = profileUpdateSchema.safeParse(updateData)
-			expect(result.success).toBe(true)
-		})
-	})
+    it('should return a copy of the allowlist (not the original)', () => {
+      const emails1 = getAllowedEmails()
+      const emails2 = getAllowedEmails()
+      
+      // Should be equal but not the same reference
+      expect(emails1).toEqual(emails2)
+      expect(emails1).not.toBe(emails2)
+    })
+  })
 })

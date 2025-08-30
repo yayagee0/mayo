@@ -49,39 +49,39 @@ describe('Environment Import Validation', () => {
   })
 
   describe('Correct $env Usage', () => {
-    it('should use $env/static/public for Supabase environment variables', async () => {
-      const supabaseFile = join(process.cwd(), 'src/lib/supabase.ts')
-      const content = await readFile(supabaseFile, 'utf-8')
+    it('should use proper import.meta.env for Firebase environment variables', async () => {
+      const firebaseFile = join(process.cwd(), 'src/lib/firebase.ts')
+      const content = await readFile(firebaseFile, 'utf-8')
       
-      // Should import from $env/static/public
-      expect(content).toMatch(/from\s+['"]\$env\/static\/public['"]/)
-      
-      // Should import the correct Supabase variables
-      expect(content).toMatch(/PUBLIC_SUPABASE_URL/)
-      expect(content).toMatch(/PUBLIC_SUPABASE_ANON_KEY/)
+      // Should use import.meta.env for Vite environment variables
+      expect(content).toMatch(/import\.meta\.env\.VITE_FB_API_KEY/)
+      expect(content).toMatch(/import\.meta\.env\.VITE_FB_AUTH_DOMAIN/)
+      expect(content).toMatch(/import\.meta\.env\.VITE_FB_PROJECT_ID/)
+      expect(content).toMatch(/import\.meta\.env\.VITE_FB_STORAGE_BUCKET/)
+      expect(content).toMatch(/import\.meta\.env\.VITE_FB_APP_ID/)
     })
 
-    it('should use correct $env syntax in server environment validation', async () => {
-      const envFile = join(process.cwd(), 'src/lib/server/env.ts')
-      const content = await readFile(envFile, 'utf-8')
+    it('should use import.meta.env in allowlist configuration', async () => {
+      const allowlistFile = join(process.cwd(), 'src/lib/allowlist.ts')
+      const content = await readFile(allowlistFile, 'utf-8')
       
-      // Should import from $env/static/public for static vars
-      expect(content).toMatch(/from\s+['"]\$env\/static\/public['"]/)
-      
-      // Should import from $env/dynamic/public for dynamic vars
-      expect(content).toMatch(/from\s+['"]\$env\/dynamic\/public['"]/)
+      // Should use import.meta.env for family ID
+      expect(content).toMatch(/import\.meta\.env\.VITE_FAMILY_ID/)
     })
 
-    it('should properly mock $env in test setup', async () => {
+    it('should properly mock environment variables in test setup', async () => {
       const setupFile = join(process.cwd(), 'test/setup.ts')
-      const content = await readFile(setupFile, 'utf-8')
       
-      // Should mock $env/static/public
-      expect(content).toMatch(/vi\.mock\s*\(\s*['"]\$env\/static\/public['"]/)
-      
-      // Should provide mock values for Supabase vars
-      expect(content).toMatch(/PUBLIC_SUPABASE_URL/)
-      expect(content).toMatch(/PUBLIC_SUPABASE_ANON_KEY/)
+      try {
+        const content = await readFile(setupFile, 'utf-8')
+        
+        // If setup file exists, should mock Firebase environment variables
+        expect(content).toMatch(/VITE_FB_/)
+      } catch (error: any) {
+        // Setup file might not exist, which is fine for Firebase app
+        // Just verify we can test without setup file
+        expect(error.code).toBe('ENOENT')
+      }
     })
   })
 
@@ -110,23 +110,26 @@ describe('Environment Import Validation', () => {
     })
   })
 
-  describe('Supabase Client Requirements', () => {
-    it('should export memoized createSupabaseClient and db client', async () => {
-      const supabaseFile = join(process.cwd(), 'src/lib/supabase.ts')
-      const content = await readFile(supabaseFile, 'utf-8')
+  describe('Firebase Client Requirements', () => {
+    it('should export Firebase services and helper functions', async () => {
+      const firebaseFile = join(process.cwd(), 'src/lib/firebase.ts')
+      const content = await readFile(firebaseFile, 'utf-8')
       
-      // Should export createSupabaseClient function
-      expect(content).toMatch(/export\s+function\s+createSupabaseClient/)
-      
-      // Should export db client
+      // Should export Firebase services
+      expect(content).toMatch(/export\s+const\s+auth\s*=/)
       expect(content).toMatch(/export\s+const\s+db\s*=/)
+      expect(content).toMatch(/export\s+const\s+storage\s*=/)
       
-      // Should have memoization (clientCache)
-      expect(content).toMatch(/clientCache/)
+      // Should export helper functions
+      expect(content).toMatch(/export\s+async\s+function\s+signInWithGoogle/)
+      expect(content).toMatch(/export\s+async\s+function\s+createOrUpdateUser/)
+      expect(content).toMatch(/export\s+async\s+function\s+uploadFile/)
       
-      // Should use environment variables correctly
-      expect(content).toMatch(/PUBLIC_SUPABASE_URL/)
-      expect(content).toMatch(/PUBLIC_SUPABASE_ANON_KEY/)
+      // Should use Firebase configuration
+      expect(content).toMatch(/initializeApp/)
+      expect(content).toMatch(/getAuth/)
+      expect(content).toMatch(/getFirestore/)
+      expect(content).toMatch(/getStorage/)
     })
   })
 })
